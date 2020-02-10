@@ -1,0 +1,33 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ofreact", "ofreact\ofreact.csproj", "{00B4A1A5-86BB-4CD0-A10F-A8EFC3DE8C4B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ofreact.Tests", "ofreact.Tests\ofreact.Tests.csproj", "{BB1A965A-4F6E-42D8-8B57-83D10EDCDD66}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "osu.Framework.Declarative", "osu.Framework.Declarative\osu.Framework.Declarative.csproj", "{78B08077-C23E-442F-B1CB-56F8436BF194}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ofreact.Benchmarks", "ofreact.Benchmarks\ofreact.Benchmarks.csproj", "{03ED0EC0-D3C1-4F67-A410-225A5F6CF816}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00B4A1A5-86BB-4CD0-A10F-A8EFC3DE8C4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00B4A1A5-86BB-4CD0-A10F-A8EFC3DE8C4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00B4A1A5-86BB-4CD0-A10F-A8EFC3DE8C4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00B4A1A5-86BB-4CD0-A10F-A8EFC3DE8C4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB1A965A-4F6E-42D8-8B57-83D10EDCDD66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB1A965A-4F6E-42D8-8B57-83D10EDCDD66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB1A965A-4F6E-42D8-8B57-83D10EDCDD66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB1A965A-4F6E-42D8-8B57-83D10EDCDD66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78B08077-C23E-442F-B1CB-56F8436BF194}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78B08077-C23E-442F-B1CB-56F8436BF194}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78B08077-C23E-442F-B1CB-56F8436BF194}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78B08077-C23E-442F-B1CB-56F8436BF194}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03ED0EC0-D3C1-4F67-A410-225A5F6CF816}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03ED0EC0-D3C1-4F67-A410-225A5F6CF816}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03ED0EC0-D3C1-4F67-A410-225A5F6CF816}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03ED0EC0-D3C1-4F67-A410-225A5F6CF816}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
