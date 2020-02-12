@@ -221,30 +221,9 @@ namespace ofreact
                 effect  = obj.Current = new EffectInfo();
                 pending = true;
             }
-
             else
             {
-                pending = dependencies?.Length == 0 || !objsEqual(dependencies, effect.Dependencies);
-
-                static bool objsEqual(object[] a, object[] b)
-                {
-                    if (a == b)
-                        return true;
-
-                    if (a == null || b == null || a.Length != b.Length)
-                        return false;
-
-                    for (var i = 0; i < a.Length; i++)
-                    {
-                        var x = a[i];
-                        var y = b[i];
-
-                        if (x != y && (x == null || !x.Equals(y)))
-                            return false;
-                    }
-
-                    return true;
-                }
+                pending = effect.IsPending(dependencies);
             }
 
             effect.Dependencies = dependencies;
