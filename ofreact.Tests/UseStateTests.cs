@@ -10,7 +10,9 @@ namespace ofreact.Tests
 
             protected override ofElement Render()
             {
-                var (count, setCount) = UseState(++RenderCount);
+                ++RenderCount;
+
+                var (count, setCount) = UseState(0);
 
                 UseEffect(() =>
                 {
@@ -29,7 +31,7 @@ namespace ofreact.Tests
 
             node.RenderElement(new Element1());
 
-            Assert.That(Element1.RenderCount, Is.EqualTo(10));
+            Assert.That(Element1.RenderCount, Is.EqualTo(11));
         }
 
         class Element2 : ofComponent
@@ -49,7 +51,9 @@ namespace ofreact.Tests
             {
                 protected override ofElement Render()
                 {
-                    var (count, setCount) = UseState(++NestedRenders1);
+                    ++NestedRenders1;
+
+                    var (count, setCount) = UseState(0);
 
                     UseEffect(() =>
                     {
@@ -80,7 +84,7 @@ namespace ofreact.Tests
             node.RenderElement(new Element2());
 
             Assert.That(Element2.ParentRenders, Is.EqualTo(1));
-            Assert.That(Element2.NestedRenders1, Is.EqualTo(10));
+            Assert.That(Element2.NestedRenders1, Is.EqualTo(11));
             Assert.That(Element2.NestedRenders2, Is.EqualTo(1));
         }
     }
