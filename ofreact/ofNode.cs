@@ -23,7 +23,7 @@ namespace ofreact
         /// </summary>
         /// <remarks>
         /// Named states are lowercase string keys.
-        /// Hook states are string keys prefixed with ^ (caret character).
+        /// Hook states are string keys prefixed with ^ (caret character) followed by zero-based hook index.
         /// </remarks>
         public Dictionary<string, object> State { get; } = new Dictionary<string, object>();
 
