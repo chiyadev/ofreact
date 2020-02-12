@@ -32,7 +32,10 @@ namespace ofreact
         internal RefObject(ofNode node, string key, T initialValue)
         {
             _dict = node.State;
-            _key  = key?.ToLowerInvariant() ?? "";
+
+            // - key is always lowercase to achieve case-insensitivity
+            // - underscore prefix convention is removed
+            _key = key.ToLowerInvariant().TrimStart('_');
 
             if (!_dict.ContainsKey(_key))
                 Current = initialValue;
