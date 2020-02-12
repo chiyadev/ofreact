@@ -7,7 +7,7 @@ namespace ofreact
     /// Internally, this object is a simple wrapper of <see cref="RefObject{T}"/> with a setter that invalidates the current element's <see cref="ofNode"/>.
     /// </remarks>
     /// <typeparam name="T">Type of the value.</typeparam>
-    public sealed class StateObject<T>
+    public sealed class StateObject<T> : IContainerObject
     {
         readonly ofNode _node;
         readonly RefObject<T> _ref;
@@ -28,6 +28,8 @@ namespace ofreact
                 _node.Invalidate();
             }
         }
+
+        object IContainerObject.Current => Current;
 
         internal StateObject(ofNode node, string key, T initialValue)
         {
