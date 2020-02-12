@@ -115,7 +115,7 @@ namespace ofreact
         internal void OnUnmount(ofNode node)
         {
             // run effect cleanups
-            foreach (var state in node.State)
+            foreach (var state in node.State.Values)
             {
                 if (state is EffectInfo effect)
                     effect.Cleanup();
@@ -142,7 +142,7 @@ namespace ofreact
         /// </remarks>
         /// <param name="initialValue">Initial value of the referenced value.</param>
         /// <typeparam name="T">Type of the referenced value.</typeparam>
-        protected RefObject<T> UseRef<T>(T initialValue = default) => new RefObject<T>(Node, _hook++, initialValue);
+        protected RefObject<T> UseRef<T>(T initialValue = default) => new RefObject<T>(Node, $":{_hook++}", initialValue);
 
         /// <summary>
         /// Returns a stateful value and a function to update it.

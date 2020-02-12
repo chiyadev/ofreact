@@ -21,7 +21,7 @@ namespace ofreact
         /// <summary>
         /// List of stateful variables.
         /// </summary>
-        public List<object> State { get; } = new List<object>();
+        public Dictionary<object, object> State { get; } = new Dictionary<object, object>();
 
         /// <summary>
         /// Gets the last element bound to this node.

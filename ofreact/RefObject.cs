@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace ofreact
@@ -11,28 +10,25 @@ namespace ofreact
     /// <typeparam name="T">Type of the value.</typeparam>
     public class RefObject<T>
     {
-        readonly List<object> _list;
-        readonly int _index;
+        readonly Dictionary<object, object> _dict;
+        readonly object _key;
 
         /// <summary>
         /// Gets or sets the current value referenced by this object.
         /// </summary>
         public T Current
         {
-            get => (T) _list[_index];
-            set => _list[_index] = value;
+            get => _dict.TryGetValue(_key, out var value) ? (T) value : default;
+            set => _dict[_key] = value;
         }
 
-        internal RefObject(ofNode node, int index, T initialValue)
+        internal RefObject(ofNode node, object key, T initialValue)
         {
-            _list  = node.State;
-            _index = index;
+            _dict = node.State;
+            _key  = key;
 
-            if (index == _list.Count)
-                _list.Add(initialValue);
-
-            else if (index > _list.Count)
-                throw new IndexOutOfRangeException($"Index of state referenced by {nameof(RefObject<T>)} is larger than the state list of {nameof(ofNode)}.");
+            if (!_dict.ContainsKey(key))
+                Current = initialValue;
         }
 
         /// <summary>
