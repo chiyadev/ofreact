@@ -39,7 +39,7 @@ namespace ofreact
             {
                 attribute.Initialize(field);
 
-                fieldBinders.Add((attribute, BuildFieldSetter(field)));
+                fieldBinders.Add((attribute, BuildFieldSetter(type, field)));
             }
 
             foreach (var method in type.GetAllMethods())
@@ -79,15 +79,10 @@ namespace ofreact
             };
         }
 
-        static Action<ofElement, object> BuildFieldSetter(FieldInfo field)
+        static Action<ofElement, object> BuildFieldSetter(Type type, FieldInfo field)
         {
-            var type = field.DeclaringType;
-
-            if (type == null)
-                return null;
-
             if (field.IsLiteral)
-                throw new NotSupportedException($"Cannot build setter for constant field {field} of {field.DeclaringType}.");
+                throw new NotSupportedException($"Cannot build setter for constant field {field} of {type}.");
 
             if (InternalConstants.IsEmitAvailable && !field.IsInitOnly)
             {

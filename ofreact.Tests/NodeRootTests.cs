@@ -5,15 +5,9 @@ namespace ofreact.Tests
 {
     public class NodeRootTests
     {
-        class Element1 : ofComponent
-        {
-            protected override ofElement Render() => null;
-        }
+        class Element1 : ofElement { }
 
-        class Element2 : ofComponent
-        {
-            protected override ofElement Render() => null;
-        }
+        class Element2 : ofElement { }
 
         [Test]
         public void MismatchingBind()
