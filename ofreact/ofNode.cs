@@ -42,6 +42,9 @@ namespace ofreact
             Parent = parent;
         }
 
+        internal RefObject<T> GetHookRef<T>(int index, T initial) => new RefObject<T>(this, $":{index}", initial);
+        internal RefObject<T> GetNamedRef<T>(string name, T initial) => new RefObject<T>(this, $"_{name}", initial);
+
         /// <summary>
         /// Unmarks this node from rerender (bind).
         /// </summary>

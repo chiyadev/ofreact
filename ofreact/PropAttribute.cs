@@ -3,11 +3,11 @@ using System;
 namespace ofreact
 {
     /// <summary>
-    /// Marks a field as a property of the element.
-    /// Prop fields must be public.
+    /// Marks a field as a prop of an element.
     /// </summary>
     /// <remarks>
-    /// Fields annotated with this attribute will cause a rerender when the field's value changes.
+    /// Prop fields must be public.
+    /// If prop fields do not change across renders, ofreact can optimize rendering of elements.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Field)]
     public class PropAttribute : Attribute { }
