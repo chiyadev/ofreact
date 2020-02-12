@@ -19,8 +19,12 @@ namespace ofreact
         public ofNode Parent { get; }
 
         /// <summary>
-        /// List of stateful variables.
+        /// Dictionary of stateful variables.
         /// </summary>
+        /// <remarks>
+        /// Named states have string keys.
+        /// Hook states have string keys prefixed with ^ (caret character).
+        /// </remarks>
         public Dictionary<object, object> State { get; } = new Dictionary<object, object>();
 
         /// <summary>
@@ -42,8 +46,8 @@ namespace ofreact
             Parent = parent;
         }
 
-        internal RefObject<T> GetHookRef<T>(int index, T initial) => new RefObject<T>(this, $":{index}", initial);
-        internal RefObject<T> GetNamedRef<T>(string name, T initial) => new RefObject<T>(this, $"_{name}", initial);
+        internal RefObject<T> GetHookRef<T>(int index, T initial) => new RefObject<T>(this, $"^{index}", initial);
+        internal RefObject<T> GetNamedRef<T>(string name, T initial) => new RefObject<T>(this, name, initial);
 
         /// <summary>
         /// Unmarks this node from rerender (bind).
