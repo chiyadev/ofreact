@@ -97,7 +97,7 @@ namespace ofreact
             }
         }
 
-        object IElementMethodParameterProvider.GetValue(ofElement element) => _get(element.Node, _name);
         object IElementFieldBinder.GetValue(ofElement element) => _get(element.Node, _name);
+        object IElementMethodParameterProvider.GetValue(ofElement element) => _get(element.Node, _name);
     }
 }
