@@ -73,10 +73,11 @@ namespace ofreact
             if (!node.Validate(this))
                 return false;
 
-            Node  = node;
-            _hook = 0;
-
             var lastElement = _currentElement;
+
+            Node = node;
+
+            _currentHook    = 0;
             _currentElement = this;
 
             try
@@ -91,10 +92,10 @@ namespace ofreact
                 if (InternalConstants.ValidateHooks)
                 {
                     if (node.HookCount == null)
-                        node.HookCount = _hook;
+                        node.HookCount = _currentHook;
 
-                    else if (node.HookCount != _hook)
-                        throw new InvalidOperationException($"The number of hooks ({_hook}) does not match with the previous render ({node.HookCount}). " +
+                    else if (node.HookCount != _currentHook)
+                        throw new InvalidOperationException($"The number of hooks ({_currentHook}) does not match with the previous render ({node.HookCount}). " +
                                                             "See https://reactjs.org/docs/hooks-rules.html for rules about hooks.");
                 }
 
@@ -104,6 +105,7 @@ namespace ofreact
             {
                 Node = null;
 
+                _currentHook    = null;
                 _currentElement = lastElement;
             }
         }
@@ -134,7 +136,7 @@ namespace ofreact
         /// </summary>
         public static T DefineHook<T>(Func<ofNode, T> hook) => hook(_currentElement?.Node);
 
-        int _hook;
+        int? _currentHook;
 
         /// <summary>
         /// Returns a mutable <see cref="RefObject{T}"/> holding a strongly typed variable that is persisted across renders.
@@ -144,7 +146,13 @@ namespace ofreact
         /// </remarks>
         /// <param name="initialValue">Initial value of the referenced value.</param>
         /// <typeparam name="T">Type of the referenced value.</typeparam>
-        protected RefObject<T> UseRef<T>(T initialValue = default) => Node.GetNamedRef($"^{_hook++}", initialValue);
+        protected RefObject<T> UseRef<T>(T initialValue = default)
+        {
+            if (_currentHook == null)
+                throw new InvalidOperationException($"Cannot use hooks outside the rendering method ({GetType()}).");
+
+            return Node.GetNamedRef($"^{_currentHook++}", initialValue);
+        }
 
         /// <summary>
         /// Returns a stateful value and a function to update it.
