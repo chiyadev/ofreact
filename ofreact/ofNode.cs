@@ -70,7 +70,7 @@ namespace ofreact
                 return true;
 
             // if props changed
-            if (!PropEquality.AreEqual(element, lastElement))
+            if (!PropEqualityComparer.Equals(element, lastElement))
                 return true;
 
             return false;

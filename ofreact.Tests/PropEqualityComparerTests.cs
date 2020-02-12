@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace ofreact.Tests
 {
-    public class PropEqualityTests
+    public class PropEqualityComparerTests
     {
         class MyElement : ofElement
         {
@@ -24,7 +24,7 @@ namespace ofreact.Tests
             var element1 = new MyElement("test", 777, key);
             var element2 = new MyElement("test", 777, key);
 
-            Assert.That(PropEquality.AreEqual(element1, element2), Is.True);
+            Assert.That(PropEqualityComparer.Equals(element1, element2), Is.True);
         }
 
         [Test]
@@ -35,7 +35,7 @@ namespace ofreact.Tests
             var element1 = new MyElement("test1", 777, key);
             var element2 = new MyElement("test2", 777, key);
 
-            Assert.That(PropEquality.AreEqual(element1, element2), Is.False);
+            Assert.That(PropEqualityComparer.Equals(element1, element2), Is.False);
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace ofreact.Tests
             var element1 = new MyElement("test", 777, key);
             var element2 = new MyElement("test", 778, key);
 
-            Assert.That(PropEquality.AreEqual(element1, element2), Is.False);
+            Assert.That(PropEqualityComparer.Equals(element1, element2), Is.False);
         }
 
         [Test]
@@ -57,7 +57,7 @@ namespace ofreact.Tests
             var element1 = new MyElement("test", 777, key);
             var element2 = new MyElement("test", 777, new object());
 
-            Assert.That(PropEquality.AreEqual(element1, element2), Is.False);
+            Assert.That(PropEqualityComparer.Equals(element1, element2), Is.False);
         }
 
         class Private : ofElement
@@ -71,17 +71,17 @@ namespace ofreact.Tests
         }
 
         [Test]
-        public void IgnorePrivateField() => Assert.That(PropEquality.AreEqual(new Private("1"), new Private("2")), Is.True);
+        public void IgnorePrivateField() => Assert.That(PropEqualityComparer.Equals(new Private("1"), new Private("2")), Is.True);
 
         [Test]
         public void ReferenceEqual()
         {
             var element = new Private("");
 
-            Assert.That(PropEquality.AreEqual(element, element), Is.True);
+            Assert.That(PropEqualityComparer.Equals(element, element), Is.True);
         }
 
         [Test]
-        public void MismatchingTypes() => Assert.That(PropEquality.AreEqual(new Private(""), new MyElement()), Is.False);
+        public void MismatchingTypes() => Assert.That(PropEqualityComparer.Equals(new Private(""), new MyElement()), Is.False);
     }
 }
