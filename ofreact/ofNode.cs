@@ -46,6 +46,8 @@ namespace ofreact
             Parent = parent;
         }
 
+        internal void EnqueueEffect(EffectInfo effect) => Root.PendingEffects.Enqueue(effect);
+
         /// <summary>
         /// Returns a named mutable <see cref="RefObject{T}"/> holding a strongly typed variable that is persisted across renders.
         /// </summary>

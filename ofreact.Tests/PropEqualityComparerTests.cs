@@ -71,7 +71,24 @@ namespace ofreact.Tests
         }
 
         [Test]
-        public void IgnorePrivateField() => Assert.That(PropEqualityComparer.Equals(new Private("1"), new Private("2")), Is.True);
+        public void DoNotIgnorePrivateField() => Assert.That(PropEqualityComparer.Equals(new Private("1"), new Private("2")), Is.False);
+
+        class Private2 : Private
+        {
+            [Prop] readonly string _prop2;
+
+            public Private2(string prop1) : base(prop1) { }
+        }
+
+        class Private3 : Private2
+        {
+            [Prop] readonly string _prop3;
+
+            public Private3(string prop1) : base(prop1) { }
+        }
+
+        [Test]
+        public void MultiLevelPrivateFields() => Assert.That(PropEqualityComparer.Equals(new Private3("1"), new Private3("2")), Is.False);
 
         [Test]
         public void ReferenceEqual()

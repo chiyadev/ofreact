@@ -230,7 +230,7 @@ namespace ofreact
             effect.Callback     = callback;
 
             if (pending)
-                Node.Root.PendingEffects.Enqueue(effect);
+                Node.EnqueueEffect(effect);
         }
 
         /// <inheritdoc cref="UseChildren"/>

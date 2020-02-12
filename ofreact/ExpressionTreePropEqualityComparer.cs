@@ -18,7 +18,7 @@ namespace ofreact
 
             var body = null as Expression;
 
-            foreach (var field in type.GetFields().Where(f => f.IsDefined(typeof(PropAttribute), true)))
+            foreach (var field in type.GetAllFields().Where(f => f.IsDefined(typeof(PropAttribute), true)))
             {
                 var other = Expression.Equal(
                     Expression.Field(a, field),

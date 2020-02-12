@@ -8,7 +8,7 @@ namespace ofreact
     /// Marks a field or parameter as a ref of an element.
     /// </summary>
     /// <remarks>
-    /// Ref fields must be public and the type must be a constructed <see cref="RefObject{T}"/>.
+    /// Ref fields must be a constructed <see cref="RefObject{T}"/>.
     /// When used on a method parameter, <see cref="RefObject{T}"/> or its unwrapped value will be injected as the argument.
     /// Refs do not cause a rerender even if its value changes.
     /// </remarks>

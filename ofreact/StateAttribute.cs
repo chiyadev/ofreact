@@ -7,7 +7,7 @@ namespace ofreact
     /// Marks a field or parameter as a state of an element.
     /// </summary>
     /// <remarks>
-    /// State fields must be public and the type must be a constructed <see cref="StateObject{T}"/>.
+    /// State fields must be a constructed <see cref="StateObject{T}"/>.
     /// When used on a method parameter, <see cref="StateObject{T}"/> or its unwrapped value will be injected as the argument.
     /// States will cause a rerender when its value changes.
     /// </remarks>

@@ -34,7 +34,7 @@ namespace ofreact
             var fieldBinders   = new List<(IElementFieldBinder, Action<ofElement, object> setter)>();
             var methodInvokers = new List<IElementMethodInvoker>();
 
-            foreach (var field in type.GetFields())
+            foreach (var field in type.GetAllFields())
             foreach (var attribute in field.GetCustomAttributes().OfType<IElementFieldBinder>())
             {
                 attribute.Initialize(field);
@@ -42,7 +42,7 @@ namespace ofreact
                 fieldBinders.Add((attribute, BuildFieldSetter(field)));
             }
 
-            foreach (var method in type.GetMethods())
+            foreach (var method in type.GetAllMethods())
             foreach (var attribute in method.GetCustomAttributes().OfType<IElementMethodInvoker>())
             {
                 var parameters         = method.GetParameters();

@@ -6,8 +6,7 @@ namespace ofreact
     /// Marks a field as a prop of an element.
     /// </summary>
     /// <remarks>
-    /// Prop fields must be public.
-    /// If prop fields do not change across renders, ofreact can optimize rendering of elements.
+    /// When a prop field does not change between renders, ofreact can optimize the rendering of the element.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Field)]
     public class PropAttribute : Attribute { }

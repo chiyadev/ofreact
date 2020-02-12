@@ -12,7 +12,7 @@ namespace ofreact
 
         public DynamicPropEqualityComparer(Type type)
         {
-            var fields = type.GetFields().Where(f => f.IsDefined(typeof(PropAttribute), true)).ToArray();
+            var fields = type.GetAllFields().Where(f => f.IsDefined(typeof(PropAttribute), true)).ToArray();
 
             switch (fields.Length)
             {
