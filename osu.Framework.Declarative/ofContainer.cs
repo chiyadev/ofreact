@@ -100,7 +100,7 @@ namespace osu.Framework.Declarative
 
             var context = new DrawableRenderContext(Drawable);
 
-            return new ofContext<DrawableRenderContext>(children: Children, value: context).RenderSubtree(node);
+            return node.Current.RenderElement(new ofContext<DrawableRenderContext>(children: Children, value: context));
         }
 
         public IEnumerator<ofElement> GetEnumerator() => Children.GetEnumerator();

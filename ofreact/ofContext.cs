@@ -22,7 +22,7 @@ namespace ofreact
             Value = value;
         }
 
-        protected override bool RenderSubtree()
+        protected internal override bool RenderSubtree()
         {
             var stack = Node.Root.Contexts;
 

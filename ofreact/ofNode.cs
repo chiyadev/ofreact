@@ -30,14 +30,9 @@ namespace ofreact
         /// <summary>
         /// Gets the last element bound to this node.
         /// </summary>
-        public ofElement Element { get; private set; }
+        public ofElement Element { get; internal set; }
 
-        /// <summary>
-        /// Returns true if there is an element bound to this node.
-        /// </summary>
-        public bool IsBound => Element?.Node == this;
-
-        internal bool Unmounted;
+        internal bool IsUnmounted;
         internal int? HookCount; // used for hook validation
 
         internal ofNode(ofNode parent)
@@ -46,7 +41,19 @@ namespace ofreact
             Parent = parent;
         }
 
-        internal void EnqueueEffect(EffectInfo effect) => Root.PendingEffects.Enqueue(effect);
+        /// <summary>
+        /// Renders the given element.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public virtual bool RenderElement(ofElement element)
+        {
+            if (!Root.RerenderNodes.Remove(this) && PropEqualityComparer.Equals(element, Element))
+                return false;
+
+            using (element.Bind(this, true, true))
+                return element.RenderSubtree();
+        }
 
         /// <summary>
         /// Returns a named mutable <see cref="RefObject{T}"/> holding a strongly typed variable that is persisted across renders.
@@ -57,46 +64,12 @@ namespace ofreact
         public RefObject<T> GetNamedRef<T>(string key, T initialValue = default) => new RefObject<T>(this, key, initialValue);
 
         /// <summary>
-        /// Unmarks this node from rerender (bind).
-        /// </summary>
-        /// <returns>True if this was previously marked.</returns>
-        public bool Validate(ofElement element)
-        {
-            if (InternalConstants.ValidateNodeBind)
-            {
-                if (Unmounted)
-                    throw new InvalidOperationException("Cannot validate an unmounted node.");
-
-                if (IsBound)
-                    throw new InvalidOperationException("Cannot validate a node already bound by another element.");
-            }
-            else
-            {
-                if (Unmounted || IsBound)
-                    return false;
-            }
-
-            var lastElement = Element;
-            Element = element;
-
-            // if marked for rerender
-            if (Root.RerenderNodes.Remove(this))
-                return true;
-
-            // if props changed
-            if (!PropEqualityComparer.Equals(element, lastElement))
-                return true;
-
-            return false;
-        }
-
-        /// <summary>
         /// Marks this node for rerender.
         /// </summary>
         /// <returns>True if this node was previously unmarked.</returns>
         public bool Invalidate()
         {
-            if (Unmounted)
+            if (IsUnmounted)
                 return false;
 
             return Root.RerenderNodes.Add(this);
@@ -105,17 +78,26 @@ namespace ofreact
         /// <summary>
         /// Creates an <see cref="ofNode"/> that is a child of this node.
         /// </summary>
-        public ofNode CreateChild() => new ofNode(this) { Unmounted = Unmounted };
+        public ofNode CreateChild() => new ofNode(this) { IsUnmounted = IsUnmounted };
 
         /// <summary>
         /// Disposes this node (unmount).
         /// </summary>
         public void Dispose()
         {
-            Element?.OnUnmount(this);
-            Element = null;
+            if (Element != null)
+            {
+                // do effect cleanups
+                foreach (var state in State.Values)
+                {
+                    if (state is EffectInfo effect)
+                        effect.Cleanup();
+                }
 
-            Unmounted = true;
+                Element = null;
+            }
+
+            IsUnmounted = true;
         }
     }
 
@@ -158,25 +140,23 @@ namespace ofreact
         /// Renders the given root element.
         /// </summary>
         /// <param name="element">Element to render.</param>
-        public void RenderElement(ofElement element)
+        public override bool RenderElement(ofElement element)
         {
-            if (!element.MatchNode(this))
-                throw new ArgumentException($"Element {element.GetType().FullName} cannot bind to this root node.");
-
-            // render root element
-            element.RenderSubtree(this);
+            base.RenderElement(element);
 
             do
             {
                 // if there are nodes skipped due to optimization somewhere in the tree, render them too
                 foreach (var node in GetRerenderNodes())
-                    node.Element?.RenderSubtree(node);
+                    node.RenderElement(node.Element);
 
                 // run effects
                 while (PendingEffects.TryDequeue(out var effect))
                     effect.Run();
             }
             while (RerenderNodes.Count != 0);
+
+            return true;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace ofreact
         /// <param name="element">Element to add.</param>
         public void Add(ofElement element) => Children.Add(element);
 
-        protected override bool RenderSubtree()
+        protected internal override bool RenderSubtree()
         {
             if (!base.RenderSubtree())
                 return false;
@@ -34,7 +34,8 @@ namespace ofreact
             var nodesRef = UseChildren();
             var nodes    = nodesRef.Current;
 
-            var rendered = new List<ofNode>(nodes.Length);
+            var rendered = false;
+            var newNodes = new List<ofNode>(nodes.Length);
 
             // ReSharper disable once ForCanBeConvertedToForeach
             for (var i = 0; i < Children.Count; i++)
@@ -51,7 +52,7 @@ namespace ofreact
                 {
                     node = nodes[j];
 
-                    if (node != null && child.MatchNode(node))
+                    if (node != null && child.Equals(node.Element))
                     {
                         nodes[j] = null;
 
@@ -65,19 +66,25 @@ namespace ofreact
                 render:
 
                 // render child element
-                child.RenderSubtree(node);
+                rendered |= node.RenderElement(child);
 
-                rendered.Add(node);
+                newNodes.Add(node);
             }
 
             // update node list
-            nodesRef.Current = rendered.ToArray();
+            nodesRef.Current = newNodes.ToArray();
 
             // dispose removed nodes
             foreach (var node in nodes)
-                node?.Dispose();
+            {
+                if (node != null)
+                {
+                    node.Dispose();
+                    rendered = true;
+                }
+            }
 
-            return true;
+            return rendered;
         }
 
         public IEnumerator<ofElement> GetEnumerator() => Children.GetEnumerator();

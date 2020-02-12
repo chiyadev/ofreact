@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ofreact
 {
@@ -20,7 +21,7 @@ namespace ofreact
     /// Elements are lightweight classes that are created every render.
     /// During render, elements are bound to their respective <see cref="ofNode"/> that hold stateful data across renders.
     /// </remarks>
-    public abstract class ofElement
+    public abstract class ofElement : IEquatable<ofElement>
     {
         [ThreadStatic] static ofElement _currentElement;
 
@@ -43,70 +44,88 @@ namespace ofreact
         public ofNode Node { get; private set; }
 
         /// <summary>
-        /// Returns true if this element can bind to the given node.
+        /// Binds to the given node.
         /// </summary>
-        public virtual bool MatchNode(ofNode node)
-        {
-            if (node == null)
-                return false;
-
-            var element = node.Element;
-
-            // node is "clean"
-            if (element == null)
-                return true;
-
-            return GetType() == element.GetType() &&                               // matching type
-                   (Key == element.Key || Key != null && Key.Equals(element.Key)); // matching key
-        }
+        /// <param name="node">Node to bind to.</param>
+        /// <param name="attributes">If true, do attribute-based instance member binding.</param>
+        /// <param name="hooks">If true, allow hooks within this scope.</param>
+        /// <returns>A value that will unbind when disposed.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public BindScope Bind(ofNode node, bool attributes = false, bool hooks = false) => new BindScope(this, node, attributes, hooks);
 
         /// <summary>
-        /// Renders this element by binding to the given backing node.
-        /// Caller is responsible for ensuring that this element matches the given node determined by <see cref="MatchNode"/>.
+        /// Represents the scope in which an element is bound to a node.
         /// </summary>
-        /// <returns>True if this element rendered, or false if rendering was skipped.</returns>
-        public bool RenderSubtree(ofNode node)
+        public readonly ref struct BindScope
         {
-            if (Node != null)
-                throw new InvalidOperationException("Cannot render an element bound to another node.");
+            readonly ofElement _current;
+            readonly ofElement _last;
 
-            if (!node.Validate(this))
-                return false;
-
-            var lastElement = _currentElement;
-
-            Node = node;
-
-            _currentHook    = 0;
-            _currentElement = this;
-
-            try
+            internal BindScope(ofElement element, ofNode node, bool attributes, bool hooks)
             {
-                ElementAttributeBinder.Bind(this);
+                if (element.Node != null)
+                    throw new InvalidOperationException("Element is already bound to another node.");
 
-                // render func
-                if (!RenderSubtree())
-                    return false;
+                if (node.IsUnmounted)
+                    throw new InvalidOperationException("Cannot bind to an unmounted node.");
 
-                // hook validation
-                if (InternalConstants.ValidateHooks)
-                {
-                    if (node.HookCount == null)
-                        node.HookCount = _currentHook;
+                if (node.Element != null && !node.Element.Equals(element))
+                    throw new ArgumentException($"Cannot bind element {element} to a node previously bound to element {node.Element}.");
 
-                    else if (node.HookCount != _currentHook)
-                        throw new InvalidOperationException($"The number of hooks ({_currentHook}) does not match with the previous render ({node.HookCount}). " +
-                                                            "See https://reactjs.org/docs/hooks-rules.html for rules about hooks.");
-                }
+                element.Node = node;
+                node.Element = element;
 
-                return true;
+                _last    = _currentElement;
+                _current = _currentElement = element;
+
+                if (hooks)
+                    element._hooks = 0;
+
+                if (attributes)
+                    try
+                    {
+                        ElementAttributeBinder.Bind(element);
+                    }
+                    catch
+                    {
+                        DisposeInternal();
+                        throw;
+                    }
             }
-            finally
-            {
-                Node = null;
 
-                _currentHook    = null;
-                _currentElement = lastElement;
+            /// <summary>
+            /// Unbinds the element from the node.
+            /// </summary>
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Dispose()
+            {
+                try
+                {
+                    if (_current._hooks != null && InternalConstants.ValidateHooks)
+                    {
+                        var node = _current.Node;
+
+                        if (node.HookCount == null)
+                            node.HookCount = _current._hooks;
+
+                        else if (node.HookCount != _current._hooks)
+                            throw new InvalidOperationException($"The number of hooks ({_current._hooks}) does not match with the previous render ({node.HookCount}). " +
+                                                                "See https://reactjs.org/docs/hooks-rules.html for rules about hooks.");
+                    }
+                }
+                finally
+                {
+                    DisposeInternal();
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            void DisposeInternal()
+            {
+                _current.Node   = null;
+                _current._hooks = null;
+
+                _currentElement = _last;
             }
         }
 
@@ -114,29 +133,21 @@ namespace ofreact
         /// Renders this element.
         /// </summary>
         /// <returns>False to short-circuit the rendering.</returns>
-        protected virtual bool RenderSubtree() => true;
-
-        internal void OnUnmount(ofNode node)
-        {
-            // run effect cleanups
-            foreach (var state in node.State.Values)
-            {
-                if (state is EffectInfo effect)
-                    effect.Cleanup();
-            }
-        }
+        protected internal virtual bool RenderSubtree() => true;
 
 #region Hooks
 
         /// <inheritdoc cref="DefineHook{T}"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void DefineHook(Action<ofNode> hook) => hook(_currentElement?.Node);
 
         /// <summary>
         /// Invokes the given callback delegate with <see cref="ofNode"/> of the element currently being rendered by the calling thread.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T DefineHook<T>(Func<ofNode, T> hook) => hook(_currentElement?.Node);
 
-        int? _currentHook;
+        int? _hooks;
 
         /// <summary>
         /// Returns a mutable <see cref="RefObject{T}"/> holding a strongly typed variable that is persisted across renders.
@@ -148,10 +159,10 @@ namespace ofreact
         /// <typeparam name="T">Type of the referenced value.</typeparam>
         protected RefObject<T> UseRef<T>(T initialValue = default)
         {
-            if (_currentHook == null)
+            if (_hooks == null)
                 throw new InvalidOperationException($"Cannot use hooks outside the rendering method ({GetType()}).");
 
-            return Node.GetNamedRef($"^{_currentHook++}", initialValue);
+            return Node.GetNamedRef($"^{_hooks++}", initialValue);
         }
 
         /// <summary>
@@ -218,27 +229,10 @@ namespace ofreact
         /// </param>
         protected void UseEffect(EffectDelegate callback, params object[] dependencies)
         {
-            bool pending;
-
             var obj    = UseRef<EffectInfo>();
-            var effect = obj.Current;
+            var effect = obj.Current ??= new EffectInfo();
 
-            // initial run
-            if (effect == null)
-            {
-                effect  = obj.Current = new EffectInfo();
-                pending = true;
-            }
-            else
-            {
-                pending = effect.IsPending(dependencies);
-            }
-
-            effect.Dependencies = dependencies;
-            effect.Callback     = callback;
-
-            if (pending)
-                Node.EnqueueEffect(effect);
+            effect.Set(this, callback, dependencies);
         }
 
         /// <inheritdoc cref="UseChildren"/>
@@ -276,10 +270,17 @@ namespace ofreact
 #region Override
 
         /// <summary>
-        /// Determines whether the specified object instance is the same instance as this element.
-        /// This is equivalent to <see cref="object.ReferenceEquals"/>.
+        /// Determines whether the specified object instance is equivalent to this element.
         /// </summary>
-        public sealed override bool Equals(object obj) => ReferenceEquals(this, obj);
+        public sealed override bool Equals(object obj) => obj is ofElement e && Equals(e);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Equals(ofElement other) => other != null &&
+                                               GetType() == other.GetType() &&
+                                               KeysEqual(this, other);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool KeysEqual(ofElement a, ofElement b) => a.Key == b.Key || a.Key != null && a.Key.Equals(b.Key);
 
         /// <summary>
         /// Calculates the hash code of this element.

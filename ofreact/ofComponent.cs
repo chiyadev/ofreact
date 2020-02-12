@@ -15,7 +15,7 @@ namespace ofreact
         /// </summary>
         protected abstract ofElement Render();
 
-        protected sealed override bool RenderSubtree()
+        protected internal sealed override bool RenderSubtree()
         {
             if (!base.RenderSubtree())
                 return false;
@@ -26,15 +26,13 @@ namespace ofreact
             if (element == null)
                 return false;
 
-            if (!element.MatchNode(node))
+            if (!element.Equals(node.Current.Element))
             {
                 node.Current.Dispose();
                 node.Current = Node.CreateChild();
             }
 
-            return element.RenderSubtree(node);
+            return node.Current.RenderElement(element);
         }
-
-        public sealed override bool MatchNode(ofNode node) => base.MatchNode(node);
     }
 }

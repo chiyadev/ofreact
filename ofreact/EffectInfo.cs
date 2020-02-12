@@ -2,47 +2,57 @@ namespace ofreact
 {
     public sealed class EffectInfo
     {
-        public object[] Dependencies;
-        public EffectDelegate Callback;
+        ofElement _element;
+        ofNode _node;
 
+        object[] _dependencies;
+
+        EffectDelegate _effect;
         EffectCleanupDelegate _cleanup;
 
         internal EffectInfo() { }
 
-        /// <summary>
-        /// Returns true if this effect is pending. i.e. the contents of the given dependency array is different from <see cref="Dependencies"/>.
-        /// This will always return true if <paramref name="dependencies"/> is an empty array.
-        /// </summary>
-        public bool IsPending(object[] dependencies)
+        public bool Set(ofElement element, EffectDelegate effect, object[] dependencies)
         {
-            static bool objsEqual(object[] a, object[] b)
-            {
-                if (a == b)
-                    return true;
+            var pending = _element == null || dependencies?.Length == 0 || !DepsEqual(_dependencies, dependencies);
 
-                if (a == null || b == null || a.Length != b.Length)
-                    return false;
+            _element      = element;
+            _node         = element.Node;
+            _dependencies = dependencies;
+            _effect       = effect;
 
-                for (var i = 0; i < a.Length; i++)
-                {
-                    var x = a[i];
-                    var y = b[i];
+            if (pending)
+                element.Node.Root.PendingEffects.Enqueue(this);
 
-                    if (x != y && (x == null || !x.Equals(y)))
-                        return false;
-                }
+            return pending;
+        }
 
+        static bool DepsEqual(object[] a, object[] b)
+        {
+            if (a == b)
                 return true;
+
+            if (a == null || b == null || a.Length != b.Length)
+                return false;
+
+            for (var i = 0; i < a.Length; i++)
+            {
+                var x = a[i];
+                var y = b[i];
+
+                if (x != y && (x == null || !x.Equals(y)))
+                    return false;
             }
 
-            return dependencies?.Length == 0 || !objsEqual(Dependencies, dependencies);
+            return true;
         }
 
         public void Run()
         {
             Cleanup();
 
-            _cleanup = Callback?.Invoke();
+            using (_element.Bind(_node))
+                _cleanup = _effect?.Invoke();
         }
 
         public void Cleanup()
@@ -53,7 +63,8 @@ namespace ofreact
             {
                 _cleanup = null;
 
-                cleanup();
+                using (_element.Bind(_node))
+                    cleanup();
             }
         }
     }
