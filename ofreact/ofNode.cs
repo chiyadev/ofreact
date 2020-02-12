@@ -47,6 +47,14 @@ namespace ofreact
         }
 
         /// <summary>
+        /// Returns a named mutable <see cref="RefObject{T}"/> holding a strongly typed variable that is persisted across renders.
+        /// </summary>
+        /// <param name="key">Name of the reference.</param>
+        /// <param name="initialValue">Initial value of the referenced value.</param>
+        /// <typeparam name="T">Type of the referenced value.</typeparam>
+        public RefObject<T> GetNamedRef<T>(string key, T initialValue = default) => new RefObject<T>(this, key, initialValue);
+
+        /// <summary>
         /// Unmarks this node from rerender (bind).
         /// </summary>
         /// <returns>True if this was previously marked.</returns>

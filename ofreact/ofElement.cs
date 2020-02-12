@@ -144,7 +144,7 @@ namespace ofreact
         /// </remarks>
         /// <param name="initialValue">Initial value of the referenced value.</param>
         /// <typeparam name="T">Type of the referenced value.</typeparam>
-        protected RefObject<T> UseRef<T>(T initialValue = default) => new RefObject<T>(Node, $"^{_hook++}", initialValue);
+        protected RefObject<T> UseRef<T>(T initialValue = default) => Node.GetNamedRef($"^{_hook++}", initialValue);
 
         /// <summary>
         /// Returns a stateful value and a function to update it.
