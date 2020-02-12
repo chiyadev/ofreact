@@ -40,7 +40,7 @@ namespace ofreact
                 throw new ArgumentException($"Field {field} of {field.DeclaringType} is not a type of {typeof(StateObject<>)}");
 
             _field = field;
-            _name  = field.Name.ToLowerInvariant();
+            _name  = field.Name;
 
             _createState = RefAttribute.CreateRefOrStateObject(_field.FieldType, _initialValue);
         }

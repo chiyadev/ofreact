@@ -25,9 +25,9 @@ namespace ofreact
         internal RefObject(ofNode node, string key, T initialValue)
         {
             _dict = node.State;
-            _key  = key;
+            _key  = key?.ToLowerInvariant() ?? "";
 
-            if (!_dict.ContainsKey(key))
+            if (!_dict.ContainsKey(_key))
                 Current = initialValue;
         }
 
