@@ -33,21 +33,27 @@ namespace ofreact
             _initialValue = initialValue;
         }
 
+        public FieldInfo Field { get; private set; }
+
         void IElementFieldBinder.Initialize(FieldInfo field)
         {
-            if (field.FieldType.GetGenericTypeDefinition() != typeof(StateObject<>))
+            if (!field.FieldType.IsGenericType || field.FieldType.GetGenericTypeDefinition() != typeof(StateObject<>))
                 throw new ArgumentException($"Field {field} of {field.DeclaringType} is not a type of {typeof(StateObject<>)}");
 
+            Field = field;
             _name = field.Name;
 
             _get = RefAttribute.GetRefOrStateObjectFactory(field.FieldType, _initialValue);
         }
 
+        public ParameterInfo Parameter { get; private set; }
+
         void IElementMethodParameterProvider.Initialize(ParameterInfo parameter)
         {
-            _name = parameter.Name;
+            Parameter = parameter;
+            _name     = parameter.Name;
 
-            if (parameter.ParameterType.GetGenericTypeDefinition() == typeof(StateObject<>))
+            if (parameter.ParameterType.IsGenericType && parameter.ParameterType.GetGenericTypeDefinition() == typeof(StateObject<>))
             {
                 _get = RefAttribute.GetRefOrStateObjectFactory(parameter.ParameterType, _initialValue);
             }

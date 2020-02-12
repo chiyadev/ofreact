@@ -70,21 +70,27 @@ namespace ofreact
             return (n, k) => (IContainerObject) refCtor.Invoke(new[] { n, k, initial });
         }
 
+        public FieldInfo Field { get; private set; }
+
         void IElementFieldBinder.Initialize(FieldInfo field)
         {
-            if (field.FieldType.GetGenericTypeDefinition() != typeof(RefObject<>))
+            if (!field.FieldType.IsGenericType || field.FieldType.GetGenericTypeDefinition() != typeof(RefObject<>))
                 throw new ArgumentException($"Field {field} of {field.DeclaringType} must be a type of {typeof(RefObject<>)}");
 
+            Field = field;
             _name = field.Name;
 
             _get = GetRefOrStateObjectFactory(field.FieldType, _initialValue);
         }
 
+        public ParameterInfo Parameter { get; private set; }
+
         void IElementMethodParameterProvider.Initialize(ParameterInfo parameter)
         {
-            _name = parameter.Name;
+            Parameter = parameter;
+            _name     = parameter.Name;
 
-            if (parameter.ParameterType.GetGenericTypeDefinition() == typeof(RefObject<>))
+            if (parameter.ParameterType.IsGenericType && parameter.ParameterType.GetGenericTypeDefinition() == typeof(RefObject<>))
             {
                 _get = GetRefOrStateObjectFactory(parameter.ParameterType, _initialValue);
             }

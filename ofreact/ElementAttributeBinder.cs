@@ -50,10 +50,13 @@ namespace ofreact
 
                 for (var i = 0; i < parameters.Length; i++)
                 {
-                    var provider = parameters[i].GetCustomAttributes().OfType<IElementMethodParameterProvider>().FirstOrDefault();
+                    var parameter = parameters[i];
+                    var provider  = parameter.GetCustomAttributes().OfType<IElementMethodParameterProvider>().FirstOrDefault();
 
                     if (provider == null && !attribute.AllowUnknownParameters)
-                        throw new ArgumentException($"Cannot find providers for parameter {parameters[i]} of {method} of {type}.");
+                        throw new ArgumentException($"Cannot find providers for parameter {parameter} of {method} of {type}.");
+
+                    provider?.Initialize(parameter);
 
                     parameterProviders[i] = provider;
                 }

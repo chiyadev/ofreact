@@ -9,6 +9,8 @@ namespace ofreact
         /// </summary>
         bool AllowUnknownParameters { get; }
 
+        MethodInfo Method { get; }
+
         void Initialize(MethodInfo method, IElementMethodParameterProvider[] parameterProviders);
         void Invoke(ofElement element);
     }
