@@ -22,10 +22,10 @@ namespace ofreact
         /// Dictionary of stateful variables.
         /// </summary>
         /// <remarks>
-        /// Named states have string keys.
-        /// Hook states have string keys prefixed with ^ (caret character).
+        /// Named states are lowercase string keys.
+        /// Hook states are string keys prefixed with ^ (caret character).
         /// </remarks>
-        public Dictionary<object, object> State { get; } = new Dictionary<object, object>();
+        public Dictionary<string, object> State { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Gets the last element bound to this node.
@@ -45,9 +45,6 @@ namespace ofreact
             Root   = parent?.Root;
             Parent = parent;
         }
-
-        internal RefObject<T> GetHookRef<T>(int index, T initial) => new RefObject<T>(this, $"^{index}", initial);
-        internal RefObject<T> GetNamedRef<T>(string name, T initial) => new RefObject<T>(this, name, initial);
 
         /// <summary>
         /// Unmarks this node from rerender (bind).

@@ -10,8 +10,8 @@ namespace ofreact
     /// <typeparam name="T">Type of the value.</typeparam>
     public class RefObject<T>
     {
-        readonly Dictionary<object, object> _dict;
-        readonly object _key;
+        readonly Dictionary<string, object> _dict;
+        readonly string _key;
 
         /// <summary>
         /// Gets or sets the current value referenced by this object.
@@ -22,7 +22,7 @@ namespace ofreact
             set => _dict[_key] = value;
         }
 
-        internal RefObject(ofNode node, object key, T initialValue)
+        internal RefObject(ofNode node, string key, T initialValue)
         {
             _dict = node.State;
             _key  = key;
