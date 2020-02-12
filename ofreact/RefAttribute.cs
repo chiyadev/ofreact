@@ -38,7 +38,7 @@ namespace ofreact
         public void Initialize(FieldInfo field)
         {
             if (field.FieldType.GetGenericTypeDefinition() != typeof(RefObject<>))
-                throw new ArgumentException($"Field {field} of {field.DeclaringType} is not type of {typeof(RefObject<>)}");
+                throw new ArgumentException($"Field {field} of {field.DeclaringType} is not a type of {typeof(RefObject<>)}");
 
             _field = field;
             _name  = field.Name.ToLowerInvariant();
