@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
@@ -14,9 +15,7 @@ namespace ofreact
         {
             try
             {
-                Expression.Lambda(Expression.Constant(true)).Compile();
-
-                IsEmitAvailable = true;
+                IsEmitAvailable = Expression.Lambda<Func<bool>>(Expression.Constant(true)).Compile()();
             }
             catch
             {
