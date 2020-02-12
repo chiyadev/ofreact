@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace ofreact.Tests
 {
-    public class StateFieldTests
+    public class BoundStateTests
     {
         class Element1 : ofComponent
         {
