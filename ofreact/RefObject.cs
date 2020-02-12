@@ -8,7 +8,7 @@ namespace ofreact
     /// A container that represents a reference to a value.
     /// </summary>
     /// <typeparam name="T">Type of the value.</typeparam>
-    public class RefObject<T>
+    public sealed class RefObject<T>
     {
         readonly Dictionary<string, object> _dict;
         readonly string _key;
@@ -30,6 +30,10 @@ namespace ofreact
             if (!_dict.ContainsKey(key))
                 Current = initialValue;
         }
+
+        public override bool Equals(object obj) => obj is RefObject<T> refObj && (Current?.Equals(refObj.Current) ?? false);
+        public override int GetHashCode() => Current?.GetHashCode() ?? 0;
+        public override string ToString() => Current?.ToString() ?? base.ToString();
 
         /// <summary>
         /// Returns <see cref="Current"/>.
