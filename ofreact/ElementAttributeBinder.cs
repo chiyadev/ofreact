@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace ofreact
@@ -29,28 +30,51 @@ namespace ofreact
 
         static Action<ofElement> BuildBinder(Type type)
         {
-            var fields = new List<IElementFieldBinder>();
+            var fieldAttrs  = new List<IElementFieldBinder>();
+            var methodAttrs = new List<IElementMethodInvoker>();
 
             foreach (var field in type.GetFields())
-            foreach (var attribute in field.GetCustomAttributes())
+            foreach (var attribute in field.GetCustomAttributes().OfType<IElementFieldBinder>())
             {
-                if (attribute is IElementFieldBinder fieldBinder)
-                {
-                    fieldBinder.Initialize(field);
+                attribute.Initialize(field);
 
-                    fields.Add(fieldBinder);
-                }
+                fieldAttrs.Add(attribute);
             }
 
-            if (fields.Count == 0)
+            foreach (var method in type.GetMethods())
+            foreach (var attribute in method.GetCustomAttributes().OfType<IElementMethodInvoker>())
+            {
+                var parameters         = method.GetParameters();
+                var parameterProviders = new IElementMethodParameterProvider[parameters.Length];
+
+                for (var i = 0; i < parameters.Length; i++)
+                {
+                    var provider = parameters[i].GetCustomAttributes().OfType<IElementMethodParameterProvider>().FirstOrDefault();
+
+                    if (provider == null && !attribute.AllowUnknownParameters)
+                        throw new ArgumentException($"Cannot find providers for parameter {parameters[i]} of {method} of {type}.");
+
+                    parameterProviders[i] = provider;
+                }
+
+                attribute.Initialize(method, parameterProviders);
+
+                methodAttrs.Add(attribute);
+            }
+
+            if (fieldAttrs.Count == 0 && methodAttrs.Count == 0)
                 return e => { };
 
-            var fieldBinders = fields.ToArray();
+            var fields  = fieldAttrs.ToArray();
+            var methods = methodAttrs.ToArray();
 
             return e =>
             {
-                foreach (var binder in fieldBinders)
+                foreach (var binder in fields)
                     binder.Bind(e);
+
+                foreach (var method in methods)
+                    method.Invoke(e);
             };
         }
     }
