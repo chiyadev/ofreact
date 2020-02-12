@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace ofreact
@@ -30,15 +31,15 @@ namespace ofreact
 
         static Action<ofElement> BuildBinder(Type type)
         {
-            var fieldAttrs  = new List<IElementFieldBinder>();
-            var methodAttrs = new List<IElementMethodInvoker>();
+            var fieldBinders   = new List<(IElementFieldBinder, Action<ofElement, object> setter)>();
+            var methodInvokers = new List<IElementMethodInvoker>();
 
             foreach (var field in type.GetFields())
             foreach (var attribute in field.GetCustomAttributes().OfType<IElementFieldBinder>())
             {
                 attribute.Initialize(field);
 
-                fieldAttrs.Add(attribute);
+                fieldBinders.Add((attribute, BuildFieldSetter(field)));
             }
 
             foreach (var method in type.GetMethods())
@@ -59,23 +60,52 @@ namespace ofreact
 
                 attribute.Initialize(method, parameterProviders);
 
-                methodAttrs.Add(attribute);
+                methodInvokers.Add(attribute);
             }
 
-            if (fieldAttrs.Count == 0 && methodAttrs.Count == 0)
+            if (fieldBinders.Count == 0 && methodInvokers.Count == 0)
                 return e => { };
 
-            var fields  = fieldAttrs.ToArray();
-            var methods = methodAttrs.ToArray();
+            var fields  = fieldBinders.ToArray();
+            var methods = methodInvokers.ToArray();
 
             return e =>
             {
-                foreach (var binder in fields)
-                    binder.Bind(e);
+                foreach (var (binder, setter) in fields)
+                    setter(e, binder.GetValue(e));
 
                 foreach (var method in methods)
                     method.Invoke(e);
             };
+        }
+
+        static Action<ofElement, object> BuildFieldSetter(FieldInfo field)
+        {
+            var type = field.DeclaringType;
+
+            if (type == null)
+                return null;
+
+            if (field.IsLiteral)
+                throw new NotSupportedException($"Cannot build setter for constant field {field} of {field.DeclaringType}.");
+
+            if (InternalConstants.IsEmitAvailable && !field.IsInitOnly)
+            {
+                var element = Expression.Parameter(typeof(ofElement), "element");
+                var value   = Expression.Parameter(typeof(object), "value");
+
+                return Expression.Lambda<Action<ofElement, object>>(
+                                      Expression.Assign(
+                                          Expression.Field(
+                                              Expression.Convert(element, type),
+                                              field),
+                                          Expression.Convert(value, field.FieldType)),
+                                      element,
+                                      value)
+                                 .Compile();
+            }
+
+            return field.SetValue;
         }
     }
 }

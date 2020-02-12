@@ -5,6 +5,6 @@ namespace ofreact
     public interface IElementFieldBinder
     {
         void Initialize(FieldInfo field);
-        void Bind(ofElement element);
+        object GetValue(ofElement element);
     }
 }

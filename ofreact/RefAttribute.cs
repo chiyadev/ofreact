@@ -17,8 +17,6 @@ namespace ofreact
     {
         readonly object _initialValue;
 
-        FieldInfo _field;
-        ParameterInfo _parameter;
         string _name;
 
         Func<ofNode, string, object> _get;
@@ -77,18 +75,14 @@ namespace ofreact
             if (field.FieldType.GetGenericTypeDefinition() != typeof(RefObject<>))
                 throw new ArgumentException($"Field {field} of {field.DeclaringType} must be a type of {typeof(RefObject<>)}");
 
-            _field = field;
-            _name  = field.Name;
+            _name = field.Name;
 
             _get = GetRefOrStateObjectFactory(field.FieldType, _initialValue);
         }
 
-        void IElementFieldBinder.Bind(ofElement element) => _field.SetValue(element, _get(element.Node, _name));
-
         void IElementMethodParameterProvider.Initialize(ParameterInfo parameter)
         {
-            _parameter = parameter;
-            _name      = parameter.Name;
+            _name = parameter.Name;
 
             if (parameter.ParameterType.GetGenericTypeDefinition() == typeof(RefObject<>))
             {
@@ -104,7 +98,6 @@ namespace ofreact
         }
 
         object IElementMethodParameterProvider.GetValue(ofElement element) => _get(element.Node, _name);
-
-        public override string ToString() => $"{_name} ({_field?.ToString() ?? _parameter?.ToString()})";
+        object IElementFieldBinder.GetValue(ofElement element) => _get(element.Node, _name);
     }
 }
