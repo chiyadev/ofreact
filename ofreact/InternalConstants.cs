@@ -8,20 +8,19 @@ namespace ofreact
         public static bool ValidateHooks => Debugger.IsAttached;
         public static bool ValidateNodeBind => Debugger.IsAttached;
 
-        public static bool IsEmitAvailable
-        {
-            get
-            {
-                try
-                {
-                    Expression.Lambda(Expression.Constant(true)).Compile();
+        public static bool IsEmitAvailable { get; }
 
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
+        static InternalConstants()
+        {
+            try
+            {
+                Expression.Lambda(Expression.Constant(true)).Compile();
+
+                IsEmitAvailable = true;
+            }
+            catch
+            {
+                IsEmitAvailable = false;
             }
         }
     }
