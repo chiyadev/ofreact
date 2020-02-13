@@ -275,7 +275,8 @@ namespace ofreact
         public sealed override bool Equals(object obj) => obj is ofElement e && Equals(e);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(ofElement other) => other != null &&
+        public bool Equals(ofElement other) => ReferenceEquals(this, other) ||
+                                               other != null &&
                                                GetType() == other.GetType() &&
                                                KeysEqual(this, other);
 
