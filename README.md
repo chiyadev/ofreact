@@ -169,25 +169,25 @@ render:
     actions:
       myAction:
         # action body is a list of transforms that are played sequentially
-        # | fade to 50% alpha in 150ms
+        # fade to 50% alpha in 150ms
         - fade:
             to: 0.5
             for: 150
-        # | scale to 2x in 100ms (concurrently with fade)
+        # scale to 2x in 100ms (concurrently with fade)
         - scale:
             to: 2
             from: 1
             for: 100ms # duration can specify units
             with: fade # this key allows the transform to play concurrently with the last "fade" transform in the list
-        # | delay for 100ms (after both fade and scale completes)
+        # delay for 100ms (after both fade and scale completes)
         - delay:
             for: 0.1s
-        # | fade colour to blue in 50ms
+        # fade colour to blue in 50ms
         - fadeColour:
             to: blue
             from: red
             for: 50
-        # | myAction takes 300ms in total to complete
+        # myAction takes 300ms in total to complete
 
         # it is possible to invoke another action in the same transform element
         - doNothing:
