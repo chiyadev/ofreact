@@ -21,10 +21,21 @@ List of things implemented:
   - UseContext
   - UseEffect
   - Helper methods to define custom hooks
+- Attribute-bound:
+  - Ref fields
+  - State fields
+  - Effect methods
+  - Extensibility in the binding pipeline
 
 ### Performance
 
-ofreact will most definitely perform worse than writing custom Drawables by hand. But the performance difference is negligible if you are writing simple user interfaces.
+ofreact will most definitely perform worse than writing custom Drawables if you are writing fast-changing scenes for a game.
+
+However in the best-case scenario where there are only a few state changes, e.g. graphical user interfaces, ofreact will perform very well and the overhead should be negligible.
+
+There are many optimizations in the rendering logic of components. Reflection calls are avoided at all costs, and expression trees are heavily utilized and cached when JIT is available.
+
+In addition, due to the lightweight design of the ofreact component tree, it is possible to optimize osu!framework's scene graph. If you are designing a modular scene using lots of intermediary containers, you can reduce the level of nesting by using ofreact components instead.
 
 ### It's really not JSX
 
@@ -46,7 +57,6 @@ If you squint hard enough you might see this:
 
 ```jsx
 <Container key='element key' style={{
-  position: 'relative',
   width: 100,
   height: 100
 }}>
@@ -54,7 +64,7 @@ If you squint hard enough you might see this:
 </Container>
 ```
 
-### What you can do
+### Example using hooks
 
 Right now, you can do things like this:
 
@@ -121,6 +131,124 @@ namespace MyGame
         }
     }
 }
+```
+
+### Writing a component using YAML (OML)
+
+Not implemented yet.
+
+```yaml
+# the name by which this element can be referred from other elements
+name: Cursor
+
+# state variables cause a rerender when changed
+states:
+  # variable "hovered" of boolean type initialized to "false" is available within this element
+  hovered: false
+
+  # variables can explicitly specify a type
+  number:
+    value: 1.5
+    type: float
+
+# o!f injected dependencies
+deps:
+  # defines a dependency named "hoverSample" loaded from sample store with the name "test-channel"
+  hoverSample:
+    type: SampleChannel
+    name: test-channel
+
+# defines the rendering function
+render:
+  # renders a Transform element that applies transformations to all child Drawables
+  Transform:
+    # setting ref to an element will make it available in callbacks and side effects (imperative code)
+    ref: hoverTransform
+
+    # dictionary of actions that can be invoked
+    actions:
+      myAction:
+        # action body is a list of transforms that are played sequentially
+        # | fade to 50% alpha in 150ms
+        - fade:
+            to: 0.5
+            for: 150
+        # | scale to 2x in 100ms (concurrently with fade)
+        - scale:
+            to: 2
+            from: 1
+            for: 100ms # duration can specify units
+            with: fade # this key allows the transform to play concurrently with the last "fade" transform in the list
+        # | delay for 100ms (after both fade and scale completes)
+        - delay:
+            for: 0.1s
+        # | fade colour to blue in 50ms
+        - fadeColour:
+            to: blue
+            from: red
+            for: 50
+        # | myAction takes 300ms in total to complete
+
+        # it is possible to invoke another action in the same transform element
+        - doNothing:
+      doNothing:
+
+    # defines the children to apply transform on
+    children:
+      # renders a Conditional element that is essentially a ternary operator in the rendering function
+      Conditional:
+        # dictionary of variables to test; variables are &&'d
+        test:
+          # tests the variable "hovered" for equality with true
+          hovered: true
+
+        # if the test passes, render the following element
+        true:
+          # renders a Container element which manages a Container<Drawable> in the o!f scene graph
+          # *the Container<Drawable> will be transformed by the nearest ancestor Transform element
+          Container:
+            ref: rotateableContent
+
+            # style prop can be used to set properties of the Container<Drawable>
+            style:
+              position: 50, 50
+              relativeSizeAxes: both
+              colour: yellow
+
+        # otherwise, render a different element
+        false:
+          Container:
+            ref: rotateableContent
+            style:
+              position: 50, 50
+              autoSizeAxes: both
+
+            # adds child elements which will be rendered inside the Container<Drawable>
+            children:
+              # renders a Box element that manages a Box drawable in o!f scene graph
+              # this Box drawable will NOT be transformed by the ancestor Transform element because transforms are already applied on the parent Container<Drawable>
+              # (if this Box was not contained in that Container<Drawable>, it would be transformed)
+              Box:
+                style:
+                  size: 100 # vector2 shorthand = 100, 100
+
+            # defines a function that handles Container's "onHover" callback prop
+            onHover:
+              # function body is a list of statements that are executed sequentially
+
+              # act upon the variable "hoverSample"
+              - hoverSample:
+                  do: play # invoke "play" defined in SampleChannel
+
+              # act upon the ref element "hoverTransform"
+              - hoverTransform:
+                  do: myAction # invoke "myAction" defined in Transform.actions prop
+
+              # assign a value to the state variable "hovered"
+              - hovered:
+                  # assigning a value will cause a rerender of this element
+                  # since "hovered" is now "true", the Conditional element test will pass, changing the styling of the rendered container and removing inner box drawable
+                  set: true
 ```
 
 ## TODO
