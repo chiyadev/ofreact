@@ -29,11 +29,11 @@ List of things implemented:
 
 ### Performance
 
-ofreact will most definitely perform worse than writing custom Drawables if you are writing fast-changing scenes for a game.
+ofreact will most definitely perform worse than writing custom Drawables if you are designing fast-changing scenes for a game.
 
 However in the best-case scenario where there are only a few state changes, e.g. graphical user interfaces, ofreact will perform very well and the overhead should be negligible.
 
-There are many optimizations in the rendering logic of components. Reflection calls are avoided at all costs, and expression trees are heavily utilized and cached when JIT is available.
+There are many optimizations in the rendering logic of components. Reflection calls are avoided unless absolutely necessary, and expression trees are heavily utilized and cached when JIT is available.
 
 In addition, due to the lightweight design of the ofreact component tree, it is possible to optimize osu!framework's scene graph. If you are designing a modular scene using lots of intermediary containers, you can reduce the level of nesting by using ofreact components instead.
 
@@ -253,7 +253,7 @@ render:
 
 ## TODO
 
-- **YAML-based scene graph parsing** (attempt at [this issue](https://github.com/ppy/osu-framework/issues/3056))
+- **YAML-based components** (attempt at [this issue](https://github.com/ppy/osu-framework/issues/3056))
 - More wrappers for osu!framework classes
 - More thorough testing
 - More hooks from react
