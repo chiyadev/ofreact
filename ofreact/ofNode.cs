@@ -34,6 +34,11 @@ namespace ofreact
         public HashSet<EffectInfo> LocalEffects { get; } = new HashSet<EffectInfo>(0);
 
         /// <summary>
+        /// If true, this node will always be considered as invalid and therefore eligible for rerender.
+        /// </summary>
+        public bool AlwaysInvalid { get; set; }
+
+        /// <summary>
         /// Gets the last element bound to this node.
         /// </summary>
         public ofElement Element { get; internal set; }
@@ -51,7 +56,7 @@ namespace ofreact
         /// </summary>
         public virtual bool RenderElement(ofElement element)
         {
-            if (!Root.RerenderNodes.Remove(this) && InternalReflection.PropsEqual(element, Element))
+            if (!Root.RerenderNodes.Remove(this) && !AlwaysInvalid && InternalReflection.PropsEqual(element, Element))
                 return false;
 
             using (element.Bind(this, true, true))
@@ -139,6 +144,8 @@ namespace ofreact
         public ofRootNode() : base(null)
         {
             Root = this;
+
+            AlwaysInvalid = true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -162,9 +169,6 @@ namespace ofreact
         {
             if (!CanRenderElement(element))
                 return false;
-
-            // always allow root element to render
-            Invalidate();
 
             var result = base.RenderElement(element);
 

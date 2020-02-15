@@ -53,7 +53,7 @@ namespace ofreact.Tests
         [Test]
         public void StateUpdateTriggersRerender()
         {
-            using var node = new ofRootNode();
+            using var node = new ofRootNode { AlwaysInvalid = false };
 
             node.RenderElement(new Element2());
 

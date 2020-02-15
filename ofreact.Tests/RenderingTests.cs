@@ -26,8 +26,7 @@ namespace ofreact.Tests
         [Test]
         public void SkipIfSameProps()
         {
-            // use child because root node is programmed to always rerender regardless anything
-            var node = new ofRootNode().CreateChild();
+            var node = new ofRootNode { AlwaysInvalid = false };
 
             Assert.That(Element1.Rendered, Is.EqualTo(0));
 
@@ -62,7 +61,7 @@ namespace ofreact.Tests
         [Test]
         public void RenderIfDifferentProps()
         {
-            var node = new ofRootNode().CreateChild();
+            var node = new ofRootNode { AlwaysInvalid = false };
 
             node.RenderElement(new Element2("test1"));
 
