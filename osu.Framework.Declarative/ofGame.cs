@@ -75,7 +75,7 @@ namespace osu.Framework.Declarative
 
             using (var host = Host(Key.ToString()))
             {
-                var game = new Bootstrap(Children.ToArray());
+                var game = new Bootstrap(this);
 
                 HostRef?.Invoke(host);
                 GameRef?.Invoke(game);
@@ -91,16 +91,30 @@ namespace osu.Framework.Declarative
 
         sealed class Bootstrap : Game
         {
+            readonly ofGame _game;
             readonly ofRootNode _node = new ofRootNode();
-            readonly ofElement[] _children;
 
-            public Bootstrap(ofElement[] children)
+            public Bootstrap(ofGame game)
             {
-                _children = children;
+                _game = game;
             }
 
-            [BackgroundDependencyLoader, MethodImpl(MethodImplOptions.AggressiveInlining)]
-            void RenderRoot() => _node.RenderElement(new ofContainerContext(this, children: _children));
+            DependencyContainer _dependencies;
+
+            protected override IReadOnlyDependencyContainer CreateChildDependencies(IReadOnlyDependencyContainer parent) =>
+                _dependencies = new DependencyContainer(base.CreateChildDependencies(parent));
+
+            [BackgroundDependencyLoader]
+            void Load()
+            {
+                _dependencies.CacheAs<Game>(this);
+                _dependencies.CacheAs(_game);
+
+                RenderRoot();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            void RenderRoot() => _node.RenderElement(new ofContainerContext(this, children: _game.Children));
 
             protected override void Update() => RenderRoot();
 
