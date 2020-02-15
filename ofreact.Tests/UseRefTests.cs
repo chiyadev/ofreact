@@ -32,8 +32,6 @@ namespace ofreact.Tests
 
             Element1.Alt = true;
 
-            node.Invalidate();
-
             Assert.That(() => node.RenderElement(new Element1()), Throws.InstanceOf<InvalidCastException>());
         }
     }

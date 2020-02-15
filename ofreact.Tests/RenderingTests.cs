@@ -6,6 +6,8 @@ namespace ofreact.Tests
     {
         class Element1 : ofComponent
         {
+            public static int Rendered;
+
             [Prop] public readonly string MyProp;
 
             public Element1(string myProp = default)
@@ -13,13 +15,10 @@ namespace ofreact.Tests
                 MyProp = myProp;
             }
 
-            bool _rendered;
-
             protected override ofElement Render()
             {
-                Assert.That(_rendered, Is.False);
+                ++Rendered;
 
-                _rendered = true;
                 return null;
             }
         }
@@ -27,10 +26,18 @@ namespace ofreact.Tests
         [Test]
         public void SkipIfSameProps()
         {
-            using var node = new ofRootNode();
+            // use child because root node is programmed to always rerender regardless anything
+            var node = new ofRootNode().CreateChild();
+
+            Assert.That(Element1.Rendered, Is.EqualTo(0));
 
             node.RenderElement(new Element1("test"));
+
+            Assert.That(Element1.Rendered, Is.EqualTo(1));
+
             node.RenderElement(new Element1("test"));
+
+            Assert.That(Element1.Rendered, Is.EqualTo(1));
         }
 
         class Element2 : ofComponent
@@ -55,7 +62,7 @@ namespace ofreact.Tests
         [Test]
         public void RenderIfDifferentProps()
         {
-            using var node = new ofRootNode();
+            var node = new ofRootNode().CreateChild();
 
             node.RenderElement(new Element2("test1"));
 

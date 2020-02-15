@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ofreact
 {
@@ -58,22 +59,45 @@ namespace ofreact
         }
 
         /// <summary>
+        /// Determines whether the given element can be bound to this node and rendered or not.
+        /// </summary>
+        /// <param name="element">Element to test.</param>
+        /// <returns>True if the element can be bound to this node and rendered.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool CanRenderElement(ofElement element)
+        {
+            if (element == null)
+                return false;
+
+            if (Element == null || ReferenceEquals(element, Element))
+                return true;
+
+            return element.GetType() == Element.GetType() && KeysEqual(element, Element);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static bool KeysEqual(ofElement a, ofElement b) => a.Key == b.Key || a.Key != null && a.Key.Equals(b.Key);
+
+        /// <summary>
         /// Returns a named mutable <see cref="RefObject{T}"/> holding a strongly typed variable that is persisted across renders.
         /// </summary>
         /// <param name="key">Name of the reference.</param>
         /// <param name="initialValue">Initial value of the referenced value.</param>
         /// <typeparam name="T">Type of the referenced value.</typeparam>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public RefObject<T> GetNamedRef<T>(string key, T initialValue = default) => new RefObject<T>(this, key, initialValue);
 
         /// <summary>
         /// Marks this node for rerender.
         /// </summary>
         /// <returns>True if this node was previously unmarked.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Invalidate() => Root.RerenderNodes.Add(this);
 
         /// <summary>
         /// Creates an <see cref="ofNode"/> that is a child of this node.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ofNode CreateChild() => new ofNode(this);
 
         public virtual void Dispose()
@@ -133,28 +157,33 @@ namespace ofreact
             return true;
         }
 
-        /// <summary>
-        /// Renders the given root element.
-        /// </summary>
-        /// <param name="element">Element to render.</param>
         public override bool RenderElement(ofElement element)
         {
-            base.RenderElement(element);
+            if (!CanRenderElement(element))
+                return false;
+
+            // always allow root element to render
+            Invalidate();
+
+            var result = base.RenderElement(element);
 
             do
             {
                 // if there are nodes skipped due to optimization somewhere in the tree, render them too
                 if (GetRerenderNodes(out var nodes))
                     foreach (var node in nodes)
-                        node.RenderElement(node.Element);
+                        result |= node.RenderElement(node.Element);
 
                 // run effects
                 while (PendingEffects.TryDequeue(out var effect))
+                {
                     effect.Run();
+                    result = true;
+                }
             }
             while (RerenderNodes.Count != 0);
 
-            return true;
+            return result;
         }
 
         public override void Dispose()

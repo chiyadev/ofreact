@@ -1,4 +1,3 @@
-using System;
 using NUnit.Framework;
 
 namespace ofreact.Tests
@@ -16,7 +15,7 @@ namespace ofreact.Tests
 
             node.RenderElement(new Element1());
 
-            Assert.That(() => node.RenderElement(new Element2()), Throws.InstanceOf<ArgumentException>());
+            Assert.That(node.RenderElement(new Element2()), Is.False);
         }
     }
 }

@@ -59,7 +59,6 @@ namespace ofreact.Tests
             Element1.OneRendered = false;
             Element1.DoAlt       = true;
 
-            node.Invalidate();
             node.RenderElement(new Element1());
 
             Assert.That(Element1.OneRendered, Is.False);
@@ -68,11 +67,68 @@ namespace ofreact.Tests
             Element1.TwoRendered = false;
             Element1.DoAlt       = false;
 
-            node.Invalidate();
             node.RenderElement(new Element1());
 
             Assert.That(Element1.OneRendered, Is.True);
             Assert.That(Element1.TwoRendered, Is.False);
+        }
+
+        class Element2 : ofComponent
+        {
+            public static int Which;
+            public static int Rendered;
+
+            protected override ofElement Render()
+            {
+                if (Which == 0)
+                    return null;
+
+                return new Nested();
+            }
+
+            class Nested : ofComponent
+            {
+                protected override ofElement Render()
+                {
+                    var (state, _) = UseState(Which);
+
+                    Assert.That(state, Is.EqualTo(Which));
+
+                    ++Rendered;
+
+                    return null;
+                }
+            }
+        }
+
+        [Test]
+        public void NullClearsChildState()
+        {
+            using var node = new ofRootNode();
+
+            Element2.Which = 0;
+
+            node.RenderElement(new Element2());
+
+            Assert.That(Element2.Rendered, Is.EqualTo(0));
+
+            Element2.Which = 1;
+
+            node.RenderElement(new Element2());
+
+            Assert.That(Element2.Rendered, Is.EqualTo(1));
+
+            Element2.Which = 0;
+
+            node.RenderElement(new Element2());
+
+            Assert.That(Element2.Rendered, Is.EqualTo(1));
+
+            Element2.Which = 2;
+
+            node.RenderElement(new Element2());
+
+            Assert.That(Element2.Rendered, Is.EqualTo(2));
         }
     }
 }

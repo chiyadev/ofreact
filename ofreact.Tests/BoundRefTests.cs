@@ -34,7 +34,6 @@ namespace ofreact.Tests
             Assert.That(Element1.CurrentCount, Is.EqualTo(1));
             Assert.That(Element1.CurrentString, Is.EqualTo("1"));
 
-            node.Invalidate();
             node.RenderElement(new Element1());
 
             Assert.That(Element1.CurrentCount, Is.EqualTo(2));

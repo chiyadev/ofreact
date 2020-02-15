@@ -52,7 +52,7 @@ namespace ofreact
                 {
                     node = nodes[j];
 
-                    if (node != null && child.Equals(node.Element))
+                    if (node != null && node.CanRenderElement(child))
                     {
                         nodes[j] = null;
 

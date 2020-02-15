@@ -35,13 +35,11 @@ namespace ofreact.Tests
             Assert.That(Element1.Effect, Is.EqualTo(1));
             Assert.That(Element1.Cleanup, Is.EqualTo(0));
 
-            node.Invalidate();
             node.RenderElement(new Element1());
 
             Assert.That(Element1.Effect, Is.EqualTo(2));
             Assert.That(Element1.Cleanup, Is.EqualTo(1));
 
-            node.Invalidate();
             node.RenderElement(new Element1());
 
             Assert.That(Element1.Effect, Is.EqualTo(3));
@@ -93,13 +91,11 @@ namespace ofreact.Tests
 
             ++Element2.Dependency;
 
-            node.Invalidate();
             node.RenderElement(new Element2());
 
             Assert.That(Element2.Effect, Is.EqualTo(2));
             Assert.That(Element2.Cleanup, Is.EqualTo(1));
 
-            node.Invalidate();
             node.RenderElement(new Element2());
 
             Assert.That(Element2.Effect, Is.EqualTo(2));
@@ -107,7 +103,6 @@ namespace ofreact.Tests
 
             ++Element2.Dependency;
 
-            node.Invalidate();
             node.RenderElement(new Element2());
 
             Assert.That(Element2.Effect, Is.EqualTo(3));
@@ -150,13 +145,11 @@ namespace ofreact.Tests
             Assert.That(Element3.Effect, Is.EqualTo(1));
             Assert.That(Element3.Cleanup, Is.EqualTo(0));
 
-            node.Invalidate();
             node.RenderElement(new Element3());
 
             Assert.That(Element3.Effect, Is.EqualTo(1));
             Assert.That(Element3.Cleanup, Is.EqualTo(0));
 
-            node.Invalidate();
             node.RenderElement(new Element3());
 
             Assert.That(Element3.Effect, Is.EqualTo(1));

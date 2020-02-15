@@ -6,7 +6,7 @@ namespace ofreact
     public abstract class ofComponent : ofElement
     {
         /// <summary>
-        /// Creates a new <see cref="ofComponent"/>/
+        /// Creates a new <see cref="ofComponent"/>.
         /// </summary>
         protected ofComponent(object key = default) : base(key) { }
 
@@ -21,18 +21,28 @@ namespace ofreact
                 return false;
 
             var node    = UseChild();
+            var current = node.Current;
+
             var element = Render();
 
             if (element == null)
-                return false;
-
-            if (!element.Equals(node.Current.Element))
             {
-                node.Current.Dispose();
-                node.Current = Node.CreateChild();
+                if (current != null)
+                {
+                    current.Dispose();
+                    node.Current = null;
+                }
+
+                return false;
             }
 
-            return node.Current.RenderElement(element);
+            if (current == null || !current.CanRenderElement(element))
+            {
+                current?.Dispose();
+                current = node.Current = Node.CreateChild();
+            }
+
+            return current.RenderElement(element);
         }
     }
 }

@@ -21,7 +21,7 @@ namespace ofreact
     /// Elements are lightweight classes that are created every render.
     /// During render, elements are bound to their respective <see cref="ofNode"/> that hold stateful data across renders.
     /// </remarks>
-    public abstract class ofElement : IEquatable<ofElement>
+    public abstract class ofElement
     {
         [ThreadStatic] static ofElement _currentElement;
 
@@ -65,9 +65,6 @@ namespace ofreact
             {
                 if (element.Node != null)
                     throw new InvalidOperationException("Element is already bound to another node.");
-
-                if (node.Element != null && !node.Element.Equals(element))
-                    throw new ArgumentException($"Cannot bind element {element} to a node previously bound to element {node.Element}.");
 
                 element.Node = node;
                 node.Element = element;
@@ -236,12 +233,15 @@ namespace ofreact
         {
             var obj = UseRef<ofNode>();
 
-            obj.Current ??= Node.CreateChild();
-
             UseEffect(() => () =>
             {
-                obj.Current?.Dispose();
-                obj.Current = null;
+                var current = obj.Current;
+
+                if (current != null)
+                {
+                    current.Dispose();
+                    obj.Current = null;
+                }
             }, null);
 
             return obj;
@@ -257,8 +257,10 @@ namespace ofreact
 
             UseEffect(() => () =>
             {
-                if (obj.Current != null)
-                    foreach (var node in obj.Current)
+                var current = obj.Current;
+
+                if (current != null)
+                    foreach (var node in current)
                         node?.Dispose();
 
                 obj.Current = Array.Empty<ofNode>();
@@ -274,16 +276,7 @@ namespace ofreact
         /// <summary>
         /// Determines whether the specified object instance is equivalent to this element.
         /// </summary>
-        public sealed override bool Equals(object obj) => obj is ofElement e && Equals(e);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(ofElement other) => ReferenceEquals(this, other) ||
-                                               other != null &&
-                                               GetType() == other.GetType() &&
-                                               KeysEqual(this, other);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static bool KeysEqual(ofElement a, ofElement b) => a.Key == b.Key || a.Key != null && a.Key.Equals(b.Key);
+        public sealed override bool Equals(object obj) => ReferenceEquals(this, obj);
 
         /// <summary>
         /// Calculates the hash code of this element.
