@@ -80,7 +80,7 @@ namespace ofreact
             var obj    = element.Node.GetNamedRef<EffectInfo>(_name);
             var effect = obj.Current ??= new EffectInfo();
 
-            effect.Set(element, () => (EffectCleanupDelegate) _invoker(element), _dependencyBuilder?.Invoke(element));
+            effect.Set(element.Node, () => (EffectCleanupDelegate) _invoker(element), _dependencyBuilder?.Invoke(element));
         }
     }
 }

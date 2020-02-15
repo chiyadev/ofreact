@@ -73,7 +73,7 @@ namespace ofreact
                 _current = _currentElement = element;
 
                 if (hooks)
-                    element._hooks = 0;
+                    node.Hooks = 0;
 
                 if (attributes)
                     try
@@ -93,8 +93,8 @@ namespace ofreact
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Dispose()
             {
-                _current.Node   = null;
-                _current._hooks = null;
+                _current.Node.Hooks = null;
+                _current.Node       = null;
 
                 _currentElement = _last;
             }
@@ -118,146 +118,33 @@ namespace ofreact
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T DefineHook<T>(Func<ofNode, T> hook) => hook(_currentElement?.Node);
 
-        internal void ValidateHooks()
-        {
-            if (_hooks != null && InternalConstants.ValidateHooks)
-            {
-                if (Node.HookCount == null)
-                    Node.HookCount = _hooks;
+        /// <inheritdoc cref="Hooks.UseRef{T}"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected RefObject<T> UseRef<T>(T initialValue = default) => Hooks.UseRefInternal(Node, initialValue);
 
-                else if (Node.HookCount != _hooks)
-                    throw new InvalidOperationException($"The number of hooks ({_hooks}) does not match with the previous render ({Node.HookCount}). " +
-                                                        "See https://reactjs.org/docs/hooks-rules.html for rules about hooks.");
-            }
-        }
+        /// <inheritdoc cref="Hooks.UseState{T}"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected (T, Action<T>) UseState<T>(T initialValue = default) => Hooks.UseStateInternal(Node, initialValue);
 
-        int? _hooks;
+        /// <inheritdoc cref="Hooks.UseState{T}"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected T UseContext<T>() => Hooks.UseContextInternal<T>(Node);
 
-        /// <summary>
-        /// Returns a mutable <see cref="RefObject{T}"/> holding a strongly typed variable that is persisted across renders.
-        /// </summary>
-        /// <remarks>
-        /// This is handy for keeping a mutable value across renders without causing a rerender when updating it.
-        /// </remarks>
-        /// <param name="initialValue">Initial value of the referenced value.</param>
-        /// <typeparam name="T">Type of the referenced value.</typeparam>
-        protected RefObject<T> UseRef<T>(T initialValue = default)
-        {
-            if (_hooks == null)
-                throw new InvalidOperationException($"Cannot use hooks outside the rendering method ({GetType()}).");
+        /// <inheritdoc cref="Hooks.UseEffect(Action,object[])"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void UseEffect(Action callback, params object[] dependencies) => Hooks.UseEffectInternal(Node, callback, dependencies);
 
-            return Node.GetNamedRef($"^{_hooks++}", initialValue);
-        }
+        /// <inheritdoc cref="Hooks.UseEffect(EffectDelegate,object[])"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void UseEffect(EffectDelegate callback, params object[] dependencies) => Hooks.UseEffectInternal(Node, callback, dependencies);
 
-        /// <summary>
-        /// Returns a stateful value and a function to update it.
-        /// </summary>
-        /// <remarks>
-        /// The setter function is used to update the state.
-        /// It accepts a new state value and enqueues a rerender of this element.
-        /// </remarks>
-        /// <param name="initialValue">Initial value of the variable.</param>
-        /// <typeparam name="T">Type of the variable.</typeparam>
-        protected (T, Action<T>) UseState<T>(T initialValue = default)
-        {
-            var obj  = UseRef(initialValue);
-            var node = Node;
+        /// <inheritdoc cref="Hooks.UseChild"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected RefObject<ofNode> UseChild() => Hooks.UseChildInternal(Node);
 
-            return (obj.Current, value =>
-            {
-                obj.Current = value;
-
-                node.Invalidate();
-            });
-        }
-
-        /// <summary>
-        /// Accepts a context type and returns the current context value for that type.
-        /// </summary>
-        /// <remarks>
-        /// The current context value is determined by the value prop of the nearest <see cref="ofContext{TContext}"/> above this element in the tree.
-        /// When the nearest <see cref="ofContext{TContext}"/> above the element updates, this hook will trigger a rerender with the latest context value.
-        /// </remarks>
-        /// <typeparam name="T">Type of context object.</typeparam>
-        protected T UseContext<T>()
-        {
-            foreach (var context in Node.Root.Contexts)
-            {
-                if (context is T value)
-                    return value;
-            }
-
-            return default;
-        }
-
-        /// <inheritdoc cref="UseEffect(EffectDelegate,object[])"/>
-        protected void UseEffect(Action callback, params object[] dependencies) => UseEffect(() =>
-        {
-            callback?.Invoke();
-            return null;
-        }, dependencies);
-
-        /// <summary>
-        /// Accepts a function that contains imperative, possibly effectful code.
-        /// </summary>
-        /// <remarks>
-        /// Mutations, subscriptions, timers, logging, and other side effects are discouraged inside the render method of an element.
-        /// Instead, use this hook for side effects. The callback function will run after rendering is completed.
-        /// </remarks>
-        /// <param name="callback">Callback function to be triggered, returning a cleanup function.</param>
-        /// <param name="dependencies">
-        /// List of dependencies that will cause a rerender when the values change.
-        /// Conceptually, these are passed as arguments to the callback function.
-        /// An empty list will trigger this effect on every render (equivalent to undefined), whereas null will trigger this effect only once on mount (equivalent to []).
-        /// </param>
-        protected void UseEffect(EffectDelegate callback, params object[] dependencies)
-        {
-            var obj    = UseRef<EffectInfo>();
-            var effect = obj.Current ??= new EffectInfo();
-
-            effect.Set(this, callback, dependencies);
-        }
-
-        /// <inheritdoc cref="UseChildren"/>
-        protected RefObject<ofNode> UseChild()
-        {
-            var obj = UseRef<ofNode>();
-
-            UseEffect(() => () =>
-            {
-                var current = obj.Current;
-
-                if (current != null)
-                {
-                    current.Dispose();
-                    obj.Current = null;
-                }
-            }, null);
-
-            return obj;
-        }
-
-        /// <summary>
-        /// Returns a <see cref="RefObject{T}"/> of <see cref="ofNode"/>s.
-        /// This is a helper hook for <see cref="UseRef{T}"/> to hold the child nodes and <see cref="UseEffect(EffectDelegate,object[])"/> to dispose them on unmount.
-        /// </summary>
-        protected RefObject<ofNode[]> UseChildren()
-        {
-            var obj = UseRef(Array.Empty<ofNode>());
-
-            UseEffect(() => () =>
-            {
-                var current = obj.Current;
-
-                if (current != null)
-                    foreach (var node in current)
-                        node?.Dispose();
-
-                obj.Current = Array.Empty<ofNode>();
-            }, null);
-
-            return obj;
-        }
+        /// <inheritdoc cref="Hooks.UseChildren"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected RefObject<ofNode[]> UseChildren() => Hooks.UseChildrenInternal(Node);
 
 #endregion
 
@@ -266,16 +153,19 @@ namespace ofreact
         /// <summary>
         /// Determines whether the specified object instance is equivalent to this element.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sealed override bool Equals(object obj) => ReferenceEquals(this, obj);
 
         /// <summary>
         /// Calculates the hash code of this element.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sealed override int GetHashCode() => HashCode.Combine(this);
 
         /// <summary>
         /// Returns a string that describes this element.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sealed override string ToString()
         {
             var str = GetType().FullName;

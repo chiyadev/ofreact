@@ -43,7 +43,8 @@ namespace ofreact
         /// </summary>
         public ofElement Element { get; internal set; }
 
-        internal int? HookCount; // used for hook validation
+        internal int? Hooks;
+        int? _lastHooks;
 
         internal ofNode(ofNode parent)
         {
@@ -63,8 +64,15 @@ namespace ofreact
             {
                 var result = element.RenderSubtree();
 
-                if (result)
-                    element.ValidateHooks();
+                if (result && InternalConstants.ValidateHooks)
+                {
+                    if (_lastHooks == null)
+                        _lastHooks = Hooks;
+
+                    else if (_lastHooks != Hooks)
+                        throw new InvalidOperationException($"The number of hooks ({Hooks}) does not match with the previous render ({_lastHooks}). " +
+                                                            "See https://reactjs.org/docs/hooks-rules.html for rules about hooks.");
+                }
 
                 return result;
             }

@@ -4,9 +4,7 @@ namespace ofreact
 {
     public sealed class EffectInfo
     {
-        ofElement _element;
         ofNode _node;
-
         object[] _dependencies;
 
         EffectDelegate _effect;
@@ -15,19 +13,18 @@ namespace ofreact
         internal EffectInfo() { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Set(ofElement element, EffectDelegate effect, object[] dependencies)
+        public bool Set(ofNode node, EffectDelegate effect, object[] dependencies)
         {
-            var pending = _element == null || dependencies?.Length == 0 || !DepsEqual(_dependencies, dependencies);
+            var pending = _node == null || dependencies?.Length == 0 || !DepsEqual(_dependencies, dependencies);
 
-            _element      = element;
-            _node         = element.Node;
+            _node         = node;
             _dependencies = dependencies;
             _effect       = effect;
 
-            element.Node.LocalEffects.Add(this);
+            node.LocalEffects.Add(this);
 
             if (pending)
-                element.Node.Root.PendingEffects.Enqueue(this);
+                node.Root.PendingEffects.Enqueue(this);
 
             return pending;
         }
@@ -58,7 +55,7 @@ namespace ofreact
         {
             Cleanup();
 
-            using (_element.Bind(_node))
+            using (_node.Element.Bind(_node))
                 _cleanup = _effect?.Invoke();
         }
 
@@ -67,13 +64,13 @@ namespace ofreact
         {
             var cleanup = _cleanup;
 
-            if (cleanup != null)
-            {
-                _cleanup = null;
+            if (cleanup == null)
+                return;
 
-                using (_element.Bind(_node))
-                    cleanup();
-            }
+            _cleanup = null;
+
+            using (_node.Element.Bind(_node))
+                cleanup();
         }
     }
 }
