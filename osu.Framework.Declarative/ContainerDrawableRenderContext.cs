@@ -19,9 +19,9 @@ namespace osu.Framework.Declarative
         public ContainerDrawableRenderContext(Container<Drawable> container)
         {
             _container = container;
-            _remaining = new HashSet<Drawable>(container.Count);
+            _remaining = new HashSet<Drawable>(container.AliveChildren.Count);
 
-            foreach (var drawable in container)
+            foreach (var drawable in container.AliveChildren)
                 _remaining.Add(drawable);
         }
 
@@ -46,7 +46,10 @@ namespace osu.Framework.Declarative
             }
         }
 
-        // remove remaining drawables that weren't rendered
-        public void Dispose() => _container.RemoveRange(_remaining);
+        public void Dispose()
+        {
+            foreach (var drawable in _remaining)
+                drawable.Expire();
+        }
     }
 }
