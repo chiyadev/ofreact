@@ -51,33 +51,6 @@ Outliers
         [Benchmark]
         public MockDrawableByRefConservativeDerived2 CreateDrawableByRefConservativeDerived2() => new MockDrawableByRefConservativeDerived2();
 
-        public struct MarginPadding
-        {
-            public float Top;
-            public float Left;
-            public float Bottom;
-            public float Right;
-        }
-
-        public struct ColourInfo
-        {
-            public Vector4 TopLeft;
-            public Vector4 BottomLeft;
-            public Vector4 TopRight;
-            public Vector4 BottomRight;
-            public bool HasSingleColour;
-        }
-
-        public struct BlendingParameters
-        {
-            public int Source;
-            public int Destination;
-            public int SourceAlpha;
-            public int DestinationAlpha;
-            public int RGBEquation;
-            public int AlphaEquation;
-        }
-
         // pass all props by val
         public class MockDrawableByVal
         {
