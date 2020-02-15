@@ -1,24 +1,61 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using ofreact;
 using osu.Framework.Allocation;
+using osu.Framework.Platform;
 
 namespace osu.Framework.Declarative
 {
+    /// <summary>
+    /// Encapsulates a method that is used to create a new <see cref="GameHost"/>.
+    /// </summary>
+    public delegate GameHost GameHostFactoryDelegate(string name);
+
+    /// <summary>
+    /// Contains variables used in <see cref="GameHost"/> initialization.
+    /// </summary>
+    public class GameHostOptions
+    {
+        /// <summary>
+        /// True to enable IPC capabilities (inter-process communication).
+        /// </summary>
+        public bool BindIpc { get; set; }
+
+        public bool PortableInstallation { get; set; }
+        public bool UseSdl { get; set; }
+
+        /// <summary>
+        /// Creates a new <see cref="GameHost"/> suitable for the calling environment.
+        /// </summary>
+        public GameHost Create(string name) => Host.GetSuitableHost(name, BindIpc, PortableInstallation, UseSdl);
+
+        public static implicit operator GameHostFactoryDelegate(GameHostOptions args) => args.Create;
+    }
+
     /// <summary>
     /// Renders a <see cref="Game"/> inside a suitable platform-specific game host and bootstraps the ofreact scene graph.
     /// </summary>
     public class ofGame : ofElement, IEnumerable<ofElement>
     {
         [Prop] public readonly GameHostFactoryDelegate Host;
+        [Prop] public readonly RefDelegate<Game> GameRef;
+        [Prop] public readonly RefDelegate<GameHost> HostRef;
         [Prop] public readonly List<ofElement> Children;
 
         /// <summary>
         /// Creates a new <see cref="ofContainer"/>.
         /// </summary>
-        public ofGame(string name, GameHostFactoryDelegate host = default, IEnumerable<ofElement> children = default) : base(name)
+        public ofGame(string name,
+                      GameHostFactoryDelegate host = default,
+                      RefDelegate<Game> gameRef = default,
+                      RefDelegate<GameHost> hostRef = default,
+                      IEnumerable<ofElement> children = default) : base(name)
         {
             Host = host ?? new GameHostOptions();
+
+            GameRef = gameRef;
+            HostRef = hostRef;
 
             Children = children == null
                 ? new List<ofElement>()
@@ -36,9 +73,18 @@ namespace osu.Framework.Declarative
             if (!base.RenderSubtree())
                 return false;
 
-            using var host = Host(Key.ToString());
+            using (var host = Host(Key.ToString()))
+            {
+                var game = new Bootstrap(Children.ToArray());
 
-            host.Run(new Bootstrap(Children.ToArray()));
+                HostRef?.Invoke(host);
+                GameRef?.Invoke(game);
+
+                host.Run(game);
+            }
+
+            HostRef?.Invoke(null);
+            GameRef?.Invoke(null);
 
             return true;
         }
@@ -53,15 +99,10 @@ namespace osu.Framework.Declarative
                 _children = children;
             }
 
-            [BackgroundDependencyLoader]
-            void Load() { }
+            [BackgroundDependencyLoader, MethodImpl(MethodImplOptions.AggressiveInlining)]
+            void RenderRoot() => _node.RenderElement(new ofContainerContext(this, children: _children));
 
-            protected override void Update()
-            {
-                base.Update();
-
-                _node.RenderElement(new ofContext<ContainerDrawableRenderContext>(children: _children, value: new ContainerDrawableRenderContext(this)));
-            }
+            protected override void Update() => RenderRoot();
 
             protected override void Dispose(bool isDisposing)
             {
