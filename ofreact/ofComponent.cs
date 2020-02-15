@@ -20,29 +20,29 @@ namespace ofreact
             if (!base.RenderSubtree())
                 return false;
 
-            var node    = UseChild();
-            var current = node.Current;
+            var nodeRef = UseChild();
+            var node    = nodeRef.Current;
 
             var element = Render();
 
             if (element == null)
             {
-                if (current != null)
+                if (node != null)
                 {
-                    current.Dispose();
-                    node.Current = null;
+                    node.Dispose();
+                    nodeRef.Current = null;
                 }
 
                 return false;
             }
 
-            if (current == null || !current.CanRenderElement(element))
+            if (node == null || !node.CanRenderElement(element))
             {
-                current?.Dispose();
-                current = node.Current = Node.CreateChild();
+                node?.Dispose();
+                node = nodeRef.Current = Node.CreateChild();
             }
 
-            return current.RenderElement(element);
+            return node.RenderElement(element);
         }
     }
 }
