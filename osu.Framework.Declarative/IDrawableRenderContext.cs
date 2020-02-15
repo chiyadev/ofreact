@@ -1,4 +1,3 @@
-using System;
 using osu.Framework.Graphics;
 
 namespace osu.Framework.Declarative
@@ -6,7 +5,7 @@ namespace osu.Framework.Declarative
     /// <summary>
     /// Represents a context in which <see cref="Drawable"/>s can be rendered.
     /// </summary>
-    public interface IDrawableRenderContext : IDisposable
+    public interface IDrawableRenderContext
     {
         /// <summary>
         /// Renders the given <see cref="Drawable"/>.

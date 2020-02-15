@@ -45,11 +45,5 @@ namespace osu.Framework.Declarative
                 _container.Add(drawable);
             }
         }
-
-        public void Dispose()
-        {
-            foreach (var drawable in _remaining)
-                drawable.Expire();
-        }
     }
 }
