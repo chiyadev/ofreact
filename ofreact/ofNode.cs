@@ -76,9 +76,6 @@ namespace ofreact
         /// </summary>
         public ofNode CreateChild() => new ofNode(this);
 
-        /// <summary>
-        /// Disposes this node.
-        /// </summary>
         public virtual void Dispose()
         {
             // do effect cleanups
@@ -158,6 +155,15 @@ namespace ofreact
             while (RerenderNodes.Count != 0);
 
             return true;
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+
+            Contexts.Clear();
+            RerenderNodes.Clear();
+            PendingEffects.Clear();
         }
     }
 }
