@@ -141,6 +141,7 @@ namespace ofreact
             Root = this;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool GetRerenderNodes(out ofNode[] nodes)
         {
             var count = RerenderNodes.Count;

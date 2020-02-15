@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace ofreact
 {
     public sealed class EffectInfo
@@ -12,6 +14,7 @@ namespace ofreact
 
         internal EffectInfo() { }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Set(ofElement element, EffectDelegate effect, object[] dependencies)
         {
             var pending = _element == null || dependencies?.Length == 0 || !DepsEqual(_dependencies, dependencies);
@@ -29,6 +32,7 @@ namespace ofreact
             return pending;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static bool DepsEqual(object[] a, object[] b)
         {
             if (a == b)
@@ -49,6 +53,7 @@ namespace ofreact
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Run()
         {
             Cleanup();
@@ -57,6 +62,7 @@ namespace ofreact
                 _cleanup = _effect?.Invoke();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Cleanup()
         {
             var cleanup = _cleanup;
