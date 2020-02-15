@@ -9,7 +9,7 @@ namespace osu.Framework.Declarative
     /// <summary>
     /// Renders a <see cref="Container{Drawable}"/> and all children inside it.
     /// </summary>
-    public class ofContainer : ofDrawable<Container<Drawable>>, IEnumerable<ofElement>
+    public class ofContainer : ofDrawableBase<Container<Drawable>>, IEnumerable<ofElement>
     {
         [Prop] public readonly List<ofElement> Children;
 
@@ -22,6 +22,8 @@ namespace osu.Framework.Declarative
                 ? new List<ofElement>()
                 : new List<ofElement>(children);
         }
+
+        protected override Container<Drawable> CreateDrawable() => new Container<Drawable>();
 
         /// <summary>
         /// Adds an element as a child of this container.
