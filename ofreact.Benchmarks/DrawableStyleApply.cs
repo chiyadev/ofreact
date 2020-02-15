@@ -13,14 +13,11 @@ AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores
   DefaultJob : .NET Core 3.1.0 (CoreCLR 4.700.19.56402, CoreFX 4.700.19.56404), X64 RyuJIT
 
 
-|     Method |     Mean |    Error |   StdDev |
-|----------- |---------:|---------:|---------:|
-| Coalescing | 69.07 ns | 0.439 ns | 0.410 ns |
-|   Checking | 47.38 ns | 0.330 ns | 0.293 ns |
-
-// * Hints *
-Outliers
-  DrawableStyleApply.Checking: Default -> 1 outlier  was  removed (59.72 ns)
+|         Method |     Mean |    Error |   StdDev |
+|--------------- |---------:|---------:|---------:|
+|     Coalescing | 69.06 ns | 0.543 ns | 0.508 ns |
+|       Checking | 47.50 ns | 0.336 ns | 0.314 ns |
+| CheckingFields | 27.77 ns | 0.175 ns | 0.164 ns |
          */
 
         [Benchmark]
@@ -28,6 +25,9 @@ Outliers
 
         [Benchmark]
         public void Checking() => new NullChecking().Apply(new Drawable());
+
+        [Benchmark]
+        public void CheckingFields() => new NullCheckingFields().Apply(new Drawable());
 
         public class NullCoalescing
         {
@@ -102,6 +102,77 @@ Outliers
             public BlendingParameters? Blending { get; set; }
             public double? LifetimeStart { get; set; }
             public double? LifetimeEnd { get; set; }
+
+            public void Apply(Drawable drawable)
+            {
+                if (Position != null)
+                    drawable.Position = Position.Value;
+                if (RelativePositionAxes != null)
+                    drawable.RelativePositionAxes = RelativePositionAxes.Value;
+                if (Size != null)
+                    drawable.Size = Size.Value;
+                if (RelativeSizeAxes != null)
+                    drawable.RelativeSizeAxes = RelativeSizeAxes.Value;
+                if (Margin != null)
+                    drawable.Margin = Margin.Value;
+                if (BypassAutoSizeAxes != null)
+                    drawable.BypassAutoSizeAxes = BypassAutoSizeAxes.Value;
+                if (Scale != null)
+                    drawable.Scale = Scale.Value;
+                if (FillAspectRatio != null)
+                    drawable.FillAspectRatio = FillAspectRatio.Value;
+                if (FillMode != null)
+                    drawable.FillMode = FillMode.Value;
+                if (Shear != null)
+                    drawable.Shear = Shear.Value;
+                if (Rotation != null)
+                    drawable.Rotation = Rotation.Value;
+                if (Origin != null)
+                    drawable.Origin = Origin.Value;
+                if (OriginPosition != null)
+                    drawable.OriginPosition = OriginPosition.Value;
+                if (Anchor != null)
+                    drawable.Anchor = Anchor.Value;
+                if (RelativeAnchorPosition != null)
+                    drawable.RelativeAnchorPosition = RelativeAnchorPosition.Value;
+                if (Colour != null)
+                    drawable.Colour = Colour.Value;
+                if (Alpha != null)
+                    drawable.Alpha = Alpha.Value;
+                if (AlwaysPresent != null)
+                    drawable.AlwaysPresent = AlwaysPresent.Value;
+                if (Blending != null)
+                    drawable.Blending = Blending.Value;
+                if (LifetimeStart != null)
+                    drawable.LifetimeStart = LifetimeStart.Value;
+                if (LifetimeEnd != null)
+                    drawable.LifetimeEnd = LifetimeEnd.Value;
+            }
+        }
+
+        public class NullCheckingFields
+        {
+            public Vector2? Position;
+            public Axes? RelativePositionAxes;
+            public Vector2? Size;
+            public Axes? RelativeSizeAxes;
+            public MarginPadding? Margin;
+            public Axes? BypassAutoSizeAxes;
+            public Vector2? Scale;
+            public float? FillAspectRatio;
+            public FillMode? FillMode;
+            public Vector2? Shear;
+            public float? Rotation;
+            public Anchor? Origin;
+            public Vector2? OriginPosition;
+            public Anchor? Anchor;
+            public Vector2? RelativeAnchorPosition;
+            public ColourInfo? Colour;
+            public float? Alpha;
+            public bool? AlwaysPresent;
+            public BlendingParameters? Blending;
+            public double? LifetimeStart;
+            public double? LifetimeEnd;
 
             public void Apply(Drawable drawable)
             {
