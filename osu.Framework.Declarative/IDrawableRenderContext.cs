@@ -1,3 +1,4 @@
+using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 
 namespace osu.Framework.Declarative
@@ -7,6 +8,11 @@ namespace osu.Framework.Declarative
     /// </summary>
     public interface IDrawableRenderContext
     {
+        /// <summary>
+        /// Gets the <see cref="IReadOnlyDependencyContainer"/>.
+        /// </summary>
+        IReadOnlyDependencyContainer DependencyContainer { get; }
+
         /// <summary>
         /// Renders the given <see cref="Drawable"/>.
         /// </summary>

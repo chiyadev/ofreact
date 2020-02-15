@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ofreact;
+using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 
@@ -19,6 +20,8 @@ namespace osu.Framework.Declarative
         {
             readonly Container<Drawable> _container;
             readonly HashSet<Drawable> _remaining;
+
+            public IReadOnlyDependencyContainer DependencyContainer => _container.Dependencies;
 
             public Context(Container<Drawable> container)
             {
