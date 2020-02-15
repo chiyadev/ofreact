@@ -13,11 +13,17 @@ AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores
   DefaultJob : .NET Core 3.1.0 (CoreCLR 4.700.19.56402, CoreFX 4.700.19.56404), X64 RyuJIT
 
 
-|         Method |     Mean |    Error |   StdDev |
-|--------------- |---------:|---------:|---------:|
-|     Coalescing | 69.06 ns | 0.543 ns | 0.508 ns |
-|       Checking | 47.50 ns | 0.336 ns | 0.314 ns |
-| CheckingFields | 27.77 ns | 0.175 ns | 0.164 ns |
+|                    Method |     Mean |    Error |   StdDev |
+|-------------------------- |---------:|---------:|---------:|
+|                Coalescing | 69.54 ns | 0.505 ns | 0.472 ns |
+|                  Checking | 47.27 ns | 0.593 ns | 0.463 ns |
+|            CheckingFields | 27.66 ns | 0.122 ns | 0.114 ns |
+| CheckingFieldsStackLoaded | 56.03 ns | 0.078 ns | 0.061 ns |
+
+// * Hints *
+Outliers
+  DrawableStyleApply.Checking: Default                  -> 3 outliers were removed (51.79 ns..56.76 ns)
+  DrawableStyleApply.CheckingFieldsStackLoaded: Default -> 3 outliers were removed (57.84 ns..58.06 ns)
          */
 
         [Benchmark]
@@ -28,6 +34,9 @@ AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores
 
         [Benchmark]
         public void CheckingFields() => new NullCheckingFields().Apply(new Drawable());
+
+        [Benchmark]
+        public void CheckingFieldsStackLoaded() => new NullCheckingFieldsStackLoaded().Apply(new Drawable());
 
         public class NullCoalescing
         {
@@ -218,6 +227,99 @@ AMD Ryzen 5 3600X, 1 CPU, 12 logical and 6 physical cores
                     drawable.LifetimeStart = LifetimeStart.Value;
                 if (LifetimeEnd != null)
                     drawable.LifetimeEnd = LifetimeEnd.Value;
+            }
+        }
+
+        public class NullCheckingFieldsStackLoaded
+        {
+            public Vector2? Position;
+            public Axes? RelativePositionAxes;
+            public Vector2? Size;
+            public Axes? RelativeSizeAxes;
+            public MarginPadding? Margin;
+            public Axes? BypassAutoSizeAxes;
+            public Vector2? Scale;
+            public float? FillAspectRatio;
+            public FillMode? FillMode;
+            public Vector2? Shear;
+            public float? Rotation;
+            public Anchor? Origin;
+            public Vector2? OriginPosition;
+            public Anchor? Anchor;
+            public Vector2? RelativeAnchorPosition;
+            public ColourInfo? Colour;
+            public float? Alpha;
+            public bool? AlwaysPresent;
+            public BlendingParameters? Blending;
+            public double? LifetimeStart;
+            public double? LifetimeEnd;
+
+            public void Apply(Drawable drawable)
+            {
+                var position               = Position;
+                var relativePositionAxes   = RelativePositionAxes;
+                var size                   = Size;
+                var relativeSizeAxes       = RelativeSizeAxes;
+                var margin                 = Margin;
+                var bypassAutoSizeAxes     = BypassAutoSizeAxes;
+                var scale                  = Scale;
+                var fillAspectRatio        = FillAspectRatio;
+                var fillMode               = FillMode;
+                var shear                  = Shear;
+                var rotation               = Rotation;
+                var origin                 = Origin;
+                var originPosition         = OriginPosition;
+                var anchor                 = Anchor;
+                var relativeAnchorPosition = RelativeAnchorPosition;
+                var colour                 = Colour;
+                var alpha                  = Alpha;
+                var alwaysPresent          = AlwaysPresent;
+                var blending               = Blending;
+                var lifetimeStart          = LifetimeStart;
+                var lifetimeEnd            = LifetimeEnd;
+
+                if (position != null)
+                    drawable.Position = position.Value;
+                if (relativePositionAxes != null)
+                    drawable.RelativePositionAxes = relativePositionAxes.Value;
+                if (size != null)
+                    drawable.Size = size.Value;
+                if (relativeSizeAxes != null)
+                    drawable.RelativeSizeAxes = relativeSizeAxes.Value;
+                if (margin != null)
+                    drawable.Margin = margin.Value;
+                if (bypassAutoSizeAxes != null)
+                    drawable.BypassAutoSizeAxes = bypassAutoSizeAxes.Value;
+                if (scale != null)
+                    drawable.Scale = scale.Value;
+                if (fillAspectRatio != null)
+                    drawable.FillAspectRatio = fillAspectRatio.Value;
+                if (fillMode != null)
+                    drawable.FillMode = fillMode.Value;
+                if (shear != null)
+                    drawable.Shear = shear.Value;
+                if (rotation != null)
+                    drawable.Rotation = rotation.Value;
+                if (origin != null)
+                    drawable.Origin = origin.Value;
+                if (originPosition != null)
+                    drawable.OriginPosition = originPosition.Value;
+                if (anchor != null)
+                    drawable.Anchor = anchor.Value;
+                if (relativeAnchorPosition != null)
+                    drawable.RelativeAnchorPosition = relativeAnchorPosition.Value;
+                if (colour != null)
+                    drawable.Colour = colour.Value;
+                if (alpha != null)
+                    drawable.Alpha = alpha.Value;
+                if (alwaysPresent != null)
+                    drawable.AlwaysPresent = alwaysPresent.Value;
+                if (blending != null)
+                    drawable.Blending = blending.Value;
+                if (lifetimeStart != null)
+                    drawable.LifetimeStart = lifetimeStart.Value;
+                if (lifetimeEnd != null)
+                    drawable.LifetimeEnd = lifetimeEnd.Value;
             }
         }
     }
