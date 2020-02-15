@@ -12,12 +12,13 @@ namespace ofreact
     /// States will cause a rerender when its value changes.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
-    public class StateAttribute : Attribute, IElementFieldBinder, IElementMethodParameterProvider
+    public class StateAttribute : Attribute, IElementFieldBinder, IElementMethodArgumentProvider
     {
         readonly object _initialValue;
 
         string _name;
-        Func<ofNode, string, object> _get;
+        ContainerObjectFactoryDelegate _create;
+        bool _wrapped;
 
         /// <summary>
         /// Creates a new <see cref="StateAttribute"/>.
@@ -34,39 +35,43 @@ namespace ofreact
         }
 
         public FieldInfo Field { get; private set; }
+        public ParameterInfo Parameter { get; private set; }
 
         void IElementFieldBinder.Initialize(FieldInfo field)
         {
-            if (!field.FieldType.IsGenericType || field.FieldType.GetGenericTypeDefinition() != typeof(StateObject<>))
-                throw new ArgumentException($"Field {field} of {field.DeclaringType} is not a type of {typeof(StateObject<>)}");
+            Field   = field;
+            _name   = field.Name;
+            _create = InternalReflection.GetStateObjectFactory(field.FieldType, out _wrapped);
 
-            Field = field;
-            _name = field.Name;
-
-            _get = RefAttribute.GetRefOrStateObjectFactory(field.FieldType, _initialValue);
+            if (_wrapped)
+                throw new ArgumentException($"Field {field} of {field.DeclaringType} must be a type of {typeof(RefObject<>)}");
         }
 
-        public ParameterInfo Parameter { get; private set; }
-
-        void IElementMethodParameterProvider.Initialize(ParameterInfo parameter)
+        void IElementMethodArgumentProvider.Initialize(ParameterInfo parameter)
         {
             Parameter = parameter;
             _name     = parameter.Name;
-
-            if (parameter.ParameterType.IsGenericType && parameter.ParameterType.GetGenericTypeDefinition() == typeof(StateObject<>))
-            {
-                _get = RefAttribute.GetRefOrStateObjectFactory(parameter.ParameterType, _initialValue);
-            }
-            else
-            {
-                //todo: this breaks with aot
-                var get = RefAttribute.GetRefOrStateObjectFactory(typeof(StateObject<>).MakeGenericType(parameter.ParameterType), _initialValue);
-
-                _get = (n, k) => get(n, k).Current;
-            }
+            _create   = InternalReflection.GetStateObjectFactory(parameter.ParameterType, out _wrapped);
         }
 
-        object IElementFieldBinder.GetValue(ofElement element) => _get(element.Node, _name);
-        object IElementMethodParameterProvider.GetValue(ofElement element) => _get(element.Node, _name);
+        object IElementFieldBinder.GetValue(ofElement element)
+        {
+            var container = _create(element.Node, _name, _initialValue);
+
+            if (_wrapped)
+                return container.Current;
+
+            return container;
+        }
+
+        object IElementMethodArgumentProvider.GetValue(ofElement element)
+        {
+            var container = _create(element.Node, _name, _initialValue);
+
+            if (_wrapped)
+                return container.Current;
+
+            return container;
+        }
     }
 }

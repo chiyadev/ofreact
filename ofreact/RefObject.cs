@@ -4,7 +4,7 @@ namespace ofreact
 {
     public delegate void RefDelegate<in T>(T value);
 
-    interface IContainerObject
+    public interface IContainerObject
     {
         object Current { get; }
     }

@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace ofreact
 {
-    public interface IElementMethodParameterProvider
+    public interface IElementMethodArgumentProvider
     {
         ParameterInfo Parameter { get; }
 

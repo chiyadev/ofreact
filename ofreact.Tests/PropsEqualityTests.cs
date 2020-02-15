@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace ofreact.Tests
 {
-    public class PropEqualityComparerTests
+    public class PropsEqualityTests
     {
         class MyElement : ofElement
         {
@@ -24,7 +24,7 @@ namespace ofreact.Tests
             var element1 = new MyElement("test", 777, key);
             var element2 = new MyElement("test", 777, key);
 
-            Assert.That(PropEqualityComparer.Equals(element1, element2), Is.True);
+            Assert.That(InternalReflection.PropsEqual(element1, element2), Is.True);
         }
 
         [Test]
@@ -35,7 +35,7 @@ namespace ofreact.Tests
             var element1 = new MyElement("test1", 777, key);
             var element2 = new MyElement("test2", 777, key);
 
-            Assert.That(PropEqualityComparer.Equals(element1, element2), Is.False);
+            Assert.That(InternalReflection.PropsEqual(element1, element2), Is.False);
         }
 
         [Test]
@@ -46,7 +46,7 @@ namespace ofreact.Tests
             var element1 = new MyElement("test", 777, key);
             var element2 = new MyElement("test", 778, key);
 
-            Assert.That(PropEqualityComparer.Equals(element1, element2), Is.False);
+            Assert.That(InternalReflection.PropsEqual(element1, element2), Is.False);
         }
 
         [Test]
@@ -57,7 +57,7 @@ namespace ofreact.Tests
             var element1 = new MyElement("test", 777, key);
             var element2 = new MyElement("test", 777, new object());
 
-            Assert.That(PropEqualityComparer.Equals(element1, element2), Is.False);
+            Assert.That(InternalReflection.PropsEqual(element1, element2), Is.False);
         }
 
         class Private : ofElement
@@ -71,7 +71,7 @@ namespace ofreact.Tests
         }
 
         [Test]
-        public void DoNotIgnorePrivateField() => Assert.That(PropEqualityComparer.Equals(new Private("1"), new Private("2")), Is.False);
+        public void DoNotIgnorePrivateField() => Assert.That(InternalReflection.PropsEqual(new Private("1"), new Private("2")), Is.False);
 
         class Private2 : Private
         {
@@ -88,17 +88,17 @@ namespace ofreact.Tests
         }
 
         [Test]
-        public void MultiLevelPrivateFields() => Assert.That(PropEqualityComparer.Equals(new Private3("1"), new Private3("2")), Is.False);
+        public void MultiLevelPrivateFields() => Assert.That(InternalReflection.PropsEqual(new Private3("1"), new Private3("2")), Is.False);
 
         [Test]
         public void ReferenceEqual()
         {
             var element = new Private("");
 
-            Assert.That(PropEqualityComparer.Equals(element, element), Is.True);
+            Assert.That(InternalReflection.PropsEqual(element, element), Is.True);
         }
 
         [Test]
-        public void MismatchingTypes() => Assert.That(PropEqualityComparer.Equals(new Private(""), new MyElement()), Is.False);
+        public void MismatchingTypes() => Assert.That(InternalReflection.PropsEqual(new Private(""), new MyElement()), Is.False);
     }
 }

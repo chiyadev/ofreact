@@ -48,7 +48,7 @@ namespace ofreact
         /// <returns></returns>
         public virtual bool RenderElement(ofElement element)
         {
-            if (!Root.RerenderNodes.Remove(this) && PropEqualityComparer.Equals(element, Element))
+            if (!Root.RerenderNodes.Remove(this) && InternalReflection.PropsEqual(element, Element))
                 return false;
 
             using (element.Bind(this, true, true))
