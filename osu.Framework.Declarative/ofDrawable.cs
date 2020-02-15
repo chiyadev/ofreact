@@ -28,7 +28,7 @@ namespace osu.Framework.Declarative
             if (!base.RenderSubtree())
                 return false;
 
-            var context = UseContext<DrawableRenderContext>();
+            var context = UseContext<IDrawableRenderContext>();
 
             if (context == null)
                 return false;

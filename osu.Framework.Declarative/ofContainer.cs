@@ -36,9 +36,48 @@ namespace osu.Framework.Declarative
 
             var node = UseChild();
 
-            var context = new DrawableRenderContext(Drawable);
+            var context = new RenderContext(Drawable);
 
-            return node.Current.RenderElement(new ofContext<DrawableRenderContext>(children: Children, value: context));
+            return node.Current.RenderElement(new ofContext<RenderContext>(children: Children, value: context));
+        }
+
+        sealed class RenderContext : IDrawableRenderContext
+        {
+            readonly Container<Drawable> _container;
+            readonly HashSet<Drawable> _remaining;
+
+            public RenderContext(Container<Drawable> container)
+            {
+                _container = container;
+                _remaining = new HashSet<Drawable>(container.Count);
+
+                foreach (var drawable in container)
+                    _remaining.Add(drawable);
+            }
+
+            float _depth;
+
+            public void Render(Drawable drawable, bool explicitDepth)
+            {
+                // already contained
+                if (_remaining.Remove(drawable))
+                {
+                    if (!explicitDepth)
+                        _container.ChangeChildDepth(drawable, _depth--);
+                }
+
+                // new child
+                else
+                {
+                    if (!explicitDepth)
+                        drawable.Depth = _depth--;
+
+                    _container.Add(drawable);
+                }
+            }
+
+            // remove remaining drawables that weren't rendered
+            public void Dispose() => _container.RemoveRange(_remaining);
         }
 
         public IEnumerator<ofElement> GetEnumerator() => Children.GetEnumerator();
