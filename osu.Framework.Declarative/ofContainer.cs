@@ -7,7 +7,7 @@ using osu.Framework.Graphics.Containers;
 namespace osu.Framework.Declarative
 {
     /// <summary>
-    /// Represents a <see cref="Container{Drawable}"/> in the osu!framework scene graph.
+    /// Renders a <see cref="Container{Drawable}"/> and all children inside it.
     /// </summary>
     public class ofContainer : ofDrawable<Container<Drawable>>, IEnumerable<ofElement>
     {

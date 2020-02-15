@@ -6,7 +6,7 @@ using osu.Framework.Allocation;
 namespace osu.Framework.Declarative
 {
     /// <summary>
-    /// Represents a <see cref="Game"/> that bootstraps the ofreact scene graph.
+    /// Renders a <see cref="Game"/> inside a suitable platform-specific game host and bootstraps the ofreact scene graph.
     /// </summary>
     public class ofGame : ofElement, IEnumerable<ofElement>
     {

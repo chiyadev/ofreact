@@ -4,7 +4,7 @@ using osu.Framework.Graphics;
 namespace osu.Framework.Declarative
 {
     /// <summary>
-    /// Represents a <see cref="Drawable"/> in the osu!framework scene graph.
+    /// Renders a <see cref="Drawable"/> of type <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">Type of the <see cref="Drawable"/> to render.</typeparam>
     public class ofDrawable<T> : ofElement where T : Drawable, new()
