@@ -167,5 +167,25 @@ namespace ofreact.Tests
             Assert.That(Element3.Effect, Is.EqualTo(1));
             Assert.That(Element3.Cleanup, Is.EqualTo(1));
         }
+
+        class Element4 : ofComponent
+        {
+            protected override ofElement Render()
+            {
+                var obj = UseRef("");
+
+                UseEffect(() => () => obj.Current = "success", null);
+
+                return null;
+            }
+        }
+
+        [Test]
+        public void ChangeStateInCleanup()
+        {
+            using var node = new ofNodeRoot();
+
+            node.RenderElement(new Element4());
+        }
     }
 }

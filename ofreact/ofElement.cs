@@ -66,9 +66,6 @@ namespace ofreact
                 if (element.Node != null)
                     throw new InvalidOperationException("Element is already bound to another node.");
 
-                if (node.IsUnmounted)
-                    throw new InvalidOperationException("Cannot bind to an unmounted node.");
-
                 if (node.Element != null && !node.Element.Equals(element))
                     throw new ArgumentException($"Cannot bind element {element} to a node previously bound to element {node.Element}.");
 
@@ -194,8 +191,7 @@ namespace ofreact
         /// The current context value is determined by the value prop of the nearest <see cref="ofContext{TContext}"/> above this element in the tree.
         /// When the nearest <see cref="ofContext{TContext}"/> above the element updates, this hook will trigger a rerender with the latest context value.
         /// </remarks>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        /// <typeparam name="T">Type of context object.</typeparam>
         protected T UseContext<T>()
         {
             foreach (var context in Node.Root.Contexts)
@@ -242,7 +238,11 @@ namespace ofreact
 
             obj.Current ??= Node.CreateChild();
 
-            UseEffect(() => () => obj.Current?.Dispose(), null);
+            UseEffect(() => () =>
+            {
+                obj.Current?.Dispose();
+                obj.Current = null;
+            }, null);
 
             return obj;
         }
@@ -260,6 +260,8 @@ namespace ofreact
                 if (obj.Current != null)
                     foreach (var node in obj.Current)
                         node?.Dispose();
+
+                obj.Current = Array.Empty<ofNode>();
             }, null);
 
             return obj;

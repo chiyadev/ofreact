@@ -25,14 +25,18 @@ namespace ofreact
         /// Named states are lowercase string keys.
         /// Hook states are string keys prefixed with ^ (caret character) followed by zero-based hook index.
         /// </remarks>
-        public Dictionary<string, object> State { get; } = new Dictionary<string, object>();
+        public Dictionary<string, object> State { get; } = new Dictionary<string, object>(0);
+
+        /// <summary>
+        /// List of effects specific to this node.
+        /// </summary>
+        public HashSet<EffectInfo> LocalEffects { get; } = new HashSet<EffectInfo>(0);
 
         /// <summary>
         /// Gets the last element bound to this node.
         /// </summary>
         public ofElement Element { get; internal set; }
 
-        internal bool IsUnmounted;
         internal int? HookCount; // used for hook validation
 
         internal ofNode(ofNode parent)
@@ -44,8 +48,6 @@ namespace ofreact
         /// <summary>
         /// Renders the given element.
         /// </summary>
-        /// <param name="element"></param>
-        /// <returns></returns>
         public virtual bool RenderElement(ofElement element)
         {
             if (!Root.RerenderNodes.Remove(this) && InternalReflection.PropsEqual(element, Element))
@@ -67,37 +69,26 @@ namespace ofreact
         /// Marks this node for rerender.
         /// </summary>
         /// <returns>True if this node was previously unmarked.</returns>
-        public bool Invalidate()
-        {
-            if (IsUnmounted)
-                return false;
-
-            return Root.RerenderNodes.Add(this);
-        }
+        public bool Invalidate() => Root.RerenderNodes.Add(this);
 
         /// <summary>
         /// Creates an <see cref="ofNode"/> that is a child of this node.
         /// </summary>
-        public ofNode CreateChild() => new ofNode(this) { IsUnmounted = IsUnmounted };
+        public ofNode CreateChild() => new ofNode(this);
 
         /// <summary>
-        /// Disposes this node (unmount).
+        /// Disposes this node.
         /// </summary>
-        public void Dispose()
+        public virtual void Dispose()
         {
-            if (Element != null)
-            {
-                // do effect cleanups
-                foreach (var state in State.Values)
-                {
-                    if (state is EffectInfo effect)
-                        effect.Cleanup();
-                }
+            // do effect cleanups
+            foreach (var effect in LocalEffects)
+                effect.Cleanup();
 
-                Element = null;
-            }
+            LocalEffects.Clear();
+            State.Clear();
 
-            IsUnmounted = true;
+            Element = null;
         }
     }
 
@@ -109,17 +100,17 @@ namespace ofreact
         /// <summary>
         /// List of context objects.
         /// </summary>
-        public Stack<object> Contexts { get; } = new Stack<object>();
+        public Stack<object> Contexts { get; } = new Stack<object>(128);
 
         /// <summary>
         /// Set of <see cref="ofNode"/> that are marked for rerender.
         /// </summary>
-        public HashSet<ofNode> RerenderNodes { get; } = new HashSet<ofNode>();
+        public HashSet<ofNode> RerenderNodes { get; } = new HashSet<ofNode>(512);
 
         /// <summary>
         /// List of effects to be triggered after render.
         /// </summary>
-        public Queue<EffectInfo> PendingEffects { get; } = new Queue<EffectInfo>();
+        public Queue<EffectInfo> PendingEffects { get; } = new Queue<EffectInfo>(1024);
 
         /// <summary>
         /// Creates a new <see cref="ofNodeRoot"/>.
@@ -129,11 +120,20 @@ namespace ofreact
             Root = this;
         }
 
-        IEnumerable<ofNode> GetRerenderNodes() // copy to array for iteration
+        bool GetRerenderNodes(out ofNode[] nodes)
         {
-            var array = new ofNode[RerenderNodes.Count];
-            RerenderNodes.CopyTo(array);
-            return array;
+            var count = RerenderNodes.Count;
+
+            if (count == 0)
+            {
+                nodes = null;
+                return false;
+            }
+
+            nodes = new ofNode[count];
+            RerenderNodes.CopyTo(nodes);
+
+            return true;
         }
 
         /// <summary>
@@ -147,8 +147,9 @@ namespace ofreact
             do
             {
                 // if there are nodes skipped due to optimization somewhere in the tree, render them too
-                foreach (var node in GetRerenderNodes())
-                    node.RenderElement(node.Element);
+                if (GetRerenderNodes(out var nodes))
+                    foreach (var node in nodes)
+                        node.RenderElement(node.Element);
 
                 // run effects
                 while (PendingEffects.TryDequeue(out var effect))

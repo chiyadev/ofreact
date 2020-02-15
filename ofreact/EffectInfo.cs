@@ -21,6 +21,8 @@ namespace ofreact
             _dependencies = dependencies;
             _effect       = effect;
 
+            element.Node.LocalEffects.Add(this);
+
             if (pending)
                 element.Node.Root.PendingEffects.Enqueue(this);
 
