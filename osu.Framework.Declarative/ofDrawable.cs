@@ -63,7 +63,7 @@ namespace osu.Framework.Declarative
             Style?.Invoke(drawable);
 
             // render drawable
-            var explicitDepth = UseRef(drawableCreated && drawable.Depth == 0).Current;
+            var explicitDepth = UseRef(drawableCreated && drawable.Depth != 0).Current;
 
             context.Render(drawable, explicitDepth);
 
