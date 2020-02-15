@@ -27,7 +27,7 @@ namespace ofreact.Tests
             Assert.That(Element1.CurrentCount, Is.EqualTo(0));
             Assert.That(Element1.CurrentString, Is.Null);
 
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element1());
 
@@ -60,7 +60,7 @@ namespace ofreact.Tests
         [Test]
         public void InitialValue()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element2());
 

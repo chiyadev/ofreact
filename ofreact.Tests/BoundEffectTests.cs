@@ -22,7 +22,7 @@ namespace ofreact.Tests
         [Test]
         public void EveryRender()
         {
-            var node = new ofNodeRoot();
+            var node = new ofRootNode();
 
             Assert.That(Element1.Effect, Is.EqualTo(0));
             Assert.That(Element1.Cleanup, Is.EqualTo(0));
@@ -75,7 +75,7 @@ namespace ofreact.Tests
         [Test]
         public void DependencyChange()
         {
-            var node = new ofNodeRoot();
+            var node = new ofRootNode();
 
             Assert.That(Element2.Effect, Is.EqualTo(0));
             Assert.That(Element2.Cleanup, Is.EqualTo(0));
@@ -136,7 +136,7 @@ namespace ofreact.Tests
         [Test]
         public void OnlyMount()
         {
-            var node = new ofNodeRoot();
+            var node = new ofRootNode();
 
             Assert.That(Element3.Effect, Is.EqualTo(0));
             Assert.That(Element3.Cleanup, Is.EqualTo(0));
@@ -175,7 +175,7 @@ namespace ofreact.Tests
         [Test]
         public void NoStaticFieldDep()
         {
-            var node = new ofNodeRoot();
+            var node = new ofRootNode();
 
             Assert.That(() => node.RenderElement(new Element4()), Throws.InstanceOf<ArgumentException>());
         }
@@ -191,7 +191,7 @@ namespace ofreact.Tests
         [Test]
         public void PrivateFieldDep()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element5());
         }
@@ -229,7 +229,7 @@ namespace ofreact.Tests
         [Test]
         public void BindUnwrappedParameter()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element6());
         }
@@ -254,7 +254,7 @@ namespace ofreact.Tests
         [Test]
         public void BindParameter()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element7());
         }

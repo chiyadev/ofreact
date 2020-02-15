@@ -26,7 +26,7 @@ namespace ofreact.Tests
         [Test]
         public void MismatchingType()
         {
-            var node = new ofNodeRoot();
+            var node = new ofRootNode();
 
             node.RenderElement(new Element1());
 

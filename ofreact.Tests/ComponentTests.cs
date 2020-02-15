@@ -49,7 +49,7 @@ namespace ofreact.Tests
         [Test]
         public void RecreateWrapperNode()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element1());
 

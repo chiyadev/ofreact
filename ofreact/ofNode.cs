@@ -11,7 +11,7 @@ namespace ofreact
         /// <summary>
         /// <see cref="ofNode"/> that is the root of the tree.
         /// </summary>
-        public ofNodeRoot Root { get; internal set; }
+        public ofRootNode Root { get; internal set; }
 
         /// <summary>
         /// <see cref="ofNode"/> that contains this node.
@@ -95,7 +95,7 @@ namespace ofreact
     /// <summary>
     /// Represents the root node of a declarative tree.
     /// </summary>
-    public class ofNodeRoot : ofNode
+    public class ofRootNode : ofNode
     {
         /// <summary>
         /// List of context objects.
@@ -113,9 +113,9 @@ namespace ofreact
         public Queue<EffectInfo> PendingEffects { get; } = new Queue<EffectInfo>(1024);
 
         /// <summary>
-        /// Creates a new <see cref="ofNodeRoot"/>.
+        /// Creates a new <see cref="ofRootNode"/>.
         /// </summary>
-        public ofNodeRoot() : base(null)
+        public ofRootNode() : base(null)
         {
             Root = this;
         }

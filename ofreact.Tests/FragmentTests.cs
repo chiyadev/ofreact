@@ -22,7 +22,7 @@ namespace ofreact.Tests
         [Test]
         public void RenderAll()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             var context = new RenderCountContext();
 
@@ -61,7 +61,7 @@ namespace ofreact.Tests
         [Test]
         public void Complex()
         {
-            var node = new ofNodeRoot();
+            var node = new ofRootNode();
 
             Assert.That(MountCounting.Mount, Is.EqualTo(0));
             Assert.That(MountCounting.Unmount, Is.EqualTo(0));
@@ -121,7 +121,7 @@ namespace ofreact.Tests
         [Test]
         public void IgnoreNullChild()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new[]
             {

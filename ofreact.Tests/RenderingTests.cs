@@ -27,7 +27,7 @@ namespace ofreact.Tests
         [Test]
         public void SkipIfSameProps()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element1("test"));
             node.RenderElement(new Element1("test"));
@@ -55,7 +55,7 @@ namespace ofreact.Tests
         [Test]
         public void RenderIfDifferentProps()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element2("test1"));
 

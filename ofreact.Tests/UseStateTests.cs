@@ -27,7 +27,7 @@ namespace ofreact.Tests
         [Test]
         public void StateUpdateTriggersRerender()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element1());
 
@@ -79,7 +79,7 @@ namespace ofreact.Tests
         [Test]
         public void StateUpdateTriggersPartialTreeRerender()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element2());
 

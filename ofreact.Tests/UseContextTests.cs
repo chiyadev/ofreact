@@ -49,7 +49,7 @@ namespace ofreact.Tests
         [Test]
         public void MultiLevelNestedContext()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element1());
 
@@ -94,7 +94,7 @@ namespace ofreact.Tests
         [Test]
         public void NearestContext()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element2());
 
@@ -120,7 +120,7 @@ namespace ofreact.Tests
         [Test]
         public void NonexistentContext()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             node.RenderElement(new Element3());
 
@@ -157,7 +157,7 @@ namespace ofreact.Tests
         [Test]
         public void DisposeContext()
         {
-            using var node = new ofNodeRoot();
+            using var node = new ofRootNode();
 
             Assert.That(DisposableContext.Disposed, Is.False);
 

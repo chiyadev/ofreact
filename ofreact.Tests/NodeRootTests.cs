@@ -12,7 +12,7 @@ namespace ofreact.Tests
         [Test]
         public void MismatchingBind()
         {
-            var node = new ofNodeRoot();
+            var node = new ofRootNode();
 
             node.RenderElement(new Element1());
 
