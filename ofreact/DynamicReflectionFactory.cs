@@ -31,7 +31,7 @@ namespace ofreact
                         var x = field.GetValue(a);
                         var y = field.GetValue(b);
 
-                        return x != y && (x == null || !x.Equals(y));
+                        return x == y || x != null && x.Equals(y);
                     };
                 }
 
