@@ -82,7 +82,7 @@ namespace ofreact
                     }
                     catch
                     {
-                        DisposeInternal();
+                        Dispose();
                         throw;
                     }
             }
@@ -92,29 +92,6 @@ namespace ofreact
             /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Dispose()
-            {
-                try
-                {
-                    if (_current._hooks != null && InternalConstants.ValidateHooks)
-                    {
-                        var node = _current.Node;
-
-                        if (node.HookCount == null)
-                            node.HookCount = _current._hooks;
-
-                        else if (node.HookCount != _current._hooks)
-                            throw new InvalidOperationException($"The number of hooks ({_current._hooks}) does not match with the previous render ({node.HookCount}). " +
-                                                                "See https://reactjs.org/docs/hooks-rules.html for rules about hooks.");
-                    }
-                }
-                finally
-                {
-                    DisposeInternal();
-                }
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            void DisposeInternal()
             {
                 _current.Node   = null;
                 _current._hooks = null;
@@ -140,6 +117,19 @@ namespace ofreact
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T DefineHook<T>(Func<ofNode, T> hook) => hook(_currentElement?.Node);
+
+        internal void ValidateHooks()
+        {
+            if (_hooks != null && InternalConstants.ValidateHooks)
+            {
+                if (Node.HookCount == null)
+                    Node.HookCount = _hooks;
+
+                else if (Node.HookCount != _hooks)
+                    throw new InvalidOperationException($"The number of hooks ({_hooks}) does not match with the previous render ({Node.HookCount}). " +
+                                                        "See https://reactjs.org/docs/hooks-rules.html for rules about hooks.");
+            }
+        }
 
         int? _hooks;
 

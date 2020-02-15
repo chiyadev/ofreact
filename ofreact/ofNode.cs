@@ -60,7 +60,14 @@ namespace ofreact
                 return false;
 
             using (element.Bind(this, true, true))
-                return element.RenderSubtree();
+            {
+                var result = element.RenderSubtree();
+
+                if (result)
+                    element.ValidateHooks();
+
+                return result;
+            }
         }
 
         /// <summary>
