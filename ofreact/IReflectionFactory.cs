@@ -16,8 +16,18 @@ namespace ofreact
 
     public delegate object[] ElementDependencyListBuilderDelegate(ofElement element);
 
+    /// <summary>
+    /// Used internally within ofreact for all reflection-related logic.
+    /// </summary>
     public static class InternalReflection
     {
+        /// <summary>
+        /// Factory to use to generate factory methods.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="ExpressionTreeReflectionFactory"/> is used by default.
+        /// In environments without IL emit support, <see cref="DynamicReflectionFactory"/> is used instead.
+        /// </remarks>
         public static IReflectionFactory Factory { get; set; }
 
         static InternalReflection()
@@ -30,6 +40,9 @@ namespace ofreact
         static readonly ConcurrentDictionary<Type, PropsEqualityComparerDelegate> _propsEqualityComparer = new ConcurrentDictionary<Type, PropsEqualityComparerDelegate>();
         static readonly PropsEqualityComparerDelegate _emptyPropsEqualityComparer = (a, b) => true;
 
+        /// <summary>
+        /// Returns true if all props of element <paramref name="a"/> and <paramref name="b"/> are equal.
+        /// </summary>
         public static bool PropsEqual(ofElement a, ofElement b)
         {
             if (ReferenceEquals(a, b))
@@ -51,6 +64,9 @@ namespace ofreact
 
         static readonly ConcurrentDictionary<Type, ElementBinderDelegate> _elementBinder = new ConcurrentDictionary<Type, ElementBinderDelegate>();
 
+        /// <summary>
+        /// Binds attribute-bound members of the given element to the element's <see cref="ofElement.Node"/>.
+        /// </summary>
         public static void BindElement(ofElement element)
         {
             var type = element.GetType();
@@ -107,6 +123,11 @@ namespace ofreact
 
         static readonly ConcurrentDictionary<Type, ContainerObjectFactoryDelegate> _containerObjectFactory = new ConcurrentDictionary<Type, ContainerObjectFactoryDelegate>();
 
+        /// <summary>
+        /// Returns a factory method for creating a <see cref="RefObject{T}"/>.
+        /// </summary>
+        /// <param name="type">Type of the referenced value or ref object.</param>
+        /// <param name="wrapped">True if the given type was wrapped in <see cref="RefObject{T}"/> as bound generic.</param>
         public static ContainerObjectFactoryDelegate GetRefObjectFactory(Type type, out bool wrapped)
         {
             if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(RefObject<>))
@@ -126,6 +147,11 @@ namespace ofreact
             return _containerObjectFactory[type] = Factory.GetContainerObjectFactory(type);
         }
 
+        /// <summary>
+        /// Returns a factory method for creating a <see cref="StateObject{T}"/>.
+        /// </summary>
+        /// <param name="type">Type of the state value or state object.</param>
+        /// <param name="wrapped">True if the given type was wrapped in <see cref="StateObject{T}"/> as bound generic.</param>
         public static ContainerObjectFactoryDelegate GetStateObjectFactory(Type type, out bool wrapped)
         {
             if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(StateObject<>))
@@ -194,6 +220,9 @@ namespace ofreact
         }
     }
 
+    /// <summary>
+    /// Used internally within ofreact to generate factory methods.
+    /// </summary>
     public interface IReflectionFactory
     {
         PropsEqualityComparerDelegate GetPropsEqualityComparer(Type type);
