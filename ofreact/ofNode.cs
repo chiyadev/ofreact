@@ -166,6 +166,30 @@ namespace ofreact
         }
 
         /// <summary>
+        /// Finds the nearest context object from ancestor nodes assignable to the given type.
+        /// </summary>
+        /// <param name="type">Type of the context object.</param>
+        /// <returns>The found context object or default value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ContextInfo FindNearestContext(Type type)
+        {
+            var node = this;
+
+            do
+            {
+                var context = node._context;
+
+                if (type.IsInstanceOfType(context?.Value))
+                    return context;
+
+                node = node.Parent;
+            }
+            while (node != null);
+
+            return default;
+        }
+
+        /// <summary>
         /// Marks this node for rerender.
         /// </summary>
         /// <returns>True if this node was previously unmarked.</returns>
