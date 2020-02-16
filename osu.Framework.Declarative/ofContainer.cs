@@ -145,7 +145,7 @@ namespace osu.Framework.Declarative
             var nodeRef = UseChild();
             var node    = nodeRef.Current ??= Node.CreateChild();
 
-            return node.RenderElement(new ofContainerContext(Drawable, children: Children));
+            return node.RenderElement(new ofPortal(Drawable, children: Children));
         }
 
         public IEnumerator<ofElement> GetEnumerator() => Children.GetEnumerator();

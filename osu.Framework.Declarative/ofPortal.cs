@@ -7,14 +7,18 @@ using osu.Framework.Graphics.Containers;
 namespace osu.Framework.Declarative
 {
     /// <summary>
-    /// Makes an existing <see cref="Container{Drawable}"/> in the scene graph available for all descendants to render to.
+    /// Provides a first-class way to render children into a <see cref="Container{Drawable}"/> that exists outside the scene graph of the parent component.
     /// </summary>
-    public class ofContainerContext : ofContext<IDrawableRenderContext>
+    /// <remarks>
+    /// A typical use case for portals is when you need the children to visually "break out" of the parent container. For example, dialogs, hovercards, and tooltips.
+    /// Portals can also be used to bootstrap any ofreact scene graph from a <see cref="Drawable"/>.
+    /// </remarks>
+    public class ofPortal : ofContext<IDrawableRenderContext>
     {
         /// <summary>
-        /// Creates a new <see cref="ofContainerContext"/>.
+        /// Creates a new <see cref="ofPortal"/>.
         /// </summary>
-        public ofContainerContext(Container<Drawable> container, object key = default, IEnumerable<ofElement> children = default) : base(key, children, new Context(container)) { }
+        public ofPortal(Container<Drawable> container, object key = default, IEnumerable<ofElement> children = default) : base(key, children, new Context(container)) { }
 
         sealed class Context : IDrawableRenderContext
         {

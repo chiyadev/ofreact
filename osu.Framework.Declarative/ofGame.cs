@@ -114,7 +114,7 @@ namespace osu.Framework.Declarative
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            void RenderRoot() => _node.RenderElement(new ofContainerContext(this, children: _game.Children));
+            void RenderRoot() => _node.RenderElement(new ofPortal(this, children: _game.Children));
 
             protected override void Update() => RenderRoot();
 
