@@ -57,9 +57,17 @@ namespace ofreact
                 return false;
 
             if (_propsEqualityComparer.TryGetValue(type, out var comparer))
-                return comparer(a, b);
+                return comparer?.Invoke(a, b) ?? true;
 
-            return (_propsEqualityComparer[type] = Factory.GetPropsEqualityComparer(type) ?? _emptyPropsEqualityComparer)(a, b);
+            var fields = type.GetAllFields().Where(f => f.IsDefined(typeof(PropAttribute), true)).ToArray();
+
+            if (fields.Length == 0)
+            {
+                _propsEqualityComparer[type] = null;
+                return true;
+            }
+
+            return (_propsEqualityComparer[type] = Factory.GetPropsEqualityComparer(type, fields) ?? _emptyPropsEqualityComparer)?.Invoke(a, b) ?? true;
         }
 
         static readonly ConcurrentDictionary<Type, ElementBinderDelegate> _elementBinder = new ConcurrentDictionary<Type, ElementBinderDelegate>();
@@ -225,7 +233,7 @@ namespace ofreact
     /// </summary>
     public interface IReflectionFactory
     {
-        PropsEqualityComparerDelegate GetPropsEqualityComparer(Type type);
+        PropsEqualityComparerDelegate GetPropsEqualityComparer(Type type, FieldInfo[] fields);
         ElementBinderDelegate GetElementBinder(Type type, IElementFieldBinder[] fields, IElementMethodInvoker[] methods);
         ContainerObjectFactoryDelegate GetContainerObjectFactory(Type type);
         ElementMethodInvokerDelegate GetElementMethodInvoker(Type type, MethodInfo method, IElementMethodArgumentProvider[] arguments);

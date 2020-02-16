@@ -15,14 +15,14 @@ namespace ofreact
 
         ExpressionTreeReflectionFactory() { }
 
-        public PropsEqualityComparerDelegate GetPropsEqualityComparer(Type type)
+        public PropsEqualityComparerDelegate GetPropsEqualityComparer(Type type, FieldInfo[] fields)
         {
             var x = Expression.Parameter(type, "x");
             var y = Expression.Parameter(type, "y");
 
             var body = null as Expression;
 
-            foreach (var field in type.GetAllFields().Where(f => f.IsDefined(typeof(PropAttribute), true)))
+            foreach (var field in fields)
             {
                 var other = Expression.Equal(
                     Expression.Field(x, field),

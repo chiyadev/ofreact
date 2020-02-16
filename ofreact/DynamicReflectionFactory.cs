@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace ofreact
@@ -13,10 +12,8 @@ namespace ofreact
 
         DynamicReflectionFactory() { }
 
-        public PropsEqualityComparerDelegate GetPropsEqualityComparer(Type type)
+        public PropsEqualityComparerDelegate GetPropsEqualityComparer(Type type, FieldInfo[] fields)
         {
-            var fields = type.GetAllFields().Where(f => f.IsDefined(typeof(PropAttribute), true)).ToArray();
-
             switch (fields.Length)
             {
                 case 0:
