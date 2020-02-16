@@ -251,6 +251,15 @@ render:
                   set: true
 ```
 
+### Using ofreact not for osu!framework
+
+ofreact is designed for maximum extensibility, so you can use all of ofreact features without osu!framework-specific features.
+
+- Project `ofreact` implements the core functionality including rendering, state management, hooks, etc. This project has no dependency except .NET Standard 2.1.
+- Project `osu.Framework.Declarative` provides Drawable-wrappers and other elements that bootstrap ofreact in the osu!framework scene graph.
+
+In fact, `osu.Framework.Declarative` is simply an extension of the core ofreact project. It is entirely possible to write declarative components for another game library based on ofreact.
+
 ## TODO
 
 - **YAML-based components** (attempt at [this issue](https://github.com/ppy/osu-framework/issues/3056))
