@@ -13,7 +13,7 @@ namespace ofreact
         internal EffectInfo() { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Set(ofNode node, EffectDelegate effect, object[] dependencies)
+        internal bool Set(ofNode node, EffectDelegate effect, object[] dependencies)
         {
             var pending = _node == null || dependencies?.Length == 0 || !DepsEqual(_dependencies, dependencies);
 
@@ -51,7 +51,7 @@ namespace ofreact
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Run()
+        public void Invoke()
         {
             Cleanup();
 

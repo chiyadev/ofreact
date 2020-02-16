@@ -15,7 +15,7 @@ namespace ofreact
     /// <typeparam name="T">Type of the value.</typeparam>
     public sealed class RefObject<T> : IContainerObject
     {
-        readonly Dictionary<string, object> _dict;
+        readonly IDictionary<string, object> _dict;
         readonly string _key;
 
         /// <summary>

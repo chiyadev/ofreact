@@ -19,6 +19,9 @@ namespace ofreact
         /// </summary>
         public ofNode Parent { get; }
 
+        Dictionary<string, object> _state;
+        HashSet<EffectInfo> _effects;
+
         /// <summary>
         /// Dictionary of stateful variables.
         /// </summary>
@@ -26,12 +29,17 @@ namespace ofreact
         /// Named states are lowercase string keys.
         /// Hook states are string keys prefixed with ^ (caret character) followed by zero-based hook index.
         /// </remarks>
-        public Dictionary<string, object> State { get; } = new Dictionary<string, object>(0);
+        public IDictionary<string, object> State => _state ??= new Dictionary<string, object>(1);
 
         /// <summary>
         /// List of effects specific to this node.
         /// </summary>
-        public HashSet<EffectInfo> LocalEffects { get; } = new HashSet<EffectInfo>(0);
+        public ISet<EffectInfo> LocalEffects => _effects ??= new HashSet<EffectInfo>(1);
+
+        /// <summary>
+        /// Context object specific to this node.
+        /// </summary>
+        public object LocalContext { get; set; }
 
         /// <summary>
         /// If true, this node will always be considered as invalid and therefore eligible for rerender.
@@ -43,8 +51,8 @@ namespace ofreact
         /// </summary>
         public ofElement Element { get; internal set; }
 
-        internal int? Hooks;
-        int? _lastHooks;
+        int? _hooks;
+        int? _lastHook;
 
         internal ofNode(ofNode parent)
         {
@@ -60,21 +68,31 @@ namespace ofreact
             if (!Root.RerenderNodes.Remove(this) && !AlwaysInvalid && InternalReflection.PropsEqual(element, Element))
                 return false;
 
-            using (element.Bind(this, true, true))
+            // enable hooks
+            _hooks = 0;
+
+            try
             {
-                var result = element.RenderSubtree();
-
-                if (result && InternalConstants.ValidateHooks)
+                using (element.Bind(this))
                 {
-                    if (_lastHooks == null)
-                        _lastHooks = Hooks;
+                    var result = element.RenderSubtree();
 
-                    else if (_lastHooks != Hooks)
-                        throw new InvalidOperationException($"The number of hooks ({Hooks}) does not match with the previous render ({_lastHooks}). " +
-                                                            "See https://reactjs.org/docs/hooks-rules.html for rules about hooks.");
+                    if (result && InternalConstants.ValidateHooks)
+                    {
+                        if (_lastHook == null)
+                            _lastHook = _hooks;
+
+                        else if (_lastHook != _hooks)
+                            throw new InvalidOperationException($"The number of hooks ({_hooks}) does not match with the previous render ({_lastHook}). " +
+                                                                "See https://reactjs.org/docs/hooks-rules.html for rules about hooks.");
+                    }
+
+                    return result;
                 }
-
-                return result;
+            }
+            finally
+            {
+                _hooks = null;
             }
         }
 
@@ -108,6 +126,43 @@ namespace ofreact
         public RefObject<T> GetNamedRef<T>(string key, T initialValue = default) => new RefObject<T>(this, key, initialValue);
 
         /// <summary>
+        /// Returns a mutable <see cref="RefObject{T}"/> used for hooks holding a strongly typed variable that is persisted across renders.
+        /// </summary>
+        /// <param name="initialValue">Initial value of the referenced value.</param>
+        /// <param name="index">Zero-based index of the hook, or null to use auto-incrementing index.</param>
+        /// <typeparam name="T">Type of the referenced value.</typeparam>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public RefObject<T> GetHookRef<T>(T initialValue = default, int? index = default)
+        {
+            if (_hooks == null)
+                throw new InvalidOperationException($"Cannot use hooks outside the rendering method ({Element.GetType()}).");
+
+            return new RefObject<T>(this, $"^{index ?? _hooks++}", initialValue);
+        }
+
+        /// <summary>
+        /// Finds the nearest context object from ancestor nodes assignable to the given type.
+        /// </summary>
+        /// <typeparam name="T">Type of the context object.</typeparam>
+        /// <returns>The found context object or default value.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T FindNearestContext<T>()
+        {
+            var node = this;
+
+            do
+            {
+                if (node.LocalContext is T context)
+                    return context;
+
+                node = node.Parent;
+            }
+            while (node != null);
+
+            return default;
+        }
+
+        /// <summary>
         /// Marks this node for rerender.
         /// </summary>
         /// <returns>True if this node was previously unmarked.</returns>
@@ -123,11 +178,12 @@ namespace ofreact
         public virtual void Dispose()
         {
             // do effect cleanups
-            foreach (var effect in LocalEffects)
-                effect.Cleanup();
+            if (_effects != null)
+                foreach (var effect in _effects)
+                    effect.Cleanup();
 
-            LocalEffects.Clear();
-            State.Clear();
+            _effects = null;
+            _state   = null;
 
             Element = null;
         }
@@ -138,11 +194,6 @@ namespace ofreact
     /// </summary>
     public class ofRootNode : ofNode
     {
-        /// <summary>
-        /// List of context objects.
-        /// </summary>
-        public Stack<object> Contexts { get; } = new Stack<object>(128);
-
         /// <summary>
         /// Set of <see cref="ofNode"/> that are marked for rerender.
         /// </summary>
@@ -197,7 +248,7 @@ namespace ofreact
                 // run effects
                 while (PendingEffects.TryDequeue(out var effect))
                 {
-                    effect.Run();
+                    effect.Invoke();
                     result = true;
                 }
             }
@@ -210,7 +261,6 @@ namespace ofreact
         {
             base.Dispose();
 
-            Contexts.Clear();
             RerenderNodes.Clear();
             PendingEffects.Clear();
         }

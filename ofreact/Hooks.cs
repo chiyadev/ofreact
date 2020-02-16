@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace ofreact
 {
@@ -12,15 +13,8 @@ namespace ofreact
         /// </remarks>
         /// <param name="initialValue">Initial value of the referenced value.</param>
         /// <typeparam name="T">Type of the referenced value.</typeparam>
-        public static RefObject<T> UseRef<T>(T initialValue = default) => ofElement.DefineHook(n => UseRefInternal(n, initialValue));
-
-        internal static RefObject<T> UseRefInternal<T>(ofNode node, T initial)
-        {
-            if (node.Hooks == null)
-                throw new InvalidOperationException($"Cannot use hooks outside the rendering method ({node.Element.GetType()}).");
-
-            return node.GetNamedRef($"^{node.Hooks++}", initial);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static RefObject<T> UseRef<T>(T initialValue = default) => ofElement.DefineHook(n => n.GetHookRef(initialValue));
 
         /// <summary>
         /// Returns a stateful value and a function to update it.
@@ -31,11 +25,13 @@ namespace ofreact
         /// </remarks>
         /// <param name="initialValue">Initial value of the variable.</param>
         /// <typeparam name="T">Type of the variable.</typeparam>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static (T, Action<T>) UseState<T>(T initialValue = default) => ofElement.DefineHook(n => UseStateInternal(n, initialValue));
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static (T, Action<T>) UseStateInternal<T>(ofNode node, T initial)
         {
-            var obj = UseRefInternal(node, initial);
+            var obj = node.GetHookRef(initial);
 
             return (obj.Current, value =>
             {
@@ -53,27 +49,8 @@ namespace ofreact
         /// When the nearest <see cref="ofContext{TContext}"/> above the element updates, this hook will trigger a rerender with the latest context value.
         /// </remarks>
         /// <typeparam name="T">Type of context object.</typeparam>
-        public static T UseContext<T>() => ofElement.DefineHook(UseContextInternal<T>);
-
-        internal static T UseContextInternal<T>(ofNode node)
-        {
-            foreach (var context in node.Root.Contexts)
-            {
-                if (context is T value)
-                    return value;
-            }
-
-            return default;
-        }
-
-        /// <inheritdoc cref="UseEffect(EffectDelegate,object[])"/>
-        public static void UseEffect(Action callback, params object[] dependencies) => ofElement.DefineHook(n => UseEffectInternal(n, callback, dependencies));
-
-        internal static void UseEffectInternal(ofNode node, Action callback, object[] dependencies) => UseEffectInternal(node, () =>
-        {
-            callback?.Invoke();
-            return null;
-        }, dependencies);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T UseContext<T>() => ofElement.DefineHook(n => n.FindNearestContext<T>());
 
         /// <summary>
         /// Accepts a function that contains imperative, possibly effectful code.
@@ -88,46 +65,37 @@ namespace ofreact
         /// Conceptually, these are passed as arguments to the callback function.
         /// An empty list will trigger this effect on every render (equivalent to undefined), whereas null will trigger this effect only once on mount (equivalent to []).
         /// </param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void UseEffect(EffectDelegate callback, params object[] dependencies) => ofElement.DefineHook(n => UseEffectInternal(n, callback, dependencies));
 
+        /// <inheritdoc cref="UseEffect(EffectDelegate,object[])"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void UseEffect(Action callback, params object[] dependencies) => UseEffect(() =>
+        {
+            callback?.Invoke();
+            return null;
+        }, dependencies);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void UseEffectInternal(ofNode node, EffectDelegate callback, object[] dependencies)
         {
-            var obj    = UseRefInternal<EffectInfo>(node, null);
+            var obj    = node.GetHookRef<EffectInfo>();
             var effect = obj.Current ??= new EffectInfo();
 
             effect.Set(node, callback, dependencies);
-        }
-
-        /// <inheritdoc cref="UseChildren"/>
-        public static RefObject<ofNode> UseChild() => ofElement.DefineHook(UseChildInternal);
-
-        internal static RefObject<ofNode> UseChildInternal(ofNode node)
-        {
-            var obj = UseRefInternal<ofNode>(node, null);
-
-            UseEffectInternal(node, () => () =>
-            {
-                var current = obj.Current;
-
-                if (current != null)
-                {
-                    current.Dispose();
-                    obj.Current = null;
-                }
-            }, null);
-
-            return obj;
         }
 
         /// <summary>
         /// Returns a <see cref="RefObject{T}"/> of <see cref="ofNode"/>s.
         /// This is a helper hook for <see cref="UseRef{T}"/> to hold the child nodes and <see cref="UseEffect(EffectDelegate,object[])"/> to dispose them on unmount.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RefObject<ofNode[]> UseChildren() => ofElement.DefineHook(UseChildrenInternal);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static RefObject<ofNode[]> UseChildrenInternal(ofNode node)
         {
-            var obj = UseRefInternal(node, Array.Empty<ofNode>());
+            var obj = node.GetHookRef(Array.Empty<ofNode>());
 
             UseEffectInternal(node, () => () =>
             {
@@ -138,6 +106,30 @@ namespace ofreact
                         child?.Dispose();
 
                 obj.Current = Array.Empty<ofNode>();
+            }, null);
+
+            return obj;
+        }
+
+        /// <inheritdoc cref="UseChildren"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static RefObject<ofNode> UseChild() => ofElement.DefineHook(UseChildInternal);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static RefObject<ofNode> UseChildInternal(ofNode node)
+        {
+            var obj = node.GetHookRef<ofNode>();
+
+            UseEffectInternal(node, () => () =>
+            {
+                var current = obj.Current;
+
+                if (current != null)
+                {
+                    current.Dispose();
+
+                    obj.Current = null;
+                }
             }, null);
 
             return obj;

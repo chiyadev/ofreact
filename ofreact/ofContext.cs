@@ -7,7 +7,7 @@ namespace ofreact
     /// Makes a context object available to all descendants of this element.
     /// </summary>
     /// <remarks>
-    /// Contexts objects that implement <see cref="IDisposable"/> will be disposed automatically after this element is rendered.
+    /// Contexts objects that implement <see cref="IDisposable"/> will be disposed automatically.
     /// </remarks>
     /// <typeparam name="TContext">Type of context object.</typeparam>
     public class ofContext<TContext> : ofFragment
@@ -24,19 +24,17 @@ namespace ofreact
 
         protected internal override bool RenderSubtree()
         {
-            var stack = Node.Root.Contexts;
-
-            stack.Push(Value);
-
-            try
+            UseEffect(() =>
             {
-                return base.RenderSubtree();
-            }
-            finally
-            {
-                if (stack.Pop() is IDisposable disposable)
-                    disposable.Dispose();
-            }
+                if (Value is IDisposable disposable)
+                    return disposable.Dispose;
+
+                return null;
+            }, Value);
+
+            Node.LocalContext = Value;
+
+            return base.RenderSubtree();
         }
     }
 }

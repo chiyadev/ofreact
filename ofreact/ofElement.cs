@@ -47,11 +47,9 @@ namespace ofreact
         /// Binds to the given node.
         /// </summary>
         /// <param name="node">Node to bind to.</param>
-        /// <param name="attributes">If true, do attribute-based instance member binding.</param>
-        /// <param name="hooks">If true, allow hooks within this scope.</param>
         /// <returns>A value that will unbind when disposed.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BindScope Bind(ofNode node, bool attributes = false, bool hooks = false) => new BindScope(this, node, attributes, hooks);
+        public BindScope Bind(ofNode node) => new BindScope(this, node);
 
         /// <summary>
         /// Represents the scope in which an element is bound to a node.
@@ -61,7 +59,7 @@ namespace ofreact
             readonly ofElement _current;
             readonly ofElement _last;
 
-            internal BindScope(ofElement element, ofNode node, bool attributes, bool hooks)
+            internal BindScope(ofElement element, ofNode node)
             {
                 if (element.Node != null)
                     throw new InvalidOperationException("Element is already bound to another node.");
@@ -72,19 +70,15 @@ namespace ofreact
                 _last    = _currentElement;
                 _current = _currentElement = element;
 
-                if (hooks)
-                    node.Hooks = 0;
-
-                if (attributes)
-                    try
-                    {
-                        InternalReflection.BindElement(element);
-                    }
-                    catch
-                    {
-                        Dispose();
-                        throw;
-                    }
+                try
+                {
+                    InternalReflection.BindElement(element);
+                }
+                catch
+                {
+                    Dispose();
+                    throw;
+                }
             }
 
             /// <summary>
@@ -93,8 +87,7 @@ namespace ofreact
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Dispose()
             {
-                _current.Node.Hooks = null;
-                _current.Node       = null;
+                _current.Node = null;
 
                 _currentElement = _last;
             }
@@ -111,6 +104,7 @@ namespace ofreact
         /// </summary>
         /// <param name="render">Rendering function.</param>
         /// <returns><see cref="ofElement"/> that invokes <paramref name="render"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ofElement DefineComponent(Func<ofElement> render) => new FunctionalComponentWrapper(render);
 
         sealed class FunctionalComponentWrapper : ofComponent
@@ -139,7 +133,7 @@ namespace ofreact
 
         /// <inheritdoc cref="Hooks.UseRef{T}"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected RefObject<T> UseRef<T>(T initialValue = default) => Hooks.UseRefInternal(Node, initialValue);
+        protected RefObject<T> UseRef<T>(T initialValue = default) => Node.GetHookRef(initialValue);
 
         /// <inheritdoc cref="Hooks.UseState{T}"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -147,23 +141,27 @@ namespace ofreact
 
         /// <inheritdoc cref="Hooks.UseState{T}"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected T UseContext<T>() => Hooks.UseContextInternal<T>(Node);
-
-        /// <inheritdoc cref="Hooks.UseEffect(Action,object[])"/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void UseEffect(Action callback, params object[] dependencies) => Hooks.UseEffectInternal(Node, callback, dependencies);
+        protected T UseContext<T>() => Node.FindNearestContext<T>();
 
         /// <inheritdoc cref="Hooks.UseEffect(EffectDelegate,object[])"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void UseEffect(EffectDelegate callback, params object[] dependencies) => Hooks.UseEffectInternal(Node, callback, dependencies);
 
-        /// <inheritdoc cref="Hooks.UseChild"/>
+        /// <inheritdoc cref="Hooks.UseEffect(Action,object[])"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected RefObject<ofNode> UseChild() => Hooks.UseChildInternal(Node);
+        protected void UseEffect(Action callback, params object[] dependencies) => UseEffect(() =>
+        {
+            callback?.Invoke();
+            return null;
+        }, dependencies);
 
         /// <inheritdoc cref="Hooks.UseChildren"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected RefObject<ofNode[]> UseChildren() => Hooks.UseChildrenInternal(Node);
+
+        /// <inheritdoc cref="Hooks.UseChild"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected RefObject<ofNode> UseChild() => Hooks.UseChildInternal(Node);
 
 #endregion
 
@@ -179,7 +177,7 @@ namespace ofreact
         /// Calculates the hash code of this element.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public sealed override int GetHashCode() => HashCode.Combine(this);
+        public sealed override int GetHashCode() => RuntimeHelpers.GetHashCode(this);
 
         /// <summary>
         /// Returns a string that describes this element.

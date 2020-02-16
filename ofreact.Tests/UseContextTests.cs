@@ -165,5 +165,66 @@ namespace ofreact.Tests
 
             Assert.That(DisposableContext.Disposed, Is.True);
         }
+
+        class Element5 : ofComponent
+        {
+            public static int Rendered;
+            public static StateObject<int> State;
+
+            protected override ofElement Render() => new Nested1();
+
+            class Context
+            {
+                public string Value;
+            }
+
+            class Nested1 : ofComponent
+            {
+                protected override ofElement Render() => new ofContext<Context>(value: new Context { Value = "test" })
+                {
+                    new Nested2()
+                };
+
+                class Nested2 : ofComponent
+                {
+                    [State] readonly StateObject<int> _state;
+
+                    protected override ofElement Render()
+                    {
+                        var context = UseContext<Context>();
+
+                        Assert.That(context, Is.Not.Null);
+                        Assert.That(context.Value, Is.EqualTo("test"));
+
+                        ++Rendered;
+                        State = _state;
+
+                        return null;
+                    }
+                }
+            }
+        }
+
+        [Test]
+        public void PartialUpdateContextAvailable()
+        {
+            using var node = new ofRootNode();
+
+            Assert.That(Element5.Rendered, Is.EqualTo(0));
+
+            node.RenderElement(new Element5());
+
+            Assert.That(Element5.Rendered, Is.EqualTo(1));
+
+            node.RenderElement(new Element5());
+
+            Assert.That(Element5.Rendered, Is.EqualTo(1));
+
+            Element5.State.Current++;
+
+            node.RenderElement(new Element5());
+
+            Assert.That(Element5.Rendered, Is.EqualTo(2));
+        }
     }
 }
