@@ -157,11 +157,15 @@ namespace ofreact.Tests
         [Test]
         public void DisposeContext()
         {
-            using var node = new ofRootNode();
+            var node = new ofRootNode();
 
             Assert.That(DisposableContext.Disposed, Is.False);
 
             node.RenderElement(new Element4());
+
+            Assert.That(DisposableContext.Disposed, Is.False);
+
+            node.Dispose();
 
             Assert.That(DisposableContext.Disposed, Is.True);
         }

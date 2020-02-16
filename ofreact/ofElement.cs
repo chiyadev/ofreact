@@ -47,9 +47,10 @@ namespace ofreact
         /// Binds to the given node.
         /// </summary>
         /// <param name="node">Node to bind to.</param>
+        /// <param name="bindAttributes">True to bind attribute-bound members to node.</param>
         /// <returns>A value that will unbind when disposed.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BindScope Bind(ofNode node) => new BindScope(this, node);
+        public BindScope Bind(ofNode node, bool bindAttributes = true) => new BindScope(this, node, bindAttributes);
 
         /// <summary>
         /// Represents the scope in which an element is bound to a node.
@@ -59,7 +60,7 @@ namespace ofreact
             readonly ofElement _current;
             readonly ofElement _last;
 
-            internal BindScope(ofElement element, ofNode node)
+            internal BindScope(ofElement element, ofNode node, bool attrs)
             {
                 if (element.Node != null)
                     throw new InvalidOperationException("Element is already bound to another node.");
@@ -70,15 +71,16 @@ namespace ofreact
                 _last    = _currentElement;
                 _current = _currentElement = element;
 
-                try
-                {
-                    InternalReflection.BindElement(element);
-                }
-                catch
-                {
-                    Dispose();
-                    throw;
-                }
+                if (attrs)
+                    try
+                    {
+                        InternalReflection.BindElement(element);
+                    }
+                    catch
+                    {
+                        Dispose();
+                        throw;
+                    }
             }
 
             /// <summary>

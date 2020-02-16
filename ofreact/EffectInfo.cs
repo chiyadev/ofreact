@@ -55,7 +55,7 @@ namespace ofreact
         {
             Cleanup();
 
-            using (_node.Element.Bind(_node))
+            using (_node.Element.Bind(_node, false))
                 _cleanup = _effect?.Invoke();
         }
 
@@ -69,7 +69,7 @@ namespace ofreact
 
             _cleanup = null;
 
-            using (_node.Element.Bind(_node))
+            using (_node.Element.Bind(_node, false))
                 cleanup();
         }
     }
