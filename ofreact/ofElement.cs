@@ -134,19 +134,15 @@ namespace ofreact
         public static T DefineHook<T>(Func<ofNode, T> hook) => hook(_currentElement?.Node);
 
         /// <inheritdoc cref="Hooks.UseRef{T}"/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected RefObject<T> UseRef<T>(T initialValue = default) => Node.GetHookRef(initialValue);
 
         /// <inheritdoc cref="Hooks.UseState{T}"/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected (T, Action<T>) UseState<T>(T initialValue = default) => Hooks.UseStateInternal(Node, initialValue);
 
-        /// <inheritdoc cref="Hooks.UseState{T}"/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected T UseContext<T>() => Node.FindNearestContext<T>();
+        /// <inheritdoc cref="Hooks.UseContext{T}"/>
+        protected T UseContext<T>() => Hooks.UseContextInternal<T>(Node);
 
         /// <inheritdoc cref="Hooks.UseEffect(EffectDelegate,object[])"/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void UseEffect(EffectDelegate callback, params object[] dependencies) => Hooks.UseEffectInternal(Node, callback, dependencies);
 
         /// <inheritdoc cref="Hooks.UseEffect(Action,object[])"/>
@@ -158,11 +154,9 @@ namespace ofreact
         }, dependencies);
 
         /// <inheritdoc cref="Hooks.UseChildren"/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected RefObject<ofNode[]> UseChildren() => Hooks.UseChildrenInternal(Node);
 
         /// <inheritdoc cref="Hooks.UseChild"/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected RefObject<ofNode> UseChild() => Hooks.UseChildInternal(Node);
 
 #endregion

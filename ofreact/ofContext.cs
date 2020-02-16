@@ -32,7 +32,7 @@ namespace ofreact
                 return null;
             }, Value);
 
-            Node.LocalContext = Value;
+            Node.LocalContext.Value = Value;
 
             return base.RenderSubtree();
         }

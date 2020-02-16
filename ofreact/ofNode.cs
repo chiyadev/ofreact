@@ -21,6 +21,7 @@ namespace ofreact
 
         Dictionary<string, object> _state;
         HashSet<EffectInfo> _effects;
+        ContextInfo _context;
 
         /// <summary>
         /// Dictionary of stateful variables.
@@ -39,7 +40,7 @@ namespace ofreact
         /// <summary>
         /// Context object specific to this node.
         /// </summary>
-        public object LocalContext { get; set; }
+        public ContextInfo LocalContext => _context ??= new ContextInfo();
 
         /// <summary>
         /// If true, this node will always be considered as invalid and therefore eligible for rerender.
@@ -65,7 +66,7 @@ namespace ofreact
         /// </summary>
         public virtual bool RenderElement(ofElement element)
         {
-            if (!Root.RerenderNodes.Remove(this) && !AlwaysInvalid && InternalReflection.PropsEqual(element, Element))
+            if (!Root.RerenderNodes.Remove(this) && !AlwaysInvalid && InternalReflection.PropsEqual(element, Element) || element == null)
                 return false;
 
             // enable hooks
@@ -146,13 +147,15 @@ namespace ofreact
         /// <typeparam name="T">Type of the context object.</typeparam>
         /// <returns>The found context object or default value.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T FindNearestContext<T>()
+        public ContextInfo<T> FindNearestContext<T>()
         {
             var node = this;
 
             do
             {
-                if (node.LocalContext is T context)
+                var context = node._context;
+
+                if (context?.Value is T)
                     return context;
 
                 node = node.Parent;
@@ -202,7 +205,7 @@ namespace ofreact
         /// <summary>
         /// List of effects to be triggered after render.
         /// </summary>
-        public Queue<EffectInfo> PendingEffects { get; } = new Queue<EffectInfo>(1024);
+        public Queue<EffectInfo> PendingEffects { get; } = new Queue<EffectInfo>(2048);
 
         /// <summary>
         /// Creates a new <see cref="ofRootNode"/>.
@@ -240,10 +243,12 @@ namespace ofreact
 
             do
             {
-                // if there are nodes skipped due to optimization somewhere in the tree, render them too
-                if (GetRerenderNodes(out var nodes))
+                // render nodes marked for rerender
+                while (GetRerenderNodes(out var nodes))
+                {
                     foreach (var node in nodes)
                         result |= node.RenderElement(node.Element);
+                }
 
                 // run effects
                 while (PendingEffects.TryDequeue(out var effect))
