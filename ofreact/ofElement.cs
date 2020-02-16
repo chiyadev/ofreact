@@ -106,6 +106,25 @@ namespace ofreact
         /// <returns>False to short-circuit the rendering.</returns>
         protected internal virtual bool RenderSubtree() => true;
 
+        /// <summary>
+        /// Wraps the given rendering function in an <see cref="ofElement"/>.
+        /// </summary>
+        /// <param name="render">Rendering function.</param>
+        /// <returns><see cref="ofElement"/> that invokes <paramref name="render"/>.</returns>
+        public static ofElement DefineComponent(Func<ofElement> render) => new FunctionalComponentWrapper(render);
+
+        sealed class FunctionalComponentWrapper : ofComponent
+        {
+            readonly Func<ofElement> _render;
+
+            public FunctionalComponentWrapper(Func<ofElement> render)
+            {
+                _render = render;
+            }
+
+            protected override ofElement Render() => _render?.Invoke();
+        }
+
 #region Hooks
 
         /// <inheritdoc cref="DefineHook{T}"/>
