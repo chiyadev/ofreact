@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace ofreact
 {
-    public delegate bool PropsEqualityComparerDelegate(ofElement a, ofElement b);
+    public delegate bool PropsEqualityComparerDelegate(object a, object b);
 
     public delegate void ElementBinderDelegate(ofElement element);
 
@@ -41,9 +41,9 @@ namespace ofreact
         static readonly PropsEqualityComparerDelegate _emptyPropsEqualityComparer = (a, b) => true;
 
         /// <summary>
-        /// Returns true if all props of element <paramref name="a"/> and <paramref name="b"/> are equal.
+        /// Returns true if all fields of element <paramref name="a"/> and <paramref name="b"/> marked with <see cref="PropAttribute"/> are equal.
         /// </summary>
-        public static bool PropsEqual(ofElement a, ofElement b)
+        public static bool PropsEqual(object a, object b)
         {
             if (ReferenceEquals(a, b))
                 return true;

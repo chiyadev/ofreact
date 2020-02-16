@@ -36,8 +36,8 @@ namespace ofreact
             if (body == null)
                 return null;
 
-            var a = Expression.Parameter(typeof(ofElement), "a");
-            var b = Expression.Parameter(typeof(ofElement), "b");
+            var a = Expression.Parameter(typeof(object), "a");
+            var b = Expression.Parameter(typeof(object), "b");
 
             return Expression.Lambda<PropsEqualityComparerDelegate>(
                                   Expression.Invoke(
