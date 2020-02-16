@@ -18,7 +18,7 @@ namespace osu.Framework.Declarative
         protected abstract ofElement Render();
 
         [BackgroundDependencyLoader, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void RenderRoot() => _node.RenderElement(new ofContainerContext(this, children: new[] { Render() }));
+        void RenderRoot() => _node.RenderElement(new ofContainerContext(this, children: new[] { ofElement.DefineComponent(Render) }));
 
         protected override void Update() => RenderRoot();
 
