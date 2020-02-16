@@ -1,6 +1,6 @@
-using System.Runtime.CompilerServices;
 using ofreact;
 using osu.Framework.Allocation;
+using osu.Framework.Graphics;
 using osu.Framework.Testing;
 
 namespace osu.Framework.Declarative
@@ -10,23 +10,16 @@ namespace osu.Framework.Declarative
     /// </summary>
     public abstract class ofTestScene : TestScene
     {
-        readonly ofRootNode _node = new ofRootNode();
-
         /// <summary>
         /// Renders this test scene and returns the rendered element.
         /// </summary>
         protected abstract ofElement Render();
 
-        [BackgroundDependencyLoader, MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void RenderRoot() => _node.RenderElement(new ofPortal(this, children: new[] { ofElement.DefineComponent(Render) }));
-
-        protected override void Update() => RenderRoot();
-
-        protected override void Dispose(bool isDisposing)
+        [BackgroundDependencyLoader]
+        void Load() => Child = new ofDrawableBootstrapper
         {
-            _node.Dispose();
-
-            base.Dispose(isDisposing);
-        }
+            Element          = ofElement.DefineComponent(Render),
+            RelativeSizeAxes = Axes.Both
+        };
     }
 }

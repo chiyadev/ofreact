@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using ofreact;
 using osu.Framework.Allocation;
+using osu.Framework.Graphics;
 using osu.Framework.Platform;
 
 namespace osu.Framework.Declarative
@@ -75,7 +75,7 @@ namespace osu.Framework.Declarative
 
             using (var host = Host(Key.ToString()))
             {
-                var game = new Bootstrap(this);
+                var game = new Bootstrapper(this);
 
                 HostRef?.Invoke(host);
                 GameRef?.Invoke(game);
@@ -89,12 +89,11 @@ namespace osu.Framework.Declarative
             return true;
         }
 
-        sealed class Bootstrap : Game
+        sealed class Bootstrapper : Game
         {
             readonly ofGame _game;
-            readonly ofRootNode _node = new ofRootNode();
 
-            public Bootstrap(ofGame game)
+            public Bootstrapper(ofGame game)
             {
                 _game = game;
             }
@@ -110,19 +109,11 @@ namespace osu.Framework.Declarative
                 _dependencies.CacheAs<Game>(this);
                 _dependencies.CacheAs(_game);
 
-                RenderRoot();
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            void RenderRoot() => _node.RenderElement(new ofPortal(this, children: _game.Children));
-
-            protected override void Update() => RenderRoot();
-
-            protected override void Dispose(bool isDisposing)
-            {
-                _node.Dispose();
-
-                base.Dispose(isDisposing);
+                Child = new ofDrawableBootstrapper
+                {
+                    Element          = _game.Children,
+                    RelativeSizeAxes = Axes.Both
+                };
             }
         }
 
