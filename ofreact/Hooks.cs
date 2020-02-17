@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace ofreact
 {
@@ -86,6 +87,7 @@ namespace ofreact
         });
 
         /// <inheritdoc cref="UseEffect(EffectDelegate,object[])"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void UseEffect(Action callback, params object[] dependencies) => UseEffect(() =>
         {
             callback?.Invoke();
@@ -133,5 +135,51 @@ namespace ofreact
 
             return obj;
         }
+
+        /// <summary>
+        /// Returns a memoized value.
+        /// </summary>
+        /// <remarks>
+        /// Accepts a "create" function and a list of dependencies.
+        /// <see cref="UseMemo{T}"/> will only recompute the memoized value when one of the dependencies has changed.
+        /// This optimization helps to avoid expensive calculations on every render.
+        /// </remarks>
+        /// <param name="create">Function to compute the memoized value.</param>
+        /// <param name="dependencies">List of dependencies that will cause a recomputation when the values change.</param>
+        /// <typeparam name="T">Type of the memoized value.</typeparam>
+        /// <returns>The memoized value.</returns>
+        public static T UseMemo<T>(Func<T> create, params object[] dependencies) => ofElement.DefineHook(node =>
+        {
+            var value = node.GetHookRef<T>();
+            var deps  = node.GetHookRef<object[]>();
+
+            if (Utils.ObjectsEqual(dependencies, deps))
+                return value;
+
+            return value.Current = create();
+        });
+
+        /// <inheritdoc cref="UseCallback{T}(T,object[])"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Action UseCallback(Action callback, params object[] dependencies) => UseCallback<Action>(callback, dependencies);
+
+        /// <inheritdoc cref="UseCallback{T}(T,object[])"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Func<T> UseCallback<T>(Func<T> callback, params object[] dependencies) => UseCallback<Func<T>>(callback, dependencies);
+
+        /// <summary>
+        /// Returns a memoized callback.
+        /// </summary>
+        /// <remarks>
+        /// Accepts a callback method or lambda and a list of dependencies.
+        /// <see cref="UseCallback{T}(T,object[])"/> will return a memoized version of the given callback that only changes if one of the dependencies has changed.
+        /// This is useful when passing callbacks to optimized child elements that rely on reference equality to prevent unnecessary renders (default behavior of all <see cref="ofElement"/>s).
+        /// </remarks>
+        /// <param name="callback">Callback method or lambda to memoize.</param>
+        /// <param name="dependencies">List of dependencies that will cause the new <paramref name="callback"/> to be returned when the values change.</param>
+        /// <typeparam name="T">Type of the memoized callback.</typeparam>
+        /// <returns>The memoized callback.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T UseCallback<T>(T callback, params object[] dependencies) where T : Delegate => UseMemo(() => callback, dependencies);
     }
 }

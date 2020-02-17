@@ -20,6 +20,8 @@ List of things implemented:
   - UseState
   - UseContext
   - UseEffect
+  - UseMemo
+  - UseCallback
   - Helper methods to define custom hooks
 - Attribute-bound:
   - Ref fields
