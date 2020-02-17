@@ -1,3 +1,5 @@
+using static ofreact.Hooks;
+
 namespace ofreact
 {
     /// <summary>

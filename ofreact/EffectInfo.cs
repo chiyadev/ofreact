@@ -2,6 +2,16 @@ using System.Runtime.CompilerServices;
 
 namespace ofreact
 {
+    /// <summary>
+    /// Encapsulates an effect method that returns a cleanup method.
+    /// </summary>
+    public delegate EffectCleanupDelegate EffectDelegate();
+
+    /// <summary>
+    /// Encapsulates the cleanup method of an effect hook.
+    /// </summary>
+    public delegate void EffectCleanupDelegate();
+
     public sealed class EffectInfo
     {
         ofNode _node;

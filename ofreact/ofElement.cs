@@ -6,16 +6,6 @@ using System.Runtime.CompilerServices;
 namespace ofreact
 {
     /// <summary>
-    /// Encapsulates an effect method that returns a cleanup method.
-    /// </summary>
-    public delegate EffectCleanupDelegate EffectDelegate();
-
-    /// <summary>
-    /// Encapsulates the cleanup method of an effect hook.
-    /// </summary>
-    public delegate void EffectCleanupDelegate();
-
-    /// <summary>
     /// Represents an element in ofreact.
     /// </summary>
     /// <remarks>
@@ -138,8 +128,6 @@ namespace ofreact
             protected override ofElement Render() => _render?.Invoke(Node);
         }
 
-#region Hooks
-
         /// <inheritdoc cref="DefineHook{T}"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void DefineHook(Action<ofNode> hook) => hook(_currentElement?.Node);
@@ -149,36 +137,6 @@ namespace ofreact
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T DefineHook<T>(Func<ofNode, T> hook) => hook(_currentElement?.Node);
-
-        /// <inheritdoc cref="Hooks.UseRef{T}"/>
-        protected RefObject<T> UseRef<T>(T initialValue = default) => Node.GetHookRef(initialValue);
-
-        /// <inheritdoc cref="Hooks.UseState{T}"/>
-        protected (T, Action<T>) UseState<T>(T initialValue = default) => Hooks.UseStateInternal(Node, initialValue);
-
-        /// <inheritdoc cref="Hooks.UseContext{T}"/>
-        protected T UseContext<T>() => Hooks.UseContextInternal<T>(Node);
-
-        /// <inheritdoc cref="Hooks.UseEffect(EffectDelegate,object[])"/>
-        protected void UseEffect(EffectDelegate callback, params object[] dependencies) => Hooks.UseEffectInternal(Node, callback, dependencies);
-
-        /// <inheritdoc cref="Hooks.UseEffect(Action,object[])"/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void UseEffect(Action callback, params object[] dependencies) => UseEffect(() =>
-        {
-            callback?.Invoke();
-            return null;
-        }, dependencies);
-
-        /// <inheritdoc cref="Hooks.UseChildren"/>
-        protected RefObject<ofNode[]> UseChildren() => Hooks.UseChildrenInternal(Node);
-
-        /// <inheritdoc cref="Hooks.UseChild"/>
-        protected RefObject<ofNode> UseChild() => Hooks.UseChildInternal(Node);
-
-#endregion
-
-#region Override
 
         /// <summary>
         /// Determines whether the specified object instance is equivalent to this element.
@@ -195,7 +153,6 @@ namespace ofreact
         /// <summary>
         /// Returns a string that describes this element.
         /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public sealed override string ToString()
         {
             var str = GetType().FullName;
@@ -205,8 +162,6 @@ namespace ofreact
 
             return str;
         }
-
-#endregion
 
         public static implicit operator ofElement(ofElement[] x) => (ofFragment) x;
         public static implicit operator ofElement(List<ofElement> x) => (ofFragment) x;

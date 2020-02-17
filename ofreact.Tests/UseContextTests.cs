@@ -1,17 +1,18 @@
 using System;
 using NUnit.Framework;
+using static ofreact.Hooks;
 
 namespace ofreact.Tests
 {
     public class UseContextTests
     {
-        class Context
-        {
-            public string Value;
-        }
-
         class Element1 : ofComponent
         {
+            class Context
+            {
+                public string Value;
+            }
+
             public static bool ContextFound;
 
             protected override ofElement Render() =>
@@ -58,6 +59,11 @@ namespace ofreact.Tests
 
         class Element2 : ofComponent
         {
+            class Context
+            {
+                public string Value;
+            }
+
             public static bool ContextFound;
 
             protected override ofElement Render() =>
@@ -103,6 +109,11 @@ namespace ofreact.Tests
 
         class Element3 : ofComponent
         {
+            class Context
+            {
+                public string Value;
+            }
+
             public static bool ContextNotFound;
 
             protected override ofElement Render()
@@ -127,16 +138,16 @@ namespace ofreact.Tests
             Assert.That(Element3.ContextNotFound, Is.True);
         }
 
-        class DisposableContext : IDisposable
-        {
-            public static bool Disposed;
-
-            public void Dispose() => Disposed = true;
-        }
-
         class Element4 : ofComponent
         {
-            protected override ofElement Render() => new ofContext<DisposableContext>(value: new DisposableContext())
+            public class Context : IDisposable
+            {
+                public static bool Disposed;
+
+                public void Dispose() => Disposed = true;
+            }
+
+            protected override ofElement Render() => new ofContext<Context>(value: new Context())
             {
                 new Nested()
             };
@@ -145,7 +156,7 @@ namespace ofreact.Tests
             {
                 protected override ofElement Render()
                 {
-                    var context = UseContext<DisposableContext>();
+                    var context = UseContext<Context>();
 
                     Assert.That(context, Is.Not.Null);
 
@@ -159,16 +170,19 @@ namespace ofreact.Tests
         {
             var node = new ofRootNode();
 
-            Assert.That(DisposableContext.Disposed, Is.False);
+            Assert.That(Element4.Context.Disposed, Is.False);
 
             node.RenderElement(new Element4());
 
-            Assert.That(DisposableContext.Disposed, Is.False);
+            Assert.That(Element4.Context.Disposed, Is.False);
 
             node.Dispose();
 
-            Assert.That(DisposableContext.Disposed, Is.True);
+            Assert.That(Element4.Context.Disposed, Is.True);
         }
+
+        [Test]
+        public void DisposeContextOnChange() { }
 
         class Element5 : ofComponent
         {

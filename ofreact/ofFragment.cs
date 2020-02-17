@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using static ofreact.Hooks;
 
 namespace ofreact
 {

@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using static ofreact.Hooks;
 
 namespace ofreact.Tests
 {

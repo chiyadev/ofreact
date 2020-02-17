@@ -22,16 +22,17 @@ namespace ofreact
             Value = value;
         }
 
+        [Effect(nameof(Value))]
+        EffectCleanupDelegate OnValueChanged()
+        {
+            if (Value is IDisposable disposable)
+                return disposable.Dispose;
+
+            return null;
+        }
+
         protected internal override bool RenderSubtree()
         {
-            UseEffect(() =>
-            {
-                if (Value is IDisposable disposable)
-                    return disposable.Dispose;
-
-                return null;
-            }, Value);
-
             Node.LocalContext.Value = Value;
 
             return base.RenderSubtree();
