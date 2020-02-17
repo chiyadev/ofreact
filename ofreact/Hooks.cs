@@ -2,6 +2,12 @@ using System;
 
 namespace ofreact
 {
+    /// <summary>
+    /// Defines a set of hook methods that can be used in the rendering function of an <see cref="ofElement"/>.
+    /// </summary>
+    /// <remarks>
+    /// Hooks can be used in conjunction with attribute-bound instance members.
+    /// </remarks>
     public static class Hooks
     {
         /// <summary>

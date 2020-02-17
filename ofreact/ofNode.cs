@@ -66,7 +66,14 @@ namespace ofreact
         /// </summary>
         public virtual bool RenderElement(ofElement element)
         {
-            if (!Root.RerenderNodes.Remove(this) && !AlwaysInvalid && InternalReflection.PropsEqual(element, Element) || element == null)
+            var shouldRender = Root.RerenderNodes.Remove(this); // remove first to avoid infinite rerender loop
+
+            if (element == null)
+                return false;
+
+            shouldRender = shouldRender || AlwaysInvalid || Element.ShouldComponentUpdate(element);
+
+            if (!shouldRender)
                 return false;
 
             // enable hooks

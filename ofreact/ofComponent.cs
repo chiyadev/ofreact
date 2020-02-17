@@ -5,6 +5,9 @@ namespace ofreact
     /// <summary>
     /// Represents the base class for an ofreact component.
     /// </summary>
+    /// <remarks>
+    /// This component is equivalent to react's PureComponent which optimizes rerenders if props are not changed.
+    /// </remarks>
     public abstract class ofComponent : ofElement
     {
         /// <summary>

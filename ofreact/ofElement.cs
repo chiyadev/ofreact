@@ -104,6 +104,18 @@ namespace ofreact
         /// <returns>False to short-circuit the rendering.</returns>
         protected internal virtual bool RenderSubtree() => true;
 
+        /// <summary>
+        /// Determines whether this element needs to be rendered or not.
+        /// </summary>
+        /// <param name="next">Next element to be rendered in place of this element.</param>
+        /// <returns>True if this element should be rendered.</returns>
+        /// <remarks>
+        /// If you know that in some situations this element doesn't need to be rendered, you can return false from this method to skip the whole rendering process, including calling <see cref="RenderSubtree"/> on this element.
+        /// However, in contrast to react behavior, this method will compare props instead of returning true by default, equivalent to PureComponent not Component.
+        /// In addition, state updates will always trigger a rerender regardless of the result of this method.
+        /// </remarks>
+        protected internal virtual bool ShouldComponentUpdate(ofElement next) => !InternalReflection.PropsEqual(this, next);
+
         /// <inheritdoc cref="DefineComponent(System.Func{ofNode,ofElement})"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ofElement DefineComponent(Func<ofElement> render) => DefineComponent(n => render?.Invoke());
