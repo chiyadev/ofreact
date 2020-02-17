@@ -78,7 +78,7 @@ namespace ofreact
                 {
                     var result = element.RenderSubtree();
 
-                    if (result && InternalConstants.ValidateHooks)
+                    if (result && ofElement.IsHookValidated)
                     {
                         if (_lastHook == null)
                             _lastHook = _hooks;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace ofreact
@@ -30,9 +31,23 @@ namespace ofreact
         /// </remarks>
         public static IReflectionFactory Factory { get; set; }
 
+        /// <summary>
+        /// Returns a value indicating whether IL emit is available in the calling environment.
+        /// </summary>
+        public static bool IsEmitAvailable { get; }
+
         static InternalReflection()
         {
-            Factory = InternalConstants.IsEmitAvailable
+            try
+            {
+                IsEmitAvailable = Expression.Lambda<Func<bool>>(Expression.Constant(true)).Compile()();
+            }
+            catch
+            {
+                IsEmitAvailable = false;
+            }
+
+            Factory = IsEmitAvailable
                 ? ExpressionTreeReflectionFactory.Instance
                 : DynamicReflectionFactory.Instance;
         }

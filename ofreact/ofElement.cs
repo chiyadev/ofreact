@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace ofreact
@@ -24,6 +25,18 @@ namespace ofreact
     public abstract class ofElement
     {
         [ThreadStatic] static ofElement _currentElement;
+
+        static bool? _validateHooks;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether hook validation is enabled or not.
+        /// This is enabled by default if <see cref="Debugger.IsAttached"/> is true.
+        /// </summary>
+        public static bool IsHookValidated
+        {
+            get => _validateHooks ?? Debugger.IsAttached;
+            set => _validateHooks = value;
+        }
 
         /// <summary>
         /// Key used to differentiate this element amongst other sibling elements.
