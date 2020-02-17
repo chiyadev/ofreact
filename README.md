@@ -258,7 +258,7 @@ ofreact is designed for maximum extensibility, so you can use all of ofreact fea
 - Project `ofreact` implements the core functionality including rendering, state management, hooks, etc. This project has no dependency except .NET Standard 2.1.
 - Project `osu.Framework.Declarative` provides Drawable-wrappers and other elements that bootstrap ofreact in the osu!framework scene graph.
 
-In fact, `osu.Framework.Declarative` is simply an extension of the core ofreact project. It is entirely possible to write declarative components for another game library based on ofreact.
+In fact, `osu.Framework.Declarative` is simply an extension of the core ofreact project. It is entirely possible to use another GUI library and use ofreact to write declarative wrapper components.
 
 ## TODO
 
