@@ -17,7 +17,7 @@ namespace ofreact
         readonly object _initialValue;
 
         string _name;
-        ContainerObjectFactoryDelegate _create;
+        InternalReflection.ContainerObjectFactoryDelegate _create;
         bool _wrapped;
 
         /// <summary>

@@ -18,8 +18,8 @@ namespace ofreact
         readonly string[] _dependencyNames;
 
         string _name;
-        ElementDependencyListBuilderDelegate _dependencyBuilder; // this can be null if Once is false!
-        ElementMethodInvokerDelegate _invoker;
+        InternalReflection.ElementDependencyListBuilderDelegate _dependencyBuilder; // this can be null if Once is false!
+        InternalReflection.ElementMethodInvokerDelegate _invoker;
 
         bool IElementMethodInvoker.AllowUnknownParameters => false;
 
