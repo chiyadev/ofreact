@@ -3,6 +3,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Colour;
 using osu.Framework.Graphics.Containers;
 using osuTK;
+using static ofreact.Hooks;
 
 namespace osu.Framework.Declarative
 {
