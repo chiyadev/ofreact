@@ -2,15 +2,16 @@ using NUnit.Framework;
 
 namespace ofreact.Tests
 {
+    [TestFixture]
     public class RenderingTests
     {
-        class Element1 : ofComponent
+        class SkipIfSamePropsElement : ofComponent
         {
             public static int Rendered;
 
             [Prop] public readonly string MyProp;
 
-            public Element1(string myProp = default)
+            public SkipIfSamePropsElement(string myProp = default)
             {
                 MyProp = myProp;
             }
@@ -26,26 +27,26 @@ namespace ofreact.Tests
         [Test]
         public void SkipIfSameProps()
         {
-            var node = new ofRootNode { AlwaysInvalid = false };
+            var node = new ofRootNode { AlwaysInvalid = false }; // we don't want optimization
 
-            Assert.That(Element1.Rendered, Is.EqualTo(0));
+            Assert.That(SkipIfSamePropsElement.Rendered, Is.EqualTo(0));
 
-            node.RenderElement(new Element1("test"));
+            node.RenderElement(new SkipIfSamePropsElement("test"));
 
-            Assert.That(Element1.Rendered, Is.EqualTo(1));
+            Assert.That(SkipIfSamePropsElement.Rendered, Is.EqualTo(1));
 
-            node.RenderElement(new Element1("test"));
+            node.RenderElement(new SkipIfSamePropsElement("test"));
 
-            Assert.That(Element1.Rendered, Is.EqualTo(1));
+            Assert.That(SkipIfSamePropsElement.Rendered, Is.EqualTo(1));
         }
 
-        class Element2 : ofComponent
+        class RenderIfDifferentPropsElement : ofComponent
         {
             public static int RenderCount;
 
             [Prop] public readonly string MyProp;
 
-            public Element2(string myProp = default)
+            public RenderIfDifferentPropsElement(string myProp = default)
             {
                 MyProp = myProp;
             }
@@ -61,31 +62,31 @@ namespace ofreact.Tests
         [Test]
         public void RenderIfDifferentProps()
         {
-            var node = new ofRootNode { AlwaysInvalid = false };
+            var node = new ofRootNode { AlwaysInvalid = false }; // we don't want optimization
 
-            node.RenderElement(new Element2("test1"));
+            node.RenderElement(new RenderIfDifferentPropsElement("test1"));
 
-            Assert.That(Element2.RenderCount, Is.EqualTo(1));
+            Assert.That(RenderIfDifferentPropsElement.RenderCount, Is.EqualTo(1));
 
-            node.RenderElement(new Element2("test2"));
+            node.RenderElement(new RenderIfDifferentPropsElement("test2"));
 
-            Assert.That(Element2.RenderCount, Is.EqualTo(2));
+            Assert.That(RenderIfDifferentPropsElement.RenderCount, Is.EqualTo(2));
 
-            node.RenderElement(new Element2("test2"));
+            node.RenderElement(new RenderIfDifferentPropsElement("test2"));
 
-            Assert.That(Element2.RenderCount, Is.EqualTo(2));
+            Assert.That(RenderIfDifferentPropsElement.RenderCount, Is.EqualTo(2));
 
-            node.RenderElement(new Element2("test2"));
+            node.RenderElement(new RenderIfDifferentPropsElement("test2"));
 
-            Assert.That(Element2.RenderCount, Is.EqualTo(2));
+            Assert.That(RenderIfDifferentPropsElement.RenderCount, Is.EqualTo(2));
 
-            node.RenderElement(new Element2("test1"));
+            node.RenderElement(new RenderIfDifferentPropsElement("test1"));
 
-            Assert.That(Element2.RenderCount, Is.EqualTo(3));
+            Assert.That(RenderIfDifferentPropsElement.RenderCount, Is.EqualTo(3));
 
-            node.RenderElement(new Element2("test1"));
+            node.RenderElement(new RenderIfDifferentPropsElement("test1"));
 
-            Assert.That(Element2.RenderCount, Is.EqualTo(3));
+            Assert.That(RenderIfDifferentPropsElement.RenderCount, Is.EqualTo(3));
         }
     }
 }

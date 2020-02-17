@@ -4,36 +4,35 @@ using static ofreact.Hooks;
 
 namespace ofreact.Tests
 {
+    [TestFixture]
     public class UseRefTests
     {
-        class Element1 : ofComponent
+        public class MismatchingType : ofComponent
         {
-            public static bool Alt;
-
-            static object _value;
+            public bool Alt;
 
             protected override ofElement Render()
             {
                 if (Alt)
-                    _value = UseRef<int>().Current;
+                    _ = UseRef<int>().Current;
 
                 else
-                    _value = UseRef<double>().Current;
+                    _ = UseRef<double>().Current;
 
                 return null;
             }
-        }
 
-        [Test]
-        public void MismatchingType()
-        {
-            var node = new ofRootNode();
+            [Test]
+            public void Test()
+            {
+                var node = new ofRootNode();
 
-            node.RenderElement(new Element1());
+                node.RenderElement(this);
 
-            Element1.Alt = true;
+                Alt = true;
 
-            Assert.That(() => node.RenderElement(new Element1()), Throws.InstanceOf<InvalidCastException>());
+                Assert.That(() => node.RenderElement(this), Throws.InstanceOf<InvalidCastException>());
+            }
         }
     }
 }

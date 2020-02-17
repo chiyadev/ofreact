@@ -3,9 +3,10 @@ using static ofreact.Hooks;
 
 namespace ofreact.Tests
 {
+    [TestFixture]
     public class FragmentTests
     {
-        class Element : ofComponent
+        public class RenderAll : ofComponent
         {
             protected override ofElement Render()
             {
@@ -13,33 +14,34 @@ namespace ofreact.Tests
 
                 return null;
             }
-        }
 
-        class RenderCountContext
-        {
-            public int Count;
-        }
-
-        [Test]
-        public void RenderAll()
-        {
-            using var node = new ofRootNode();
-
-            var context = new RenderCountContext();
-
-            node.RenderElement(new ofContext<RenderCountContext>(value: context)
+            class RenderCountContext
             {
-                new Element(),
-                new Element(),
-                new Element(),
-                new Element(),
-                new Element()
-            });
+                public int Count;
+            }
 
-            Assert.That(context.Count, Is.EqualTo(5));
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
+
+                var context = new RenderCountContext();
+
+                // ofContext is ofFragment
+                node.RenderElement(new ofContext<RenderCountContext>(value: context)
+                {
+                    this,
+                    this,
+                    this,
+                    this,
+                    this
+                });
+
+                Assert.That(context.Count, Is.EqualTo(5));
+            }
         }
 
-        class MountCounting : ofComponent
+        public class MountCounting : ofComponent
         {
             public static int Mount;
             public static int Unmount;
@@ -127,7 +129,8 @@ namespace ofreact.Tests
             node.RenderElement(new[]
             {
                 new ofFragment(),
-                null
+                null,
+                new ofFragment()
             });
         }
     }

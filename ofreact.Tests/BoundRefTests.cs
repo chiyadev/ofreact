@@ -2,12 +2,13 @@ using NUnit.Framework;
 
 namespace ofreact.Tests
 {
+    [TestFixture]
     public class BoundRefTests
     {
-        class Element1 : ofComponent
+        public class Ref : ofComponent
         {
-            public static int CurrentCount;
-            public static string CurrentString;
+            public int CurrentCount;
+            public string CurrentString;
 
             [Ref] public readonly RefObject<int> Count;
             [Ref] public readonly RefObject<string> String;
@@ -19,30 +20,30 @@ namespace ofreact.Tests
 
                 return null;
             }
+
+            [Test]
+            public void Test()
+            {
+                Assert.That(CurrentCount, Is.EqualTo(0));
+                Assert.That(CurrentString, Is.Null);
+
+                using var node = new ofRootNode();
+
+                node.RenderElement(this);
+
+                Assert.That(CurrentCount, Is.EqualTo(1));
+                Assert.That(CurrentString, Is.EqualTo("1"));
+
+                node.RenderElement(this);
+
+                Assert.That(CurrentCount, Is.EqualTo(2));
+                Assert.That(CurrentString, Is.EqualTo("2"));
+            }
         }
 
-        [Test]
-        public void Ref()
+        public class InitialValue : ofComponent
         {
-            Assert.That(Element1.CurrentCount, Is.EqualTo(0));
-            Assert.That(Element1.CurrentString, Is.Null);
-
-            using var node = new ofRootNode();
-
-            node.RenderElement(new Element1());
-
-            Assert.That(Element1.CurrentCount, Is.EqualTo(1));
-            Assert.That(Element1.CurrentString, Is.EqualTo("1"));
-
-            node.RenderElement(new Element1());
-
-            Assert.That(Element1.CurrentCount, Is.EqualTo(2));
-            Assert.That(Element1.CurrentString, Is.EqualTo("2"));
-        }
-
-        class Element2 : ofComponent
-        {
-            public static bool Rendered;
+            public bool Rendered;
 
             [Ref(777)] public readonly RefObject<int> Number;
 
@@ -54,16 +55,16 @@ namespace ofreact.Tests
 
                 return null;
             }
-        }
 
-        [Test]
-        public void InitialValue()
-        {
-            using var node = new ofRootNode();
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
 
-            node.RenderElement(new Element2());
+                node.RenderElement(this);
 
-            Assert.That(Element2.Rendered, Is.True);
+                Assert.That(Rendered, Is.True);
+            }
         }
     }
 }

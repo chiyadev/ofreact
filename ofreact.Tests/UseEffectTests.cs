@@ -3,12 +3,13 @@ using static ofreact.Hooks;
 
 namespace ofreact.Tests
 {
+    [TestFixture]
     public class UseEffectTests
     {
-        class Element1 : ofComponent
+        public class EveryRender : ofComponent
         {
-            public static int Effect;
-            public static int Cleanup;
+            public int Effect;
+            public int Cleanup;
 
             protected override ofElement Render()
             {
@@ -21,42 +22,42 @@ namespace ofreact.Tests
 
                 return null;
             }
+
+            [Test]
+            public void Test()
+            {
+                var node = new ofRootNode();
+
+                Assert.That(Effect, Is.EqualTo(0));
+                Assert.That(Cleanup, Is.EqualTo(0));
+
+                node.RenderElement(this);
+
+                Assert.That(Effect, Is.EqualTo(1));
+                Assert.That(Cleanup, Is.EqualTo(0));
+
+                node.RenderElement(this);
+
+                Assert.That(Effect, Is.EqualTo(2));
+                Assert.That(Cleanup, Is.EqualTo(1));
+
+                node.RenderElement(this);
+
+                Assert.That(Effect, Is.EqualTo(3));
+                Assert.That(Cleanup, Is.EqualTo(2));
+
+                node.Dispose();
+
+                Assert.That(Effect, Is.EqualTo(3));
+                Assert.That(Cleanup, Is.EqualTo(3));
+            }
         }
 
-        [Test]
-        public void EveryRender()
+        public class DependencyChange : ofComponent
         {
-            var node = new ofRootNode();
-
-            Assert.That(Element1.Effect, Is.EqualTo(0));
-            Assert.That(Element1.Cleanup, Is.EqualTo(0));
-
-            node.RenderElement(new Element1());
-
-            Assert.That(Element1.Effect, Is.EqualTo(1));
-            Assert.That(Element1.Cleanup, Is.EqualTo(0));
-
-            node.RenderElement(new Element1());
-
-            Assert.That(Element1.Effect, Is.EqualTo(2));
-            Assert.That(Element1.Cleanup, Is.EqualTo(1));
-
-            node.RenderElement(new Element1());
-
-            Assert.That(Element1.Effect, Is.EqualTo(3));
-            Assert.That(Element1.Cleanup, Is.EqualTo(2));
-
-            node.Dispose();
-
-            Assert.That(Element1.Effect, Is.EqualTo(3));
-            Assert.That(Element1.Cleanup, Is.EqualTo(3));
-        }
-
-        class Element2 : ofComponent
-        {
-            public static int Dependency;
-            public static int Effect;
-            public static int Cleanup;
+            public int Dependency;
+            public int Effect;
+            public int Cleanup;
 
             protected override ofElement Render()
             {
@@ -69,56 +70,55 @@ namespace ofreact.Tests
 
                 return null;
             }
+
+            [Test]
+            public void Test()
+            {
+                var node = new ofRootNode();
+
+                Assert.That(Effect, Is.EqualTo(0));
+                Assert.That(Cleanup, Is.EqualTo(0));
+
+                node.RenderElement(this);
+
+                Assert.That(Effect, Is.EqualTo(1));
+                Assert.That(Cleanup, Is.EqualTo(0));
+
+                node.RenderElement(this);
+
+                Assert.That(Effect, Is.EqualTo(1));
+                Assert.That(Cleanup, Is.EqualTo(0));
+
+                ++Dependency;
+
+                node.RenderElement(this);
+
+                Assert.That(Effect, Is.EqualTo(2));
+                Assert.That(Cleanup, Is.EqualTo(1));
+
+                node.RenderElement(this);
+
+                Assert.That(Effect, Is.EqualTo(2));
+                Assert.That(Cleanup, Is.EqualTo(1));
+
+                ++Dependency;
+
+                node.RenderElement(this);
+
+                Assert.That(Effect, Is.EqualTo(3));
+                Assert.That(Cleanup, Is.EqualTo(2));
+
+                node.Dispose();
+
+                Assert.That(Effect, Is.EqualTo(3));
+                Assert.That(Cleanup, Is.EqualTo(3));
+            }
         }
 
-        [Test]
-        public void DependencyChange()
+        public class OnlyMount : ofComponent
         {
-            var node = new ofRootNode();
-
-            Assert.That(Element2.Effect, Is.EqualTo(0));
-            Assert.That(Element2.Cleanup, Is.EqualTo(0));
-
-            node.RenderElement(new Element2());
-
-            Assert.That(Element2.Effect, Is.EqualTo(1));
-            Assert.That(Element2.Cleanup, Is.EqualTo(0));
-
-            node.Invalidate();
-            node.RenderElement(new Element2());
-
-            Assert.That(Element2.Effect, Is.EqualTo(1));
-            Assert.That(Element2.Cleanup, Is.EqualTo(0));
-
-            ++Element2.Dependency;
-
-            node.RenderElement(new Element2());
-
-            Assert.That(Element2.Effect, Is.EqualTo(2));
-            Assert.That(Element2.Cleanup, Is.EqualTo(1));
-
-            node.RenderElement(new Element2());
-
-            Assert.That(Element2.Effect, Is.EqualTo(2));
-            Assert.That(Element2.Cleanup, Is.EqualTo(1));
-
-            ++Element2.Dependency;
-
-            node.RenderElement(new Element2());
-
-            Assert.That(Element2.Effect, Is.EqualTo(3));
-            Assert.That(Element2.Cleanup, Is.EqualTo(2));
-
-            node.Dispose();
-
-            Assert.That(Element2.Effect, Is.EqualTo(3));
-            Assert.That(Element2.Cleanup, Is.EqualTo(3));
-        }
-
-        class Element3 : ofComponent
-        {
-            public static int Effect;
-            public static int Cleanup;
+            public int Effect;
+            public int Cleanup;
 
             protected override ofElement Render()
             {
@@ -131,38 +131,38 @@ namespace ofreact.Tests
 
                 return null;
             }
+
+            [Test]
+            public void Test()
+            {
+                var node = new ofRootNode();
+
+                Assert.That(Effect, Is.EqualTo(0));
+                Assert.That(Cleanup, Is.EqualTo(0));
+
+                node.RenderElement(this);
+
+                Assert.That(Effect, Is.EqualTo(1));
+                Assert.That(Cleanup, Is.EqualTo(0));
+
+                node.RenderElement(this);
+
+                Assert.That(Effect, Is.EqualTo(1));
+                Assert.That(Cleanup, Is.EqualTo(0));
+
+                node.RenderElement(this);
+
+                Assert.That(Effect, Is.EqualTo(1));
+                Assert.That(Cleanup, Is.EqualTo(0));
+
+                node.Dispose();
+
+                Assert.That(Effect, Is.EqualTo(1));
+                Assert.That(Cleanup, Is.EqualTo(1));
+            }
         }
 
-        [Test]
-        public void OnlyMount()
-        {
-            var node = new ofRootNode();
-
-            Assert.That(Element3.Effect, Is.EqualTo(0));
-            Assert.That(Element3.Cleanup, Is.EqualTo(0));
-
-            node.RenderElement(new Element3());
-
-            Assert.That(Element3.Effect, Is.EqualTo(1));
-            Assert.That(Element3.Cleanup, Is.EqualTo(0));
-
-            node.RenderElement(new Element3());
-
-            Assert.That(Element3.Effect, Is.EqualTo(1));
-            Assert.That(Element3.Cleanup, Is.EqualTo(0));
-
-            node.RenderElement(new Element3());
-
-            Assert.That(Element3.Effect, Is.EqualTo(1));
-            Assert.That(Element3.Cleanup, Is.EqualTo(0));
-
-            node.Dispose();
-
-            Assert.That(Element3.Effect, Is.EqualTo(1));
-            Assert.That(Element3.Cleanup, Is.EqualTo(1));
-        }
-
-        class Element4 : ofComponent
+        public class ChangeStateInCleanup : ofComponent
         {
             protected override ofElement Render()
             {
@@ -172,14 +172,14 @@ namespace ofreact.Tests
 
                 return null;
             }
-        }
 
-        [Test]
-        public void ChangeStateInCleanup()
-        {
-            using var node = new ofRootNode();
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
 
-            node.RenderElement(new Element4());
+                node.RenderElement(this);
+            }
         }
     }
 }

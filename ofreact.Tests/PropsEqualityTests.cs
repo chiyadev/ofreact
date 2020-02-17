@@ -2,14 +2,15 @@ using NUnit.Framework;
 
 namespace ofreact.Tests
 {
+    [TestFixture]
     public class PropsEqualityTests
     {
-        class MyElement : ofElement
+        class Element : ofElement
         {
             [Prop] public readonly string Prop1;
             [Prop] public readonly int Prop2;
 
-            public MyElement(string prop1 = default, int prop2 = default, object key = default) : base(key)
+            public Element(string prop1 = default, int prop2 = default, object key = default) : base(key)
             {
                 Prop1 = prop1;
                 Prop2 = prop2;
@@ -21,8 +22,8 @@ namespace ofreact.Tests
         {
             var key = new object();
 
-            var element1 = new MyElement("test", 777, key);
-            var element2 = new MyElement("test", 777, key);
+            var element1 = new Element("test", 777, key);
+            var element2 = new Element("test", 777, key);
 
             Assert.That(InternalReflection.PropsEqual(element1, element2), Is.True);
         }
@@ -32,8 +33,8 @@ namespace ofreact.Tests
         {
             var key = new object();
 
-            var element1 = new MyElement("test1", 777, key);
-            var element2 = new MyElement("test2", 777, key);
+            var element1 = new Element("test1", 777, key);
+            var element2 = new Element("test2", 777, key);
 
             Assert.That(InternalReflection.PropsEqual(element1, element2), Is.False);
         }
@@ -43,62 +44,65 @@ namespace ofreact.Tests
         {
             var key = new object();
 
-            var element1 = new MyElement("test", 777, key);
-            var element2 = new MyElement("test", 778, key);
+            var element1 = new Element("test", 777, key);
+            var element2 = new Element("test", 778, key);
 
             Assert.That(InternalReflection.PropsEqual(element1, element2), Is.False);
         }
 
         [Test]
-        public void AreNotEqualRef()
+        public void AreNotEqualReference()
         {
             var key = new object();
 
-            var element1 = new MyElement("test", 777, key);
-            var element2 = new MyElement("test", 777, new object());
+            var element1 = new Element("test", 777, key);
+            var element2 = new Element("test", 777, new object());
 
             Assert.That(InternalReflection.PropsEqual(element1, element2), Is.False);
         }
 
-        class Private : ofElement
+        class PrivateField : ofElement
         {
             [Prop] readonly string _prop1;
 
-            public Private(string prop1)
+            public PrivateField(string prop1)
             {
                 _prop1 = prop1;
             }
         }
 
         [Test]
-        public void DoNotIgnorePrivateField() => Assert.That(InternalReflection.PropsEqual(new Private("1"), new Private("2")), Is.False);
+        public void DoNotIgnorePrivateField() => Assert.That(InternalReflection.PropsEqual(new PrivateField("1"), new PrivateField("2")), Is.False);
 
-        class Private2 : Private
+        class PrivateFieldInherited1 : PrivateField
         {
-            [Prop] readonly string _prop2;
+            [Prop] readonly string _prop2 = "prop2";
 
-            public Private2(string prop1) : base(prop1) { }
+            public PrivateFieldInherited1(string prop1) : base(prop1) { }
         }
 
-        class Private3 : Private2
+        class PrivateFieldInherited2 : PrivateFieldInherited1
         {
-            [Prop] readonly string _prop3;
+            [Prop] readonly string _prop3 = "prop3";
 
-            public Private3(string prop1) : base(prop1) { }
+            public PrivateFieldInherited2(string prop1) : base(prop1) { }
         }
 
         [Test]
-        public void MultiLevelPrivateFields() => Assert.That(InternalReflection.PropsEqual(new Private3("1"), new Private3("2")), Is.False);
+        public void MultiLevelPrivateFields() => Assert.That(InternalReflection.PropsEqual(new PrivateFieldInherited2("1"), new PrivateFieldInherited2("1")), Is.True);
+
+        [Test]
+        public void MultiLevelPrivateFieldsNeq() => Assert.That(InternalReflection.PropsEqual(new PrivateFieldInherited2("1"), new PrivateFieldInherited2("2")), Is.False);
 
         [Test]
         public void ReferenceEqual()
         {
-            var element = new Private("");
+            var element = new PrivateField("");
 
             Assert.That(InternalReflection.PropsEqual(element, element), Is.True);
         }
 
         [Test]
-        public void MismatchingTypes() => Assert.That(InternalReflection.PropsEqual(new Private(""), new MyElement()), Is.False);
+        public void MismatchingTypes() => Assert.That(InternalReflection.PropsEqual(new PrivateField(""), new Element()), Is.False);
     }
 }

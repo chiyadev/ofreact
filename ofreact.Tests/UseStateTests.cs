@@ -3,11 +3,12 @@ using static ofreact.Hooks;
 
 namespace ofreact.Tests
 {
+    [TestFixture]
     public class UseStateTests
     {
-        class Element1 : ofComponent
+        public class StateUpdateTriggersRerender : ofComponent
         {
-            public static int RenderCount;
+            public int RenderCount;
 
             protected override ofElement Render()
             {
@@ -23,21 +24,22 @@ namespace ofreact.Tests
 
                 return null;
             }
+
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
+
+                node.RenderElement(this);
+
+                Assert.That(RenderCount, Is.EqualTo(11));
+            }
         }
 
-        [Test]
-        public void StateUpdateTriggersRerender()
+        public class UpdateTriggersPartialTreeRerender : ofComponent
         {
-            using var node = new ofRootNode();
+            public int ParentRenders;
 
-            node.RenderElement(new Element1());
-
-            Assert.That(Element1.RenderCount, Is.EqualTo(11));
-        }
-
-        class Element2 : ofComponent
-        {
-            public static int ParentRenders;
             public static int NestedRenders1;
             public static int NestedRenders2;
 
@@ -75,18 +77,18 @@ namespace ofreact.Tests
                     }
                 }
             }
-        }
 
-        [Test]
-        public void StateUpdateTriggersPartialTreeRerender()
-        {
-            using var node = new ofRootNode();
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
 
-            node.RenderElement(new Element2());
+                node.RenderElement(this);
 
-            Assert.That(Element2.ParentRenders, Is.EqualTo(1));
-            Assert.That(Element2.NestedRenders1, Is.EqualTo(11));
-            Assert.That(Element2.NestedRenders2, Is.EqualTo(1));
+                Assert.That(ParentRenders, Is.EqualTo(1));
+                Assert.That(NestedRenders1, Is.EqualTo(11));
+                Assert.That(NestedRenders2, Is.EqualTo(1));
+            }
         }
     }
 }

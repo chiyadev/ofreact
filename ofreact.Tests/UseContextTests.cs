@@ -4,9 +4,10 @@ using static ofreact.Hooks;
 
 namespace ofreact.Tests
 {
+    [TestFixture]
     public class UseContextTests
     {
-        class Element1 : ofComponent
+        public class MultiLevelNestedContext : ofComponent
         {
             class Context
             {
@@ -15,11 +16,10 @@ namespace ofreact.Tests
 
             public static bool ContextFound;
 
-            protected override ofElement Render() =>
-                new ofContext<Context>(value: new Context { Value = "test" })
-                {
-                    new Nested1()
-                };
+            protected override ofElement Render() => new ofContext<Context>(value: new Context { Value = "test" })
+            {
+                new Nested1()
+            };
 
             class Nested1 : ofComponent
             {
@@ -45,19 +45,19 @@ namespace ofreact.Tests
                     }
                 }
             }
+
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
+
+                node.RenderElement(this);
+
+                Assert.That(ContextFound, Is.True);
+            }
         }
 
-        [Test]
-        public void MultiLevelNestedContext()
-        {
-            using var node = new ofRootNode();
-
-            node.RenderElement(new Element1());
-
-            Assert.That(Element1.ContextFound, Is.True);
-        }
-
-        class Element2 : ofComponent
+        public class NearestContext : ofComponent
         {
             class Context
             {
@@ -95,26 +95,26 @@ namespace ofreact.Tests
                     }
                 }
             }
+
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
+
+                node.RenderElement(this);
+
+                Assert.That(ContextFound, Is.True);
+            }
         }
 
-        [Test]
-        public void NearestContext()
+        public class NonexistentContext : ofComponent
         {
-            using var node = new ofRootNode();
-
-            node.RenderElement(new Element2());
-
-            Assert.That(Element2.ContextFound, Is.True);
-        }
-
-        class Element3 : ofComponent
-        {
-            class Context
+            public class Context
             {
                 public string Value;
             }
 
-            public static bool ContextNotFound;
+            public bool ContextNotFound;
 
             protected override ofElement Render()
             {
@@ -126,24 +126,24 @@ namespace ofreact.Tests
 
                 return null;
             }
+
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
+
+                node.RenderElement(this);
+
+                Assert.That(ContextNotFound, Is.True);
+            }
         }
 
-        [Test]
-        public void NonexistentContext()
+        public class DisposeContext : ofComponent
         {
-            using var node = new ofRootNode();
+            public static bool Disposed;
 
-            node.RenderElement(new Element3());
-
-            Assert.That(Element3.ContextNotFound, Is.True);
-        }
-
-        class Element4 : ofComponent
-        {
             public class Context : IDisposable
             {
-                public static bool Disposed;
-
                 public void Dispose() => Disposed = true;
             }
 
@@ -163,28 +163,25 @@ namespace ofreact.Tests
                     return null;
                 }
             }
+
+            [Test]
+            public void Test()
+            {
+                var node = new ofRootNode();
+
+                Assert.That(Disposed, Is.False);
+
+                node.RenderElement(this);
+
+                Assert.That(Disposed, Is.False);
+
+                node.Dispose();
+
+                Assert.That(Disposed, Is.True);
+            }
         }
 
-        [Test]
-        public void DisposeContext()
-        {
-            var node = new ofRootNode();
-
-            Assert.That(Element4.Context.Disposed, Is.False);
-
-            node.RenderElement(new Element4());
-
-            Assert.That(Element4.Context.Disposed, Is.False);
-
-            node.Dispose();
-
-            Assert.That(Element4.Context.Disposed, Is.True);
-        }
-
-        [Test]
-        public void DisposeContextOnChange() { }
-
-        class Element5 : ofComponent
+        public class PartialUpdateContextAvailable : ofComponent
         {
             public static int Rendered;
             public static StateObject<int> State;
@@ -221,36 +218,40 @@ namespace ofreact.Tests
                     }
                 }
             }
+
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
+
+                Assert.That(Rendered, Is.EqualTo(0));
+
+                node.RenderElement(this);
+
+                Assert.That(Rendered, Is.EqualTo(1));
+
+                node.RenderElement(this);
+
+                Assert.That(Rendered, Is.EqualTo(1));
+
+                State.Current++;
+
+                node.RenderElement(this);
+
+                Assert.That(Rendered, Is.EqualTo(2));
+
+                node.RenderElement(this);
+
+                Assert.That(Rendered, Is.EqualTo(2));
+            }
         }
 
-        [Test]
-        public void PartialUpdateContextAvailable()
-        {
-            using var node = new ofRootNode();
-
-            Assert.That(Element5.Rendered, Is.EqualTo(0));
-
-            node.RenderElement(new Element5());
-
-            Assert.That(Element5.Rendered, Is.EqualTo(1));
-
-            node.RenderElement(new Element5());
-
-            Assert.That(Element5.Rendered, Is.EqualTo(1));
-
-            Element5.State.Current++;
-
-            node.RenderElement(new Element5());
-
-            Assert.That(Element5.Rendered, Is.EqualTo(2));
-        }
-
-        class Element6 : ofComponent
+        public class ContextChangeRerender : ofComponent
         {
             public static int Nested1Rendered;
             public static int Nested2Rendered;
 
-            public static bool RemoveNested2;
+            public bool RemoveNested2;
 
             protected override ofElement Render() => new ofContext<Context>(value: new Context
             {
@@ -299,62 +300,59 @@ namespace ofreact.Tests
                     }
                 }
             }
+
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
+
+                node.RenderElement(this);
+
+                Assert.That(Nested1Rendered, Is.EqualTo(1));
+                Assert.That(Nested2Rendered, Is.EqualTo(1));
+
+                node.RenderElement(this);
+
+                Assert.That(Nested1Rendered, Is.EqualTo(1));
+                Assert.That(Nested2Rendered, Is.EqualTo(2));
+
+                node.RenderElement(this);
+
+                Assert.That(Nested1Rendered, Is.EqualTo(1));
+                Assert.That(Nested2Rendered, Is.EqualTo(3));
+
+                node.RenderElement(this);
+
+                Assert.That(Nested1Rendered, Is.EqualTo(1));
+                Assert.That(Nested2Rendered, Is.EqualTo(4));
+
+                RemoveNested2 = true;
+
+                node.RenderElement(this);
+
+                Assert.That(Nested1Rendered, Is.EqualTo(2));
+                Assert.That(Nested2Rendered, Is.EqualTo(4));
+
+                node.RenderElement(this);
+
+                Assert.That(Nested1Rendered, Is.EqualTo(2));
+                Assert.That(Nested2Rendered, Is.EqualTo(4));
+
+                RemoveNested2 = false;
+
+                node.RenderElement(this);
+
+                Assert.That(Nested1Rendered, Is.EqualTo(3));
+                Assert.That(Nested2Rendered, Is.EqualTo(5));
+
+                node.RenderElement(this);
+
+                Assert.That(Nested1Rendered, Is.EqualTo(3));
+                Assert.That(Nested2Rendered, Is.EqualTo(6));
+            }
         }
 
-        [Test]
-        public void ContextChangeRerender()
-        {
-            using var node = new ofRootNode();
-
-            Assert.That(Element6.Nested1Rendered, Is.EqualTo(0));
-            Assert.That(Element6.Nested2Rendered, Is.EqualTo(0));
-
-            node.RenderElement(new Element6());
-
-            Assert.That(Element6.Nested1Rendered, Is.EqualTo(1));
-            Assert.That(Element6.Nested2Rendered, Is.EqualTo(1));
-
-            node.RenderElement(new Element6());
-
-            Assert.That(Element6.Nested1Rendered, Is.EqualTo(1));
-            Assert.That(Element6.Nested2Rendered, Is.EqualTo(2));
-
-            node.RenderElement(new Element6());
-
-            Assert.That(Element6.Nested1Rendered, Is.EqualTo(1));
-            Assert.That(Element6.Nested2Rendered, Is.EqualTo(3));
-
-            node.RenderElement(new Element6());
-
-            Assert.That(Element6.Nested1Rendered, Is.EqualTo(1));
-            Assert.That(Element6.Nested2Rendered, Is.EqualTo(4));
-
-            Element6.RemoveNested2 = true;
-
-            node.RenderElement(new Element6());
-
-            Assert.That(Element6.Nested1Rendered, Is.EqualTo(2));
-            Assert.That(Element6.Nested2Rendered, Is.EqualTo(4));
-
-            node.RenderElement(new Element6());
-
-            Assert.That(Element6.Nested1Rendered, Is.EqualTo(2));
-            Assert.That(Element6.Nested2Rendered, Is.EqualTo(4));
-
-            Element6.RemoveNested2 = false;
-
-            node.RenderElement(new Element6());
-
-            Assert.That(Element6.Nested1Rendered, Is.EqualTo(3));
-            Assert.That(Element6.Nested2Rendered, Is.EqualTo(5));
-
-            node.RenderElement(new Element6());
-
-            Assert.That(Element6.Nested1Rendered, Is.EqualTo(3));
-            Assert.That(Element6.Nested2Rendered, Is.EqualTo(6));
-        }
-
-        class Element7 : ofComponent
+        public class EmptyContext : ofComponent
         {
             public static int Nested1Rendered;
             public static int Nested2Rendered;
@@ -369,6 +367,7 @@ namespace ofreact.Tests
 
             class Context
             {
+                // [Prop]
                 public string IgnoreMe;
             }
 
@@ -395,25 +394,25 @@ namespace ofreact.Tests
                     }
                 }
             }
-        }
 
-        [Test]
-        public void EmptyContext()
-        {
-            using var node = new ofRootNode();
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
 
-            Assert.That(Element7.Nested1Rendered, Is.EqualTo(0));
-            Assert.That(Element7.Nested2Rendered, Is.EqualTo(0));
+                Assert.That(Nested1Rendered, Is.EqualTo(0));
+                Assert.That(Nested2Rendered, Is.EqualTo(0));
 
-            node.RenderElement(new Element7());
+                node.RenderElement(this);
 
-            Assert.That(Element7.Nested1Rendered, Is.EqualTo(1));
-            Assert.That(Element7.Nested2Rendered, Is.EqualTo(1));
+                Assert.That(Nested1Rendered, Is.EqualTo(1));
+                Assert.That(Nested2Rendered, Is.EqualTo(1));
 
-            node.RenderElement(new Element7());
+                node.RenderElement(this);
 
-            Assert.That(Element7.Nested1Rendered, Is.EqualTo(1));
-            Assert.That(Element7.Nested2Rendered, Is.EqualTo(1));
+                Assert.That(Nested1Rendered, Is.EqualTo(1));
+                Assert.That(Nested2Rendered, Is.EqualTo(1));
+            }
         }
     }
 }

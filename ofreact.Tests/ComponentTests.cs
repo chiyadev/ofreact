@@ -3,11 +3,12 @@ using static ofreact.Hooks;
 
 namespace ofreact.Tests
 {
+    [TestFixture]
     public class ComponentTests
     {
-        class Element1 : ofComponent
+        public class RecreateWrapperNode : ofComponent
         {
-            public static bool DoAlt;
+            public bool DoAlt;
 
             public static bool OneRendered;
             public static bool TwoRendered;
@@ -45,43 +46,43 @@ namespace ofreact.Tests
                     return null;
                 }
             }
+
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
+
+                node.RenderElement(this);
+
+                Assert.That(OneRendered, Is.True);
+                Assert.That(TwoRendered, Is.False);
+
+                OneRendered = false;
+                DoAlt       = true;
+
+                node.RenderElement(this);
+
+                Assert.That(OneRendered, Is.False);
+                Assert.That(TwoRendered, Is.True);
+
+                TwoRendered = false;
+                DoAlt       = false;
+
+                node.RenderElement(this);
+
+                Assert.That(OneRendered, Is.True);
+                Assert.That(TwoRendered, Is.False);
+            }
         }
 
-        [Test]
-        public void RecreateWrapperNode()
+        public class NullClearsChildState : ofComponent
         {
-            using var node = new ofRootNode();
-
-            node.RenderElement(new Element1());
-
-            Assert.That(Element1.OneRendered, Is.True);
-            Assert.That(Element1.TwoRendered, Is.False);
-
-            Element1.OneRendered = false;
-            Element1.DoAlt       = true;
-
-            node.RenderElement(new Element1());
-
-            Assert.That(Element1.OneRendered, Is.False);
-            Assert.That(Element1.TwoRendered, Is.True);
-
-            Element1.TwoRendered = false;
-            Element1.DoAlt       = false;
-
-            node.RenderElement(new Element1());
-
-            Assert.That(Element1.OneRendered, Is.True);
-            Assert.That(Element1.TwoRendered, Is.False);
-        }
-
-        class Element2 : ofComponent
-        {
-            public static int Which;
+            public static int State;
             public static int Rendered;
 
             protected override ofElement Render()
             {
-                if (Which == 0)
+                if (State == 0)
                     return null;
 
                 return new Nested();
@@ -91,45 +92,45 @@ namespace ofreact.Tests
             {
                 protected override ofElement Render()
                 {
-                    var (state, _) = UseState(Which);
+                    var (state, _) = UseState(State);
 
-                    Assert.That(state, Is.EqualTo(Which));
+                    Assert.That(state, Is.EqualTo(State));
 
                     ++Rendered;
 
                     return null;
                 }
             }
-        }
 
-        [Test]
-        public void NullClearsChildState()
-        {
-            using var node = new ofRootNode();
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
 
-            Element2.Which = 0;
+                State = 0;
 
-            node.RenderElement(new Element2());
+                node.RenderElement(this);
 
-            Assert.That(Element2.Rendered, Is.EqualTo(0));
+                Assert.That(Rendered, Is.EqualTo(0));
 
-            Element2.Which = 1;
+                State = 1;
 
-            node.RenderElement(new Element2());
+                node.RenderElement(this);
 
-            Assert.That(Element2.Rendered, Is.EqualTo(1));
+                Assert.That(Rendered, Is.EqualTo(1));
 
-            Element2.Which = 0;
+                State = 0;
 
-            node.RenderElement(new Element2());
+                node.RenderElement(this);
 
-            Assert.That(Element2.Rendered, Is.EqualTo(1));
+                Assert.That(Rendered, Is.EqualTo(1));
 
-            Element2.Which = 2;
+                State = 2;
 
-            node.RenderElement(new Element2());
+                node.RenderElement(this);
 
-            Assert.That(Element2.Rendered, Is.EqualTo(2));
+                Assert.That(Rendered, Is.EqualTo(2));
+            }
         }
     }
 }

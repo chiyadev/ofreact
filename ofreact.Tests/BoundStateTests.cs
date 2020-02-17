@@ -3,11 +3,12 @@ using static ofreact.Hooks;
 
 namespace ofreact.Tests
 {
+    [TestFixture]
     public class BoundStateTests
     {
-        class Element1 : ofComponent
+        public class InitialValue : ofComponent
         {
-            public static bool Rendered;
+            public bool Rendered;
 
             [State(777)] public readonly StateObject<int> Number;
 
@@ -19,21 +20,21 @@ namespace ofreact.Tests
 
                 return null;
             }
+
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
+
+                node.RenderElement(this);
+
+                Assert.That(Rendered, Is.True);
+            }
         }
 
-        [Test]
-        public void InitialValue()
+        public class UpdateTriggersRerender : ofComponent
         {
-            using var node = new ofRootNode();
-
-            node.RenderElement(new Element1());
-
-            Assert.That(Element1.Rendered, Is.True);
-        }
-
-        class Element2 : ofComponent
-        {
-            public static int Renders;
+            public int Renders;
 
             [State] public readonly StateObject<int> Count;
 
@@ -49,21 +50,21 @@ namespace ofreact.Tests
 
                 return null;
             }
+
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
+
+                node.RenderElement(this);
+
+                Assert.That(Renders, Is.EqualTo(11));
+            }
         }
 
-        [Test]
-        public void StateUpdateTriggersRerender()
+        public class UpdateTriggersPartialTreeRerender : ofComponent
         {
-            using var node = new ofRootNode { AlwaysInvalid = false };
-
-            node.RenderElement(new Element2());
-
-            Assert.That(Element2.Renders, Is.EqualTo(11));
-        }
-
-        class Element3 : ofComponent
-        {
-            public static int ParentRenders;
+            public int ParentRenders;
             public static int NestedRenders1;
             public static int NestedRenders2;
 
@@ -76,7 +77,7 @@ namespace ofreact.Tests
 
             class Nested1 : ofComponent
             {
-                [State] public readonly StateObject<int> Count;
+                [State] readonly StateObject<int> _count;
 
                 protected override ofElement Render()
                 {
@@ -84,8 +85,8 @@ namespace ofreact.Tests
 
                     UseEffect(() =>
                     {
-                        if (Count < 10)
-                            ++Count.Current;
+                        if (_count < 10)
+                            ++_count.Current;
                     });
 
                     return new Nested2();
@@ -101,18 +102,18 @@ namespace ofreact.Tests
                     }
                 }
             }
-        }
 
-        [Test]
-        public void StateUpdateTriggersPartialTreeRerender()
-        {
-            using var node = new ofRootNode();
+            [Test]
+            public void Test()
+            {
+                using var node = new ofRootNode();
 
-            node.RenderElement(new Element3());
+                node.RenderElement(this);
 
-            Assert.That(Element3.ParentRenders, Is.EqualTo(1));
-            Assert.That(Element3.NestedRenders1, Is.EqualTo(11));
-            Assert.That(Element3.NestedRenders2, Is.EqualTo(1));
+                Assert.That(ParentRenders, Is.EqualTo(1));
+                Assert.That(NestedRenders1, Is.EqualTo(11));
+                Assert.That(NestedRenders2, Is.EqualTo(1));
+            }
         }
     }
 }
