@@ -114,24 +114,28 @@ namespace ofreact
         /// <returns>False to short-circuit the rendering.</returns>
         protected internal virtual bool RenderSubtree() => true;
 
+        /// <inheritdoc cref="DefineComponent(System.Func{ofNode,ofElement})"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ofElement DefineComponent(Func<ofElement> render) => DefineComponent(n => render?.Invoke());
+
         /// <summary>
         /// Wraps the given rendering function in an <see cref="ofElement"/>.
         /// </summary>
         /// <param name="render">Rendering function.</param>
-        /// <returns><see cref="ofElement"/> that invokes <paramref name="render"/>.</returns>
+        /// <returns>An <see cref="ofElement"/> that invokes <paramref name="render"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ofElement DefineComponent(Func<ofElement> render) => new FunctionalComponentWrapper(render);
+        public static ofElement DefineComponent(Func<ofNode, ofElement> render) => new FunctionalComponent(render);
 
-        sealed class FunctionalComponentWrapper : ofComponent
+        sealed class FunctionalComponent : ofComponent
         {
-            readonly Func<ofElement> _render;
+            readonly Func<ofNode, ofElement> _render;
 
-            public FunctionalComponentWrapper(Func<ofElement> render)
+            public FunctionalComponent(Func<ofNode, ofElement> render)
             {
                 _render = render;
             }
 
-            protected override ofElement Render() => _render?.Invoke();
+            protected override ofElement Render() => _render?.Invoke(Node);
         }
 
 #region Hooks
