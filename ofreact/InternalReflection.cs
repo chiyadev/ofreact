@@ -186,54 +186,6 @@ namespace ofreact
             return _containerObjectFactory[type] = Factory.GetContainerObjectFactory(type);
         }
 
-        internal static IEnumerable<FieldInfo> GetAllFields(this Type type)
-        {
-            do
-            {
-                foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-                    yield return field;
-            }
-            while ((type = type.BaseType) != null);
-        }
-
-        internal static IEnumerable<MethodInfo> GetAllMethods(this Type type)
-        {
-            do
-            {
-                foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly))
-                    yield return method;
-            }
-            while ((type = type.BaseType) != null);
-        }
-
-        internal static FieldInfo GetAllField(this Type type, string name)
-        {
-            do
-            {
-                var field = type.GetField(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-
-                if (field != null)
-                    return field;
-            }
-            while ((type = type.BaseType) != null);
-
-            return null;
-        }
-
-        internal static MethodInfo GetAllMethod(this Type type, string name)
-        {
-            do
-            {
-                var method = type.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-
-                if (method != null)
-                    return method;
-            }
-            while ((type = type.BaseType) != null);
-
-            return null;
-        }
-
         public delegate object ElementMethodInvokerDelegate(ofElement element);
 
         public delegate object[] ElementDependencyListBuilderDelegate(ofElement element);
