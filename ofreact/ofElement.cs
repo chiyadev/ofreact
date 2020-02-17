@@ -142,13 +142,29 @@ namespace ofreact
 
         /// <inheritdoc cref="DefineHook{T}"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void DefineHook(Action<ofNode> hook) => hook(_currentElement?.Node);
+        public static void DefineHook(Action<ofNode> hook)
+        {
+            var node = _currentElement?.Node;
+
+            if (node == null)
+                throw new InvalidOperationException("Cannot use hooks outside the rendering method.");
+
+            hook(node);
+        }
 
         /// <summary>
         /// Invokes the given callback delegate with <see cref="ofNode"/> of the element currently being rendered by the calling thread.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T DefineHook<T>(Func<ofNode, T> hook) => hook(_currentElement?.Node);
+        public static T DefineHook<T>(Func<ofNode, T> hook)
+        {
+            var node = _currentElement?.Node;
+
+            if (node == null)
+                throw new InvalidOperationException("Cannot use hooks outside the rendering method.");
+
+            return hook(node);
+        }
 
         /// <summary>
         /// Determines whether the specified object instance is equivalent to this element.
