@@ -22,6 +22,14 @@ namespace ofreact
         /// </summary>
         public static bool IsEmitAvailable { get; }
 
+        /// <summary>
+        /// Returns a value indicating whether <see cref="Type.MakeGenericType"/> or <see cref="MethodInfo.MakeGenericMethod"/> is available in the calling environment.
+        /// </summary>
+        public static bool CanMakeGeneric { get; }
+
+        // ReSharper disable once UnusedTypeParameter
+        struct MyCustomStruct<T> { }
+
         static InternalReflection()
         {
             try
@@ -31,6 +39,15 @@ namespace ofreact
             catch
             {
                 IsEmitAvailable = false;
+            }
+
+            try
+            {
+                CanMakeGeneric = typeof(MyCustomStruct<>).MakeGenericType(typeof(Action)).IsValueType;
+            }
+            catch
+            {
+                CanMakeGeneric = false;
             }
 
             Factory = IsEmitAvailable
