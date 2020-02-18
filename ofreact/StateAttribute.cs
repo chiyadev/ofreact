@@ -1,4 +1,5 @@
 using System;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace ofreact
@@ -12,66 +13,43 @@ namespace ofreact
     /// States will cause a rerender when its value changes.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
-    public class StateAttribute : Attribute, IElementFieldBinder, IElementMethodArgumentProvider
+    public class StateAttribute : Attribute, IBinderFieldProvider, IBinderMethodParameterProvider
     {
         readonly object _initialValue;
 
-        string _name;
-        InternalReflection.ContainerObjectFactoryDelegate _create;
-        bool _wrapped;
-
         /// <summary>
-        /// Creates a new <see cref="StateAttribute"/>.
+        /// Creates a new <see cref="RefAttribute"/>.
         /// </summary>
         public StateAttribute() { }
 
         /// <summary>
-        /// Creates a new <see cref="StateAttribute"/> with the given initial value.
+        /// Creates a new <see cref="RefAttribute"/> with the given initial value.
         /// </summary>
-        /// <param name="initialValue">Initial value of the stateful value.</param>
+        /// <param name="initialValue">Initial value of the referenced value.</param>
         public StateAttribute(object initialValue)
         {
             _initialValue = initialValue;
         }
 
-        public FieldInfo Field { get; private set; }
-        public ParameterInfo Parameter { get; private set; }
-
-        void IElementFieldBinder.Initialize(FieldInfo field)
+        public Expression GetValue(Expression element, FieldInfo field)
         {
-            Field   = field;
-            _name   = field.Name;
-            _create = InternalReflection.GetStateObjectFactory(field.FieldType, out _wrapped);
+            var type = field.FieldType;
 
-            if (_wrapped)
-                throw new ArgumentException($"Field {field} of {field.DeclaringType} must be a type of {typeof(RefObject<>)}");
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(StateObject<>))
+                return ElementBinder.BuildContainerInstantiation(type, element, Expression.Constant(field.Name), _initialValue);
+
+            throw new ArgumentException($"Field {field} of {field.DeclaringType} must be a type of {typeof(StateObject<>)}");
         }
 
-        void IElementMethodArgumentProvider.Initialize(ParameterInfo parameter)
+        public Expression GetValue(Expression element, ParameterInfo parameter)
         {
-            Parameter = parameter;
-            _name     = parameter.Name;
-            _create   = InternalReflection.GetStateObjectFactory(parameter.ParameterType, out _wrapped);
-        }
+            var type = parameter.ParameterType;
 
-        object IElementFieldBinder.GetValue(ofElement element)
-        {
-            var container = _create(element.Node, _name, _initialValue);
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(StateObject<>))
+                return ElementBinder.BuildContainerInstantiation(type, element, Expression.Constant(parameter.Name), _initialValue);
 
-            if (_wrapped)
-                return container.Current;
-
-            return container;
-        }
-
-        object IElementMethodArgumentProvider.GetValue(ofElement element)
-        {
-            var container = _create(element.Node, _name, _initialValue);
-
-            if (_wrapped)
-                return container.Current;
-
-            return container;
+            // todo: this breaks with aot
+            return ElementBinder.BuildContainerValueAccess(ElementBinder.BuildContainerInstantiation(typeof(StateObject<>).MakeGenericType(type), element, Expression.Constant(parameter.Name), _initialValue));
         }
     }
 }

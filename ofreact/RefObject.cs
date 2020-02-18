@@ -4,16 +4,11 @@ namespace ofreact
 {
     public delegate void RefDelegate<in T>(T value);
 
-    public interface IContainerObject
-    {
-        object Current { get; }
-    }
-
     /// <summary>
     /// A container that represents a reference to a value.
     /// </summary>
     /// <typeparam name="T">Type of the value.</typeparam>
-    public sealed class RefObject<T> : IContainerObject
+    public sealed class RefObject<T>
     {
         readonly IDictionary<string, object> _dict;
         readonly string _key;
@@ -26,8 +21,6 @@ namespace ofreact
             get => _dict.TryGetValue(_key, out var value) ? (T) value : default;
             set => _dict[_key] = value;
         }
-
-        object IContainerObject.Current => Current;
 
         internal RefObject(ofNode node, string key, T initialValue)
         {

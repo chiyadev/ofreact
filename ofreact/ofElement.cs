@@ -77,7 +77,7 @@ namespace ofreact
                 if (attrs)
                     try
                     {
-                        InternalReflection.BindElement(element);
+                        ElementBinder.BindAttributes(element);
                     }
                     catch
                     {

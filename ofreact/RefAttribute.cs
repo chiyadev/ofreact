@@ -1,4 +1,5 @@
 using System;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace ofreact
@@ -12,13 +13,9 @@ namespace ofreact
     /// Refs do not cause a rerender even if its value changes.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter)]
-    public class RefAttribute : Attribute, IElementFieldBinder, IElementMethodArgumentProvider
+    public class RefAttribute : Attribute, IBinderFieldProvider, IBinderMethodParameterProvider
     {
         readonly object _initialValue;
-
-        string _name;
-        InternalReflection.ContainerObjectFactoryDelegate _create;
-        bool _wrapped;
 
         /// <summary>
         /// Creates a new <see cref="RefAttribute"/>.
@@ -34,44 +31,25 @@ namespace ofreact
             _initialValue = initialValue;
         }
 
-        public FieldInfo Field { get; private set; }
-        public ParameterInfo Parameter { get; private set; }
-
-        void IElementFieldBinder.Initialize(FieldInfo field)
+        public Expression GetValue(Expression element, FieldInfo field)
         {
-            Field   = field;
-            _name   = field.Name;
-            _create = InternalReflection.GetRefObjectFactory(field.FieldType, out _wrapped);
+            var type = field.FieldType;
 
-            if (_wrapped)
-                throw new ArgumentException($"Field {field} of {field.DeclaringType} must be a type of {typeof(RefObject<>)}");
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(RefObject<>))
+                return ElementBinder.BuildContainerInstantiation(type, element, Expression.Constant(field.Name), _initialValue);
+
+            throw new ArgumentException($"Field {field} of {field.DeclaringType} must be a type of {typeof(RefObject<>)}");
         }
 
-        void IElementMethodArgumentProvider.Initialize(ParameterInfo parameter)
+        public Expression GetValue(Expression element, ParameterInfo parameter)
         {
-            Parameter = parameter;
-            _name     = parameter.Name;
-            _create   = InternalReflection.GetRefObjectFactory(parameter.ParameterType, out _wrapped);
-        }
+            var type = parameter.ParameterType;
 
-        object IElementFieldBinder.GetValue(ofElement element)
-        {
-            var container = _create(element.Node, _name, _initialValue);
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(RefObject<>))
+                return ElementBinder.BuildContainerInstantiation(type, element, Expression.Constant(parameter.Name), _initialValue);
 
-            if (_wrapped)
-                return container.Current;
-
-            return container;
-        }
-
-        object IElementMethodArgumentProvider.GetValue(ofElement element)
-        {
-            var container = _create(element.Node, _name, _initialValue);
-
-            if (_wrapped)
-                return container.Current;
-
-            return container;
+            // todo: this breaks with aot
+            return ElementBinder.BuildContainerValueAccess(ElementBinder.BuildContainerInstantiation(typeof(RefObject<>).MakeGenericType(type), element, Expression.Constant(parameter.Name), _initialValue));
         }
     }
 }
