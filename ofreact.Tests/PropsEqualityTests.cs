@@ -25,7 +25,7 @@ namespace ofreact.Tests
             var element1 = new Element("test", 777, key);
             var element2 = new Element("test", 777, key);
 
-            Assert.That(InternalReflection.PropsEqual(element1, element2), Is.True);
+            Assert.That(PropComparer.Equal(element1, element2), Is.True);
         }
 
         [Test]
@@ -36,7 +36,7 @@ namespace ofreact.Tests
             var element1 = new Element("test1", 777, key);
             var element2 = new Element("test2", 777, key);
 
-            Assert.That(InternalReflection.PropsEqual(element1, element2), Is.False);
+            Assert.That(PropComparer.Equal(element1, element2), Is.False);
         }
 
         [Test]
@@ -47,7 +47,7 @@ namespace ofreact.Tests
             var element1 = new Element("test", 777, key);
             var element2 = new Element("test", 778, key);
 
-            Assert.That(InternalReflection.PropsEqual(element1, element2), Is.False);
+            Assert.That(PropComparer.Equal(element1, element2), Is.False);
         }
 
         [Test]
@@ -58,7 +58,7 @@ namespace ofreact.Tests
             var element1 = new Element("test", 777, key);
             var element2 = new Element("test", 777, new object());
 
-            Assert.That(InternalReflection.PropsEqual(element1, element2), Is.False);
+            Assert.That(PropComparer.Equal(element1, element2), Is.False);
         }
 
         class PrivateField : ofElement
@@ -72,7 +72,7 @@ namespace ofreact.Tests
         }
 
         [Test]
-        public void DoNotIgnorePrivateField() => Assert.That(InternalReflection.PropsEqual(new PrivateField("1"), new PrivateField("2")), Is.False);
+        public void DoNotIgnorePrivateField() => Assert.That(PropComparer.Equal(new PrivateField("1"), new PrivateField("2")), Is.False);
 
         class PrivateFieldInherited1 : PrivateField
         {
@@ -89,20 +89,20 @@ namespace ofreact.Tests
         }
 
         [Test]
-        public void MultiLevelPrivateFields() => Assert.That(InternalReflection.PropsEqual(new PrivateFieldInherited2("1"), new PrivateFieldInherited2("1")), Is.True);
+        public void MultiLevelPrivateFields() => Assert.That(PropComparer.Equal(new PrivateFieldInherited2("1"), new PrivateFieldInherited2("1")), Is.True);
 
         [Test]
-        public void MultiLevelPrivateFieldsNeq() => Assert.That(InternalReflection.PropsEqual(new PrivateFieldInherited2("1"), new PrivateFieldInherited2("2")), Is.False);
+        public void MultiLevelPrivateFieldsNeq() => Assert.That(PropComparer.Equal(new PrivateFieldInherited2("1"), new PrivateFieldInherited2("2")), Is.False);
 
         [Test]
         public void ReferenceEqual()
         {
             var element = new PrivateField("");
 
-            Assert.That(InternalReflection.PropsEqual(element, element), Is.True);
+            Assert.That(PropComparer.Equal(element, element), Is.True);
         }
 
         [Test]
-        public void MismatchingTypes() => Assert.That(InternalReflection.PropsEqual(new PrivateField(""), new Element()), Is.False);
+        public void MismatchingTypes() => Assert.That(PropComparer.Equal(new PrivateField(""), new Element()), Is.False);
     }
 }

@@ -114,7 +114,7 @@ namespace ofreact
         /// However, in contrast to react behavior, this method will compare props instead of returning true by default, equivalent to PureComponent not Component.
         /// In addition, state updates will always trigger a rerender regardless of the result of this method.
         /// </remarks>
-        protected internal virtual bool ShouldComponentUpdate(ofElement next) => !InternalReflection.PropsEqual(this, next);
+        protected internal virtual bool ShouldComponentUpdate(ofElement next) => !PropComparer.Equal(this, next);
 
         /// <inheritdoc cref="DefineComponent(System.Func{ofNode,ofElement})"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

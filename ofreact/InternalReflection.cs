@@ -49,45 +49,6 @@ namespace ofreact
             {
                 CanMakeGeneric = false;
             }
-
-            Factory = IsEmitAvailable
-                ? new ExpressionTreeReflectionFactory() as IReflectionFactory
-                : new DynamicReflectionFactory();
-        }
-
-        public delegate bool PropsEqualityComparerDelegate(object a, object b);
-
-        static readonly ConcurrentDictionary<Type, PropsEqualityComparerDelegate> _propsEqualityComparer = new ConcurrentDictionary<Type, PropsEqualityComparerDelegate>();
-        static readonly PropsEqualityComparerDelegate _emptyPropsEqualityComparer = (a, b) => true;
-
-        /// <summary>
-        /// Returns true if all fields of element <paramref name="a"/> and <paramref name="b"/> marked with <see cref="PropAttribute"/> are equal.
-        /// </summary>
-        public static bool PropsEqual(object a, object b)
-        {
-            if (ReferenceEquals(a, b))
-                return true;
-
-            if (a == null || b == null)
-                return false;
-
-            var type = a.GetType();
-
-            if (type != b.GetType())
-                return false;
-
-            if (_propsEqualityComparer.TryGetValue(type, out var comparer))
-                return comparer?.Invoke(a, b) ?? true;
-
-            var fields = type.GetAllFields().Where(f => f.IsDefined(typeof(PropAttribute), true)).ToArray();
-
-            if (fields.Length == 0)
-            {
-                _propsEqualityComparer[type] = null;
-                return true;
-            }
-
-            return (_propsEqualityComparer[type] = Factory.GetPropsEqualityComparer(type, fields) ?? _emptyPropsEqualityComparer)?.Invoke(a, b) ?? true;
         }
 
         public delegate void ElementBinderDelegate(ofElement element);
@@ -212,140 +173,14 @@ namespace ofreact
         /// </summary>
         public interface IReflectionFactory
         {
-            PropsEqualityComparerDelegate GetPropsEqualityComparer(Type type, FieldInfo[] fields);
             ElementBinderDelegate GetElementBinder(Type type, IElementFieldBinder[] fields, IElementMethodInvoker[] methods);
             ContainerObjectFactoryDelegate GetContainerObjectFactory(Type type);
             ElementMethodInvokerDelegate GetElementMethodInvoker(Type type, MethodInfo method, IElementMethodArgumentProvider[] arguments);
             ElementDependencyListBuilderDelegate GetElementDependencyListBuilder(Type type, FieldInfo[] fields, IElementMethodArgumentProvider[] arguments);
         }
 
-        sealed class DynamicReflectionFactory : IReflectionFactory
-        {
-            public PropsEqualityComparerDelegate GetPropsEqualityComparer(Type type, FieldInfo[] fields)
-            {
-                switch (fields.Length)
-                {
-                    case 0:
-                        return null;
-
-                    case 1:
-                    {
-                        var field = fields[0];
-
-                        return (a, b) =>
-                        {
-                            var x = field.GetValue(a);
-                            var y = field.GetValue(b);
-
-                            return x == y || x != null && x.Equals(y);
-                        };
-                    }
-
-                    default:
-                    {
-                        return (a, b) =>
-                        {
-                            for (var i = 0; i < fields.Length; i++)
-                            {
-                                var field = fields[i];
-
-                                var x = field.GetValue(a);
-                                var y = field.GetValue(b);
-
-                                if (x != y && (x == null || !x.Equals(y)))
-                                    return false;
-                            }
-
-                            return true;
-                        };
-                    }
-                }
-            }
-
-            public ElementBinderDelegate GetElementBinder(Type type, IElementFieldBinder[] fields, IElementMethodInvoker[] methods) => e =>
-            {
-                foreach (var binder in fields)
-                    binder.Field.SetValue(e, binder.GetValue(e));
-
-                foreach (var invoker in methods)
-                    invoker.Invoke(e);
-            };
-
-            public ContainerObjectFactoryDelegate GetContainerObjectFactory(Type type)
-            {
-                // type is container
-                var ctor = type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)[0];
-
-                type = type.GenericTypeArguments[0];
-
-                // create default value for type if it's struct
-                var defaultValue = null as object;
-
-                if (type.IsValueType)
-                    defaultValue = Activator.CreateInstance(type);
-
-                return (n, k, i) => (IContainerObject) ctor.Invoke(new[] { n, k, i ?? defaultValue });
-            }
-
-            public ElementMethodInvokerDelegate GetElementMethodInvoker(Type type, MethodInfo method, IElementMethodArgumentProvider[] arguments) => e =>
-            {
-                var args = new object[arguments.Length];
-
-                for (var i = 0; i < arguments.Length; i++)
-                    args[i] = arguments[i].GetValue(e);
-
-                return method.Invoke(e, args);
-            };
-
-            public ElementDependencyListBuilderDelegate GetElementDependencyListBuilder(Type type, FieldInfo[] fields, IElementMethodArgumentProvider[] arguments) => e =>
-            {
-                var deps = new object[fields.Length + arguments.Length];
-
-                for (var i = 0; i < fields.Length; i++)
-                    deps[i] = fields[i].GetValue(e);
-
-                for (var i = 0; i < arguments.Length; i++)
-                    deps[fields.Length + i] = arguments[i].GetValue(e);
-
-                return deps;
-            };
-        }
-
         sealed class ExpressionTreeReflectionFactory : IReflectionFactory
         {
-            public PropsEqualityComparerDelegate GetPropsEqualityComparer(Type type, FieldInfo[] fields)
-            {
-                var x = Expression.Parameter(type, "x");
-                var y = Expression.Parameter(type, "y");
-
-                var body = null as Expression;
-
-                foreach (var field in fields)
-                {
-                    var other = Expression.Equal(
-                        Expression.Field(x, field),
-                        Expression.Field(y, field));
-
-                    body = body == null
-                        ? other
-                        : Expression.AndAlso(body, other);
-                }
-
-                if (body == null)
-                    return null;
-
-                var a = Expression.Parameter(typeof(object), "a");
-                var b = Expression.Parameter(typeof(object), "b");
-
-                return Expression.Lambda<PropsEqualityComparerDelegate>(
-                                      Expression.Invoke(
-                                          Expression.Lambda(body, x, y),
-                                          Expression.Convert(a, type),
-                                          Expression.Convert(b, type)),
-                                      a, b)
-                                 .Compile();
-            }
-
             static readonly MethodInfo _fieldSetValueMethod = typeof(FieldInfo).GetMethod(nameof(FieldInfo.SetValue), new[] { typeof(object), typeof(object) });
 
             static Expression BuildFieldSetter(Expression instance, FieldInfo field, Expression value)

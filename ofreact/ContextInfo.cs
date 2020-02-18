@@ -38,7 +38,7 @@ namespace ofreact
             get => _value;
             set
             {
-                var changed = !InternalReflection.PropsEqual(value, _value);
+                var changed = !PropComparer.Equal(value, _value);
 
                 _value = value;
 
