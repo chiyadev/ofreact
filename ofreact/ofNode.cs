@@ -71,7 +71,7 @@ namespace ofreact
             if (element == null)
                 return false;
 
-            shouldRender = shouldRender || AlwaysInvalid || Element.ShouldComponentUpdate(element);
+            shouldRender = shouldRender || AlwaysInvalid || Element == null || Element.ShouldComponentUpdate(element);
 
             if (!shouldRender)
                 return false;
