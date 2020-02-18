@@ -31,26 +31,24 @@ namespace ofreact
             if (_comparer.TryGetValue(type, out var comparer))
                 return comparer(a, b);
 
-            // parameters: a, b
-            var pa = Expression.Parameter(typeof(object), "a");
-            var pb = Expression.Parameter(typeof(object), "b");
+            var c = Expression.Parameter(typeof(object));
+            var d = Expression.Parameter(typeof(object));
 
-            // comparison variables: x, y (casted parameters)
-            var x = Expression.Variable(type, "x");
-            var y = Expression.Variable(type, "y");
+            var x = Expression.Variable(type, nameof(a));
+            var y = Expression.Variable(type, nameof(b));
 
             comparer = Expression.Lambda<Func<object, object, bool>>(
                                       Expression.Block(new[] { x, y },
-                                          Expression.Assign(x, Expression.Convert(pa, type)),
-                                          Expression.Assign(y, Expression.Convert(pb, type)),
-                                          Build(type, x, y)),
-                                      pa, pb)
+                                          Expression.Assign(x, Expression.Convert(c, type)),
+                                          Expression.Assign(y, Expression.Convert(d, type)),
+                                          BuildComparison(type, x, y)),
+                                      c, d)
                                  .CompileSafe();
 
             return (_comparer[type] = comparer)(a, b);
         }
 
-        public static Expression Build(Type type, Expression a, Expression b)
+        public static Expression BuildComparison(Type type, Expression a, Expression b)
         {
             var expr = null as Expression;
 
