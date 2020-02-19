@@ -35,7 +35,7 @@ namespace ofreact.Yaml
     public interface IYamlComponentBuilder : IComponentBuilder
     {
         IComponentPartHandler PartHandler { get; set; }
-        IElementTypeResolver TypeResolver { get; set; }
+        IElementTypeResolver ElementResolver { get; set; }
         IPropResolver PropResolver { get; set; }
 
         ElementRenderInfo BuildElement(YamlNode node);
@@ -56,7 +56,7 @@ namespace ofreact.Yaml
                 new NamePartHandler());
 
         /// <summary>
-        /// Default <see cref="TypeResolver"/> for all instances of <see cref="YamlComponentBuilder"/>.
+        /// Default <see cref="ElementResolver"/> for all instances of <see cref="YamlComponentBuilder"/>.
         /// </summary>
         public static IElementTypeResolver DefaultTypeResolver { get; set; } =
             new PrefixedElementResolver("of",
@@ -75,7 +75,7 @@ namespace ofreact.Yaml
                 new PrimitivePropResolver());
 
         public IComponentPartHandler PartHandler { get; set; } = DefaultPartHandler;
-        public IElementTypeResolver TypeResolver { get; set; } = DefaultTypeResolver;
+        public IElementTypeResolver ElementResolver { get; set; } = DefaultTypeResolver;
         public IPropResolver PropResolver { get; set; } = DefaultPropResolver;
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace ofreact.Yaml
                         throw new YamlComponentException("Must be a scalar.", key);
 
                     // resolve type
-                    var type = TypeResolver.Resolve(this, typeScalar.Value) ?? throw new YamlComponentException($"Cannot resolve element '{typeScalar.Value}'.", typeScalar);
+                    var type = ElementResolver.Resolve(this, typeScalar.Value) ?? throw new YamlComponentException($"Cannot resolve element '{typeScalar.Value}'.", typeScalar);
 
                     // build prop dictionary
                     Dictionary<string, YamlProp> props;
