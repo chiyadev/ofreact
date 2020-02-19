@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace ofreact.Diagnostics
@@ -38,16 +39,16 @@ namespace ofreact.Diagnostics
 
         public void EnsureRendered(params Type[] elementTypes)
         {
-            if (NodesRendered.Count != elementTypes.Length)
-                bad(NodesRendered.Count);
+            var renderedTypes = NodesRendered.Select(n => n.Element?.GetType()).Where(e => e != null).ToArray();
 
-            for (var i = 0; i < NodesRendered.Count; i++)
+            for (var i = 0; i < renderedTypes.Length && i < elementTypes.Length; i++)
             {
-                var node = NodesRendered[i];
-
-                if (node.Element == null || node.Element.GetType() != elementTypes[i])
+                if (renderedTypes[i] != elementTypes[i])
                     bad(i);
             }
+
+            if (renderedTypes.Length != elementTypes.Length)
+                bad(renderedTypes.Length);
 
             void bad(int index)
             {
@@ -60,8 +61,8 @@ namespace ofreact.Diagnostics
 
                 builder.AppendLine().AppendLine("Actual:");
 
-                foreach (var node in NodesRendered)
-                    builder.AppendLine($"  - {node.Element?.GetType().ToString() ?? "<null>"}");
+                foreach (var type in renderedTypes)
+                    builder.AppendLine($"  - {type}");
 
                 throw new ArgumentException(builder.ToString());
             }
