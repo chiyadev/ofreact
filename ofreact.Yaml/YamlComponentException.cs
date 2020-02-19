@@ -24,7 +24,7 @@ namespace ofreact.Yaml
 
             var mark = node.Start;
 
-            return $"{message} (line {mark.Line} column {mark.Column} {node.NodeType.ToString().ToLowerInvariant()})";
+            return $"{message} <{node.NodeType.ToString().ToLowerInvariant()}> (line {mark.Line} column {mark.Column})";
         }
 
         protected YamlComponentException(SerializationInfo info, StreamingContext context) : base(info, context) { }
