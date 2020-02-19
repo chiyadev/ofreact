@@ -14,7 +14,7 @@ namespace osu.Framework.Declarative
         readonly ofRootNode _node = new ofRootNode();
 
         /// <summary>
-        /// Gets or sets the element to bootstrap.
+        /// Element to bootstrap.
         /// </summary>
         public ofElement Element { get; set; }
 
