@@ -12,7 +12,6 @@ namespace ofreact.Tests.Yaml
             using var node = new ofRootNode();
 
             node.RenderElement(new ofYamlComponent(@"
-name: basic
 render:
   Fragment:"));
 
@@ -27,7 +26,6 @@ render:
             using var node = new ofRootNode();
 
             node.RenderElement(new ofYamlComponent(@"
-name: basic
 render:
   - Fragment:"));
 
@@ -42,7 +40,6 @@ render:
             using var node = new ofRootNode();
 
             node.RenderElement(new ofYamlComponent(@"
-name: basic
 render:
   - Fragment:
   - Fragment:
@@ -62,7 +59,6 @@ render:
             using var node = new ofRootNode();
 
             node.RenderElement(new ofYamlComponent(@"
-name: basic
 render:
   Fragment:
     children:
