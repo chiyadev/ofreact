@@ -33,9 +33,9 @@ namespace ofreact
         ofElement Build();
 
         /// <summary>
-        /// Builds an expression tree of the renderer function.
+        /// Builds a <see cref="FunctionComponent"/> delegate that renders this component.
         /// </summary>
-        Expression BuildRenderer(Expression node);
+        FunctionComponent BuildRenderer();
     }
 
     /// <summary>
@@ -68,27 +68,27 @@ namespace ofreact
 
         public ParameterExpression GetVariable(string name) => _variables.GetValueOrDefault(name)?.Name;
 
-        public ofElement Build()
+        public ofElement Build() => ofElement.DefineComponent(BuildRenderer());
+
+        public FunctionComponent BuildRenderer()
         {
             var node = Expression.Parameter(typeof(ofNode), "node");
 
-            return ofElement.DefineComponent(Expression.Lambda<Func<ofNode, ofElement>>(BuildRenderer(node), node).CompileSafe());
-        }
-
-        public Expression BuildRenderer(Expression node)
-        {
+            // get render info before anything else
             var element = Render(node);
 
             var body = new List<Expression>();
 
+            // declare and initialize variables step
             var variables = _variables.OrderBy(x => x.Key).Select(x => x.Value).ToArray();
 
             foreach (var variable in variables)
                 body.Add(Expression.Assign(variable.Name, variable.Value));
 
+            // return rendered element step
             body.Add(element?.GetValue(node) ?? Expression.Constant(null));
 
-            return Expression.Block(variables.Select(v => v.Name), body);
+            return Expression.Lambda<FunctionComponent>(Expression.Block(variables.Select(v => v.Name), body), node).CompileSafe();
         }
 
         protected abstract ElementRenderInfo Render(Expression node);

@@ -6,6 +6,11 @@ using System.Runtime.CompilerServices;
 namespace ofreact
 {
     /// <summary>
+    /// Encapsulates a method renders an element.
+    /// </summary>
+    public delegate ofElement FunctionComponent(ofNode node);
+
+    /// <summary>
     /// Represents an element in ofreact.
     /// </summary>
     /// <remarks>
@@ -116,28 +121,23 @@ namespace ofreact
         /// </remarks>
         protected internal virtual bool ShouldComponentUpdate(ofElement next) => !PropComparer.Equal(this, next);
 
-        /// <inheritdoc cref="DefineComponent(System.Func{ofNode,ofElement})"/>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ofElement DefineComponent(Func<ofElement> render) => DefineComponent(n => render?.Invoke());
-
         /// <summary>
-        /// Wraps the given rendering function in an <see cref="ofElement"/>.
+        /// Defines a function component.
         /// </summary>
-        /// <param name="render">Rendering function.</param>
-        /// <returns>An <see cref="ofElement"/> that invokes <paramref name="render"/>.</returns>
+        /// <param name="component">Function to be invoked for rendering.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ofElement DefineComponent(Func<ofNode, ofElement> render) => new FunctionalComponent(render);
+        public static ofElement DefineComponent(FunctionComponent component) => new FunctionComponentWrapper(component);
 
-        sealed class FunctionalComponent : ofComponent
+        sealed class FunctionComponentWrapper : ofComponent
         {
-            readonly Func<ofNode, ofElement> _render;
+            readonly FunctionComponent _component;
 
-            public FunctionalComponent(Func<ofNode, ofElement> render)
+            public FunctionComponentWrapper(FunctionComponent component)
             {
-                _render = render;
+                _component = component;
             }
 
-            protected override ofElement Render() => _render?.Invoke(Node);
+            protected override ofElement Render() => _component?.Invoke(Node);
         }
 
         /// <inheritdoc cref="DefineHook{T}"/>
