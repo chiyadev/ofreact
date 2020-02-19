@@ -31,7 +31,12 @@ namespace ofreact
             try
             {
                 if (_fast)
-                    return expression.CompileFast();
+                {
+                    var compiled = expression.CompileFast(true);
+
+                    if (compiled != null)
+                        return compiled;
+                }
             }
             catch
             {
