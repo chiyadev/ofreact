@@ -187,7 +187,12 @@ namespace ofreact.Yaml
 
                             var provider = PropResolver.Resolve(this, element, parameter, prop.Value);
 
-                            element.Props[parameter.Name] = provider ?? throw new YamlComponentException($"Cannot resolve prop '{parameter.Name}' in element {type}.", prop.Value);
+                            if (provider == null)
+                                throw new YamlComponentException($"Cannot resolve prop '{parameter.Name}' in element {type}.", prop.Value);
+
+                            ++relevance;
+
+                            element.Props[parameter.Name] = provider;
                         }
 
                         else if (!parameter.HasDefaultValue)
@@ -195,8 +200,6 @@ namespace ofreact.Yaml
                             throw new YamlComponentException($"Missing required prop '{parameter.Name}' ({parameter.ParameterType}).", node);
                         }
                     }
-
-                    relevance = matchedProps.Count;
 
                     // find excessive props
                     foreach (var (key, prop) in props)
