@@ -2,6 +2,9 @@ using System;
 
 namespace ofreact.Yaml
 {
+    /// <summary>
+    /// Resolves an element type by prepending or removing a name prefix.
+    /// </summary>
     public class PrefixedElementResolver : IElementTypeResolver
     {
         readonly string _prefix;

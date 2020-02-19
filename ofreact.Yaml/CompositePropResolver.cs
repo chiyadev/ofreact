@@ -4,6 +4,9 @@ using YamlDotNet.RepresentationModel;
 
 namespace ofreact.Yaml
 {
+    /// <summary>
+    /// Resolves an element prop from a collection of nested resolvers.
+    /// </summary>
     public class CompositePropResolver : IPropResolver
     {
         readonly IPropResolver[] _resolvers;

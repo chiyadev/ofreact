@@ -4,6 +4,9 @@ using YamlDotNet.RepresentationModel;
 
 namespace ofreact.Yaml
 {
+    /// <summary>
+    /// Resolves an element prop that takes an element or a collection of elements.
+    /// </summary>
     public class ChildrenPropResolver : IPropResolver
     {
         public IPropProvider Resolve(IYamlComponentBuilder builder, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)

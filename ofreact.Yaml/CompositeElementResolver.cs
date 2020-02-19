@@ -3,6 +3,9 @@ using System.Linq;
 
 namespace ofreact.Yaml
 {
+    /// <summary>
+    /// Resolves an element type from a collection of nested resolvers.
+    /// </summary>
     public class CompositeElementResolver : IElementTypeResolver
     {
         readonly IElementTypeResolver[] _resolvers;

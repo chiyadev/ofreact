@@ -6,6 +6,10 @@ using YamlDotNet.RepresentationModel;
 
 namespace ofreact.Yaml
 {
+    /// <summary>
+    /// Resolves an element prop that is a primitive type.
+    /// This includes strings, built-in value types and enums.
+    /// </summary>
     public class PrimitivePropResolver : IPropResolver
     {
         public bool IgnoreEnumCase { get; set; } = true;
@@ -14,8 +18,22 @@ namespace ofreact.Yaml
         {
             var type = parameter.ParameterType;
 
+            if (IsNullable(type, out var underlyingType))
+                return ResolveType(type, underlyingType, node);
+
+            return ResolveType(type, type, node);
+        }
+
+        static bool IsNullable(Type type, out Type underlyingType)
+        {
+            underlyingType = Nullable.GetUnderlyingType(type);
+            return underlyingType != null;
+        }
+
+        IPropProvider ResolveType(Type exprType, Type type, YamlNode node)
+        {
             if (type == typeof(string))
-                return new Provider(ParseNode(node), type);
+                return new Provider(ParseNode(node), exprType);
 
             if (type.IsPrimitive)
             {
@@ -23,7 +41,7 @@ namespace ofreact.Yaml
 
                 try
                 {
-                    return new Provider(Convert.ChangeType(value, type, CultureInfo.InvariantCulture), type);
+                    return new Provider(Convert.ChangeType(value, type, CultureInfo.InvariantCulture), exprType);
                 }
                 catch (Exception e)
                 {
@@ -36,7 +54,7 @@ namespace ofreact.Yaml
                 var value = ParseNode(node);
 
                 if (Enum.TryParse(type, value, IgnoreEnumCase, out var parsed))
-                    return new Provider(parsed, type);
+                    return new Provider(parsed, exprType);
 
                 throw new YamlComponentException($"Unknown enum value '{value}' in {type}.", node);
             }

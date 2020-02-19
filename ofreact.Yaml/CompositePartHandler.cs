@@ -3,6 +3,9 @@ using YamlDotNet.RepresentationModel;
 
 namespace ofreact.Yaml
 {
+    /// <summary>
+    /// Handles a part of a component using a collection of nested handlers.
+    /// </summary>
     public class CompositePartHandler : IComponentPartHandler
     {
         readonly IComponentPartHandler[] _handlers;
