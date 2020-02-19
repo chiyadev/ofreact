@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace ofreact.Diagnostics
 {
@@ -35,20 +36,35 @@ namespace ofreact.Diagnostics
             Exceptions.Clear();
         }
 
-        public bool AreRendered(params Type[] elementTypes)
+        public void EnsureRendered(params Type[] elementTypes)
         {
             if (NodesRendered.Count != elementTypes.Length)
-                return false;
+                bad(NodesRendered.Count);
 
             for (var i = 0; i < NodesRendered.Count; i++)
             {
                 var node = NodesRendered[i];
 
                 if (node.Element == null || node.Element.GetType() != elementTypes[i])
-                    return false;
+                    bad(i);
             }
 
-            return true;
+            void bad(int index)
+            {
+                var builder = new StringBuilder($"List of rendered elements differs at index {index}.");
+
+                builder.AppendLine().AppendLine("Expected:");
+
+                foreach (var type in elementTypes)
+                    builder.AppendLine($"  - {type}");
+
+                builder.AppendLine().AppendLine("Actual:");
+
+                foreach (var node in NodesRendered)
+                    builder.AppendLine($"  - {node.Element?.GetType().ToString() ?? "<null>"}");
+
+                throw new ArgumentException(builder.ToString());
+            }
         }
     }
 }
