@@ -190,13 +190,15 @@ namespace ofreact.Yaml
         {
             public readonly ElementRenderInfo Element;
             public readonly Exception Exception;
-            public readonly int Relevance;
+            public readonly float Relevance;
 
-            public ElementMatch(ElementRenderInfo element, Exception exception, int relevance)
+            public ElementMatch(ElementRenderInfo element, Exception exception, float points)
             {
                 Element   = element;
                 Exception = exception;
-                Relevance = relevance;
+
+                // relevance is relative
+                Relevance = points / element.Parameters.Length;
             }
         }
 
@@ -207,8 +209,8 @@ namespace ofreact.Yaml
 
             foreach (var constructor in type.GetConstructors())
             {
-                var element   = new ElementRenderInfo(type, constructor);
-                var relevance = 0;
+                var element = new ElementRenderInfo(type, constructor);
+                var points  = 0f;
 
                 try
                 {
@@ -223,15 +225,17 @@ namespace ofreact.Yaml
 
                             var provider = PropResolver.Resolve(this, element, parameter, prop.Value);
 
-                            if (provider == null)
-                                throw new YamlComponentException($"Cannot resolve prop '{parameter.Name}' in element {type}.", prop.Value);
+                            element.Props[parameter.Name] = provider ?? throw new YamlComponentException($"Cannot resolve prop '{parameter.Name}' in element {type}.", prop.Value);
 
-                            ++relevance;
-
-                            element.Props[parameter.Name] = provider;
+                            points += 1;
                         }
 
-                        else if (!parameter.HasDefaultValue)
+                        else if (parameter.HasDefaultValue)
+                        {
+                            points += 0.5f;
+                        }
+
+                        else
                         {
                             throw new YamlComponentException($"Missing required prop '{parameter.Name}' ({parameter.ParameterType}).", node);
                         }
@@ -244,11 +248,11 @@ namespace ofreact.Yaml
                             throw new YamlComponentException($"Cannot resolve prop '{key}' in element {type}.", prop.Key);
                     }
 
-                    success.Add(new ElementMatch(element, null, relevance));
+                    success.Add(new ElementMatch(element, null, points));
                 }
                 catch (Exception e)
                 {
-                    exception.Add(new ElementMatch(element, e, relevance));
+                    exception.Add(new ElementMatch(element, e, points));
                 }
             }
 
