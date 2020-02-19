@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\ofreact.Yaml\ofreact.Yaml.csproj" />
       <ProjectReference Include="..\ofreact\ofreact.csproj" />
     </ItemGroup>
 

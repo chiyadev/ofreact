@@ -48,21 +48,35 @@ namespace ofreact.Yaml
     {
         readonly YamlMappingNode _mapping;
 
-        public IComponentPartHandler PartHandler { get; set; } =
+        /// <summary>
+        /// Default <see cref="PartHandler"/> for all instances of <see cref="YamlComponentBuilder"/>.
+        /// </summary>
+        public static IComponentPartHandler DefaultPartHandler { get; set; } =
             new CompositePartHandler(
                 new NamePartHandler());
 
-        public IElementTypeResolver TypeResolver { get; set; } =
+        /// <summary>
+        /// Default <see cref="TypeResolver"/> for all instances of <see cref="YamlComponentBuilder"/>.
+        /// </summary>
+        public static IElementTypeResolver DefaultTypeResolver { get; set; } =
             new PrefixedElementResolver("of",
                 new CompositeElementResolver(
                     new AssemblyElementResolver(typeof(ofElement).Assembly),
                     new AssemblyElementResolver(typeof(YamlComponentBuilder).Assembly)));
 
-        public IPropResolver PropResolver { get; set; } =
+        /// <summary>
+        /// Default <see cref="PropResolver"/> for all instances of <see cref="YamlComponentBuilder"/>.
+        /// </summary>
+        public static IPropResolver DefaultPropResolver { get; set; } =
             new CompositePropResolver(
                 new AttributePropResolver(),
                 new KeyPropResolver(),
+                new ChildrenPropResolver(),
                 new PrimitivePropResolver());
+
+        public IComponentPartHandler PartHandler { get; set; } = DefaultPartHandler;
+        public IElementTypeResolver TypeResolver { get; set; } = DefaultTypeResolver;
+        public IPropResolver PropResolver { get; set; } = DefaultPropResolver;
 
         /// <summary>
         /// Creates a new <see cref="YamlComponentBuilder"/> with the given document to construct the component from.
@@ -119,6 +133,9 @@ namespace ofreact.Yaml
             {
                 // element
                 case YamlMappingNode mapping:
+                    if (mapping.Children.Count == 0)
+                        return new EmptyRenderInfo();
+
                     if (mapping.Children.Count > 1)
                         throw new YamlComponentException("Mapping must have one key that indicates the element type.", mapping);
 
@@ -127,23 +144,41 @@ namespace ofreact.Yaml
                     if (!(key is YamlScalarNode typeScalar))
                         throw new YamlComponentException("Must be a scalar.", key);
 
-                    if (!(value is YamlMappingNode propsMapping))
-                        throw new YamlComponentException("Must be a mapping.", value);
-
                     // resolve type
                     var type = TypeResolver.Resolve(this, typeScalar.Value) ?? throw new YamlComponentException($"Cannot resolve element '{typeScalar.Value}'.", typeScalar);
 
                     // build prop dictionary
-                    var props = propsMapping.ToDictionary(x => (x.Key as YamlScalarNode ?? throw new YamlComponentException("Must be a scalar.", x.Key)).Value, x => new YamlProp(x.Key, x.Value));
+                    Dictionary<string, YamlProp> props;
+
+                    switch (value)
+                    {
+                        case YamlMappingNode propsMapping:
+                            props = propsMapping.ToDictionary(x => (x.Key as YamlScalarNode ?? throw new YamlComponentException("Must be a scalar.", x.Key)).Value, x => new YamlProp(x.Key, x.Value));
+                            break;
+
+                        case YamlScalarNode s when string.IsNullOrEmpty(s.Value):
+                            props = new Dictionary<string, YamlProp>();
+                            break;
+
+                        default:
+                            throw new YamlComponentException("Must be a mapping.", value);
+                    }
 
                     return BuildElementWithProps(type, typeScalar, props);
 
                 // fragment
                 case YamlSequenceNode sequence:
-                    if (sequence.Children.Count == 1)
-                        return BuildElement(sequence[0]);
+                    var elements = sequence.Select(BuildElement).Where(e => !(e is EmptyRenderInfo)).ToArray();
 
-                    return new FragmentRenderInfo(sequence.Select(BuildElement));
+                    return elements.Length switch
+                    {
+                        1 => elements[0],
+                        0 => new EmptyRenderInfo(),
+                        _ => new FragmentRenderInfo(elements)
+                    };
+
+                case YamlScalarNode scalar when string.IsNullOrEmpty(scalar.Value):
+                    return new EmptyRenderInfo();
 
                 default:
                     throw new YamlComponentException("Must be a mapping or sequence.", node);

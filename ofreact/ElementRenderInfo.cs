@@ -87,4 +87,22 @@ namespace ofreact
             Props["children"] = new CollectionPropProvider(typeof(IEnumerable<ofElement>), children);
         }
     }
+
+    public class EmptyRenderInfo : ElementRenderInfo
+    {
+        static readonly Type _type = typeof(ofEmptyElement);
+        static readonly ConstructorInfo _ctor = _type.GetConstructors()[0];
+
+        public EmptyRenderInfo() : base(_type, _ctor) { }
+
+        sealed class ofEmptyElement : ofElement
+        {
+            public ofEmptyElement()
+            {
+                throw new NotSupportedException($"{nameof(EmptyRenderInfo)} should not be rendered.");
+            }
+        }
+
+        public override Expression GetValue(Expression node) => Expression.Constant(null, typeof(ofElement));
+    }
 }

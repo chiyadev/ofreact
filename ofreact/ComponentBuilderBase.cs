@@ -86,7 +86,7 @@ namespace ofreact
                 body.Add(Expression.Assign(variable.Name, variable.Value));
 
             // return rendered element step
-            body.Add(element?.GetValue(node) ?? Expression.Constant(null));
+            body.Add(element?.GetValue(node) ?? Expression.Constant(null, typeof(ofElement)));
 
             return Expression.Lambda<FunctionComponent>(Expression.Block(variables.Select(v => v.Name), body), node).CompileSafe();
         }

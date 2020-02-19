@@ -38,6 +38,9 @@ namespace ofreact.Yaml
 
                 stream.Load(reader);
 
+                if (stream.Documents.Count == 0)
+                    return n => null;
+
                 return new YamlComponentBuilder(stream.Documents[0]).BuildRenderer();
             };
         }
