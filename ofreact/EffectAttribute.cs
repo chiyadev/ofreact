@@ -53,7 +53,7 @@ namespace ofreact
             var fields = new FieldInfo[_depFields.Length];
 
             for (var i = 0; i < _depFields.Length; i++)
-                fields[i] = type?.GetAllField(_depFields[i]) ?? throw new ArgumentException($"Could not find field '{_depFields[i]}' in {type}.");
+                fields[i] = type?.GetAllField(_depFields[i]) ?? throw new ArgumentException($"Cannot find field '{_depFields[i]}' in {type}.");
 
             // find parameter providers
             var parameters = method.GetParameters();
