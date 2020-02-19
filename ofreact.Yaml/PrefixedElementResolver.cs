@@ -1,0 +1,36 @@
+using System;
+
+namespace ofreact.Yaml
+{
+    public class PrefixedElementResolver : IElementTypeResolver
+    {
+        readonly string _prefix;
+        readonly IElementTypeResolver _resolver;
+        readonly StringComparison _comparison;
+
+        public PrefixedElementResolver(string prefix, IElementTypeResolver resolver, StringComparison comparison = StringComparison.Ordinal)
+        {
+            _prefix     = prefix;
+            _resolver   = resolver;
+            _comparison = comparison;
+        }
+
+        public Type Resolve(IYamlComponentBuilder builder, string name) => _resolver?.Resolve(builder, AddPrefix(name)) ?? _resolver?.Resolve(builder, RemovePrefix(name));
+
+        string AddPrefix(string name)
+        {
+            if (name.StartsWith(_prefix, _comparison))
+                return name;
+
+            return _prefix + name;
+        }
+
+        string RemovePrefix(string name)
+        {
+            if (name.StartsWith(_prefix, _comparison))
+                return name.Substring(_prefix.Length);
+
+            return name;
+        }
+    }
+}
