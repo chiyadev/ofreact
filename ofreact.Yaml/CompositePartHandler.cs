@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using YamlDotNet.RepresentationModel;
 
@@ -9,6 +10,8 @@ namespace ofreact.Yaml
     public class CompositePartHandler : IComponentPartHandler
     {
         readonly IComponentPartHandler[] _handlers;
+
+        public CompositePartHandler(IEnumerable<IComponentPartHandler> resolvers) : this(resolvers.ToArray()) { }
 
         public CompositePartHandler(params IComponentPartHandler[] handlers)
         {

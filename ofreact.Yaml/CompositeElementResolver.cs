@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ofreact.Yaml
@@ -9,6 +10,8 @@ namespace ofreact.Yaml
     public class CompositeElementResolver : IElementTypeResolver
     {
         readonly IElementTypeResolver[] _resolvers;
+
+        public CompositeElementResolver(IEnumerable<IElementTypeResolver> resolvers) : this(resolvers.ToArray()) { }
 
         public CompositeElementResolver(params IElementTypeResolver[] resolvers)
         {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using YamlDotNet.RepresentationModel;
@@ -10,6 +11,8 @@ namespace ofreact.Yaml
     public class CompositePropResolver : IPropResolver
     {
         readonly IPropResolver[] _resolvers;
+
+        public CompositePropResolver(IEnumerable<IPropResolver> resolvers) : this(resolvers.ToArray()) { }
 
         public CompositePropResolver(params IPropResolver[] resolvers)
         {
