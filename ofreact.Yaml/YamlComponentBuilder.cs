@@ -53,7 +53,8 @@ namespace ofreact.Yaml
         /// </summary>
         public static IComponentPartHandler DefaultPartHandler { get; set; } =
             new CompositePartHandler(
-                new NamePartHandler());
+                new NamePartHandler(),
+                new ImportPartHandler());
 
         /// <summary>
         /// Default <see cref="ElementResolver"/> for all instances of <see cref="YamlComponentBuilder"/>.
