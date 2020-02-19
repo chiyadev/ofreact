@@ -4,7 +4,7 @@ using YamlDotNet.RepresentationModel;
 
 namespace ofreact.Yaml
 {
-    public class ChildPropResolver : IPropResolver
+    public class ChildrenPropResolver : IPropResolver
     {
         public IPropProvider Resolve(IYamlComponentBuilder builder, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
         {
