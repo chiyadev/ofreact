@@ -6,7 +6,7 @@ using System.Reflection;
 namespace ofreact.Yaml
 {
     /// <summary>
-    /// Resolves an element type from all types defined in an assembly by their name or full name.
+    /// Resolves an element type from all public types defined in an assembly by their name or full name.
     /// </summary>
     public class AssemblyElementResolver : IElementTypeResolver
     {
@@ -27,11 +27,17 @@ namespace ofreact.Yaml
 
             foreach (var type in types.OrderBy(t => t.FullName))
             {
-                if (type.IsAbstract || !typeof(ofElement).IsAssignableFrom(type))
+                var name = type.FullName;
+
+                if (name == null || !type.IsPublic || type.IsAbstract || !typeof(ofElement).IsAssignableFrom(type))
                     continue;
 
-                _types.TryAdd(type.Name, type);
-                _types.TryAdd(type.FullName, type);
+                var start = name.LastIndexOf('.') + 1;
+
+                name = name.Replace('+', '.'); // for nested types
+
+                _types.TryAdd(name, type);
+                _types.TryAdd(name.Substring(start), type);
             }
         }
 
