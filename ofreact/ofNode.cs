@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using ofreact.Diagnostics;
 
 namespace ofreact
 {
@@ -64,9 +66,12 @@ namespace ofreact
         /// <summary>
         /// Renders the given element.
         /// </summary>
+        /// <remarks>
+        /// The caller is responsible for ensuring that <see cref="CanRenderElement"/> returns true.
+        /// </remarks>
         public virtual bool RenderElement(ofElement element)
         {
-            var shouldRender = Root.RerenderNodes.Remove(this); // remove first to avoid infinite rerender loop
+            var shouldRender = Root.RerenderNodes.Remove(this); // remove first to avoid infinite rendering loop
 
             if (element == null)
                 return false;
@@ -74,7 +79,10 @@ namespace ofreact
             shouldRender = shouldRender || AlwaysInvalid || Element == null || Element.ShouldComponentUpdate(element);
 
             if (!shouldRender)
+            {
+                Root.Diagnostics?.OnNodeRenderSkipped(this);
                 return false;
+            }
 
             // enable hooks
             _hooks = 0;
@@ -83,6 +91,8 @@ namespace ofreact
             {
                 using (element.Bind(this))
                 {
+                    Root.Diagnostics?.OnNodeRendering(this);
+
                     var result = element.RenderSubtree();
 
                     if (result && ofElement.IsHookValidated)
@@ -97,6 +107,11 @@ namespace ofreact
 
                     return result;
                 }
+            }
+            catch (Exception e)
+            {
+                Root.Diagnostics?.OnException(e);
+                throw;
             }
             finally
             {
@@ -201,7 +216,16 @@ namespace ofreact
         /// </summary>
         /// <returns>True if this node was previously unmarked.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Invalidate() => Root.RerenderNodes.Add(this);
+        public bool Invalidate()
+        {
+            if (Root.RerenderNodes.Add(this))
+            {
+                Root.Diagnostics?.OnNodeInvalidated(this);
+                return true;
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Creates an <see cref="ofNode"/> that is a child of this node.
@@ -220,6 +244,8 @@ namespace ofreact
             _state   = null;
 
             Element = null;
+
+            Root.Diagnostics?.OnNodeDisposed(this);
         }
     }
 
@@ -228,6 +254,18 @@ namespace ofreact
     /// </summary>
     public class ofRootNode : ofNode
     {
+        static bool? _enableDiagnostics;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether rendering diagnostics is enabled or not.
+        /// This is enabled by default if <see cref="Debugger.IsAttached"/> is true.
+        /// </summary>
+        public static bool IsDiagnosticsEnabled
+        {
+            get => _enableDiagnostics ?? Debugger.IsAttached;
+            set => _enableDiagnostics = value;
+        }
+
         /// <summary>
         /// Set of <see cref="ofNode"/> that are marked for rerender.
         /// </summary>
@@ -239,6 +277,11 @@ namespace ofreact
         public Queue<EffectInfo> PendingEffects { get; } = new Queue<EffectInfo>(2048);
 
         /// <summary>
+        /// Diagnostics object used for debugging.
+        /// </summary>
+        public RenderDiagnostics Diagnostics { get; }
+
+        /// <summary>
         /// Creates a new <see cref="ofRootNode"/>.
         /// </summary>
         public ofRootNode() : base(null)
@@ -246,6 +289,9 @@ namespace ofreact
             Root = this;
 
             AlwaysInvalid = true;
+
+            if (IsDiagnosticsEnabled)
+                Diagnostics = new RenderDiagnostics();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -267,6 +313,8 @@ namespace ofreact
 
         public override bool RenderElement(ofElement element)
         {
+            Diagnostics?.Clear();
+
             if (!CanRenderElement(element))
                 return false;
 
@@ -284,6 +332,8 @@ namespace ofreact
                 // run effects
                 while (PendingEffects.TryDequeue(out var effect))
                 {
+                    Diagnostics?.OnEffectInvoking(effect);
+
                     effect.Invoke();
                     result = true;
                 }
