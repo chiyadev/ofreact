@@ -141,7 +141,7 @@ namespace ofreact
         /// </summary>
         /// <remarks>
         /// Accepts a "create" function and a list of dependencies.
-        /// <see cref="UseMemo{T}"/> will only recompute the memoized value when one of the dependencies has changed.
+        /// <see cref="UseMemo{T}"/> will only recompute the memoized value when any of the dependencies has changed.
         /// This optimization helps to avoid expensive calculations on every render.
         /// </remarks>
         /// <param name="create">Function to compute the memoized value.</param>
@@ -172,7 +172,7 @@ namespace ofreact
         /// </summary>
         /// <remarks>
         /// Accepts a callback method or lambda and a list of dependencies.
-        /// <see cref="UseCallback{T}(T,object[])"/> will return a memoized version of the given callback that only changes if one of the dependencies has changed.
+        /// <see cref="UseCallback{T}(T,object[])"/> will return a memoized version of the given callback that only changes if any of the dependencies has changed.
         /// This is useful when passing callbacks to optimized child elements that rely on reference equality to prevent unnecessary renders (default behavior of all <see cref="ofElement"/>s).
         /// </remarks>
         /// <param name="callback">Callback method or lambda to memoize.</param>

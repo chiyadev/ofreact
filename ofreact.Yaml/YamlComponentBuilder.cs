@@ -25,7 +25,7 @@ namespace ofreact.Yaml
     }
 
     /// <summary>
-    /// Used to create a prop provider from a YAML node.
+    /// Used to create a prop provider from an YAML node.
     /// </summary>
     public interface IPropResolver
     {
