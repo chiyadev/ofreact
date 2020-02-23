@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using YamlDotNet.RepresentationModel;
@@ -15,14 +16,7 @@ namespace ofreact.Yaml
         public bool IgnoreEnumCase { get; set; } = true;
 
         public IPropProvider Resolve(IYamlComponentBuilder builder, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
-        {
-            var type = parameter.ParameterType;
-
-            if (IsNullable(type, out var underlyingType))
-                return ResolveType(type, underlyingType, node);
-
-            return ResolveType(type, type, node);
-        }
+            => ResolveType(parameter.ParameterType, parameter.ParameterType, node);
 
         static bool IsNullable(Type type, out Type underlyingType)
         {
@@ -30,11 +24,25 @@ namespace ofreact.Yaml
             return underlyingType != null;
         }
 
+        static string ParseNode(YamlNode node)
+        {
+            if (node is YamlScalarNode scalar)
+                return scalar.Value;
+
+            throw new YamlComponentException("Must be a scalar.", node);
+        }
+
         IPropProvider ResolveType(Type exprType, Type type, YamlNode node)
         {
+            // nullable
+            if (IsNullable(type, out var underlyingType))
+                return ResolveType(exprType, underlyingType, node);
+
+            // string
             if (type == typeof(string))
                 return new Provider(ParseNode(node), exprType);
 
+            // primitive
             if (type.IsPrimitive)
             {
                 var value = ParseNode(node);
@@ -49,6 +57,7 @@ namespace ofreact.Yaml
                 }
             }
 
+            // enum
             if (type.IsEnum)
             {
                 var value = ParseNode(node);
@@ -59,15 +68,29 @@ namespace ofreact.Yaml
                 throw new YamlComponentException($"Unknown enum value '{value}' in {type}.", node);
             }
 
+            // collection
+            if (CollectionPropProvider.IsCollection(type, out _, out var elementType))
+                switch (node)
+                {
+                    case YamlSequenceNode sequence when sequence.Children.Count == 0:
+                        return new CollectionPropProvider(type, Enumerable.Empty<IPropProvider>());
+
+                    case YamlSequenceNode sequence:
+                        if (ResolveType(elementType, elementType, sequence.Children[0]) == null)
+                            break;
+
+                        return new CollectionPropProvider(type, sequence.Select(n => ResolveType(elementType, elementType, n)));
+
+                    case YamlScalarNode scalar:
+                        var provider = ResolveType(elementType, elementType, scalar);
+
+                        if (provider == null)
+                            break;
+
+                        return new CollectionPropProvider(type, new[] { provider });
+                }
+
             return null;
-        }
-
-        static string ParseNode(YamlNode node)
-        {
-            if (node is YamlScalarNode scalar)
-                return scalar.Value;
-
-            throw new YamlComponentException("Must be a scalar.", node);
         }
 
         sealed class Provider : IPropProvider
