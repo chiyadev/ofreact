@@ -16,7 +16,7 @@ namespace ofreact.Yaml
             if (typeof(ofElement).IsAssignableFrom(type))
                 return builder.BuildElement(node);
 
-            if (CollectionPropProvider.IsCollection(type, out _))
+            if (CollectionPropProvider.IsCollection(type, out _, out var elementType) && typeof(ofElement).IsAssignableFrom(elementType))
                 return node switch
                 {
                     YamlSequenceNode sequence => new CollectionPropProvider(type, sequence.Select(builder.BuildElement)),
