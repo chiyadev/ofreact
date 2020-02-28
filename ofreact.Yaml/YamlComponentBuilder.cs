@@ -90,6 +90,14 @@ namespace ofreact.Yaml
                 throw new ArgumentException("Document root must be a mapping.");
         }
 
+        static YamlComponentException WrapException(YamlNode node, Exception e)
+        {
+            if (e is YamlComponentException yamlException)
+                return yamlException;
+
+            return new YamlComponentException(node, e);
+        }
+
         protected override ElementRenderInfo Render(ComponentBuilderContext context)
         {
             var render = null as YamlNode;
@@ -110,13 +118,9 @@ namespace ofreact.Yaml
                     if (!PartHandler.Handle(context, keyScalar.Value, value))
                         throw new YamlComponentException($"Invalid component part '{keyScalar.Value}'.", key);
                 }
-                catch (YamlComponentException)
-                {
-                    throw;
-                }
                 catch (Exception e)
                 {
-                    throw new YamlComponentException(value, e);
+                    context.OnException(WrapException(value, e));
                 }
             }
 
@@ -140,59 +144,68 @@ namespace ofreact.Yaml
 
         public ElementRenderInfo BuildElement(ComponentBuilderContext context, YamlNode node)
         {
-            switch (node)
+            try
             {
-                // element
-                case YamlMappingNode mapping:
-                    if (mapping.Children.Count == 0)
+                switch (node)
+                {
+                    // element
+                    case YamlMappingNode mapping:
+                        if (mapping.Children.Count == 0)
+                            return new EmptyRenderInfo();
+
+                        if (mapping.Children.Count > 1)
+                            throw new YamlComponentException("Mapping must have one key that indicates the element type.", mapping);
+
+                        var (key, value) = mapping.Children.First();
+
+                        if (!(key is YamlScalarNode typeScalar))
+                            throw new YamlComponentException("Must be a scalar.", key);
+
+                        // resolve type
+                        var type = ElementResolver.Resolve(context, typeScalar.Value) ?? throw new YamlComponentException($"Cannot resolve element '{typeScalar.Value}'.", typeScalar);
+
+                        // build prop dictionary
+                        Dictionary<string, YamlProp> props;
+
+                        switch (value)
+                        {
+                            case YamlMappingNode propsMapping:
+                                props = propsMapping.ToDictionary(x => (x.Key as YamlScalarNode ?? throw new YamlComponentException("Must be a scalar.", x.Key)).Value, x => new YamlProp(x.Key, x.Value));
+                                break;
+
+                            case YamlScalarNode scalar when string.IsNullOrEmpty(scalar.Value):
+                                props = new Dictionary<string, YamlProp>();
+                                break;
+
+                            default:
+                                throw new YamlComponentException("Must be a mapping.", value);
+                        }
+
+                        return BuildElementWithProps(context, type, typeScalar, props);
+
+                    // fragment
+                    case YamlSequenceNode sequence:
+                        var elements = sequence.Select(n => BuildElement(context, n)).Where(e => !(e is EmptyRenderInfo)).ToArray();
+
+                        return elements.Length switch
+                        {
+                            0 => new EmptyRenderInfo(),
+                            1 => elements[0],
+                            _ => new FragmentRenderInfo(elements)
+                        };
+
+                    case YamlScalarNode scalar when string.IsNullOrEmpty(scalar.Value):
                         return new EmptyRenderInfo();
 
-                    if (mapping.Children.Count > 1)
-                        throw new YamlComponentException("Mapping must have one key that indicates the element type.", mapping);
+                    default:
+                        throw new YamlComponentException("Must be a mapping or sequence.", node);
+                }
+            }
+            catch (Exception e)
+            {
+                context.OnException(e);
 
-                    var (key, value) = mapping.Children.First();
-
-                    if (!(key is YamlScalarNode typeScalar))
-                        throw new YamlComponentException("Must be a scalar.", key);
-
-                    // resolve type
-                    var type = ElementResolver.Resolve(context, typeScalar.Value) ?? throw new YamlComponentException($"Cannot resolve element '{typeScalar.Value}'.", typeScalar);
-
-                    // build prop dictionary
-                    Dictionary<string, YamlProp> props;
-
-                    switch (value)
-                    {
-                        case YamlMappingNode propsMapping:
-                            props = propsMapping.ToDictionary(x => (x.Key as YamlScalarNode ?? throw new YamlComponentException("Must be a scalar.", x.Key)).Value, x => new YamlProp(x.Key, x.Value));
-                            break;
-
-                        case YamlScalarNode s when string.IsNullOrEmpty(s.Value):
-                            props = new Dictionary<string, YamlProp>();
-                            break;
-
-                        default:
-                            throw new YamlComponentException("Must be a mapping.", value);
-                    }
-
-                    return BuildElementWithProps(context, type, typeScalar, props);
-
-                // fragment
-                case YamlSequenceNode sequence:
-                    var elements = sequence.Select(n => BuildElement(context, n)).Where(e => !(e is EmptyRenderInfo)).ToArray();
-
-                    return elements.Length switch
-                    {
-                        1 => elements[0],
-                        0 => new EmptyRenderInfo(),
-                        _ => new FragmentRenderInfo(elements)
-                    };
-
-                case YamlScalarNode scalar when string.IsNullOrEmpty(scalar.Value):
-                    return new EmptyRenderInfo();
-
-                default:
-                    throw new YamlComponentException("Must be a mapping or sequence.", node);
+                return new EmptyRenderInfo();
             }
         }
 
@@ -214,20 +227,21 @@ namespace ofreact.Yaml
 
         ElementRenderInfo BuildElementWithProps(ComponentBuilderContext context, Type type, YamlNode node, IReadOnlyDictionary<string, YamlProp> props)
         {
-            var success   = new List<ElementMatch>();
-            var exception = new List<ElementMatch>();
+            var success = new List<ElementMatch>();
+            var fail    = new List<ElementMatch>();
 
             foreach (var constructor in type.GetConstructors())
             {
-                var element = new ElementRenderInfo(type, constructor);
-                var points  = 0f;
+                var element    = new ElementRenderInfo(type, constructor);
+                var exceptions = new List<Exception>();
+                var points     = 0f;
 
-                try
+                var matchedParams = new HashSet<string>();
+
+                // match parameters to props
+                foreach (var parameter in element.Parameters)
                 {
-                    var matchedParams = new HashSet<string>();
-
-                    // match parameters to props
-                    foreach (var parameter in element.Parameters)
+                    try
                     {
                         if (props.TryGetValue(parameter.Name, out var prop))
                         {
@@ -250,9 +264,16 @@ namespace ofreact.Yaml
                             throw new YamlComponentException($"Missing required prop '{parameter.Name}' ({parameter.ParameterType}).", node);
                         }
                     }
+                    catch (Exception e)
+                    {
+                        exceptions.Add(e);
+                    }
+                }
 
-                    // find excessive props
-                    foreach (var (key, prop) in props)
+                // find excessive props
+                foreach (var (key, prop) in props)
+                {
+                    try
                     {
                         if (!matchedParams.Remove(key))
                         {
@@ -263,13 +284,16 @@ namespace ofreact.Yaml
                             points += 1;
                         }
                     }
+                    catch (Exception e)
+                    {
+                        exceptions.Add(e);
+                    }
+                }
 
+                if (exceptions.Count == 0)
                     success.Add(new ElementMatch(element, null, points));
-                }
-                catch (Exception e)
-                {
-                    exception.Add(new ElementMatch(element, e, points));
-                }
+                else
+                    fail.Add(new ElementMatch(element, new AggregateException(exceptions), points));
             }
 
             if (success.Count != 0)
@@ -283,8 +307,8 @@ namespace ofreact.Yaml
                     throw new YamlComponentException($"Ambiguous element constructor reference: {string.Join(", ", matches.Select(m => m.Element.Constructor))}", node);
                 }
 
-            if (exception.Count != 0)
-                ExceptionDispatchInfo.Capture(exception.OrderByDescending(m => m.Relevance).First().Exception).Throw();
+            if (fail.Count != 0)
+                ExceptionDispatchInfo.Capture(fail.OrderByDescending(m => m.Relevance).First().Exception).Throw();
 
             throw new YamlComponentException($"No public instance constructor in element {type}.", node);
         }

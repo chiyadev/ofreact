@@ -2,11 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.ExceptionServices;
 
 namespace ofreact
 {
     public interface IComponentBuilder
     {
+        /// <summary>
+        /// If true, enables full analysis of the component being built. Otherwise, fails quickly on the first exception.
+        /// </summary>
+        /// <remarks>
+        /// If multiple exceptions are thrown in full analysis, they are wrapped in <see cref="AggregateException"/>.
+        /// </remarks>
+        bool FullAnalysis { get; set; }
+
         /// <summary>
         /// Builds this component as an <see cref="ofElement"/>.
         /// </summary>
@@ -23,14 +32,26 @@ namespace ofreact
     /// </summary>
     public abstract class ComponentBuilderBase : IComponentBuilder
     {
+        public bool FullAnalysis { get; set; }
+
         public ofElement Build() => ofElement.DefineComponent(BuildRenderer());
 
         public FunctionComponent BuildRenderer()
         {
             var context = new ComponentBuilderContext(this);
+            var element = null as ElementRenderInfo;
 
-            // get render info before anything else
-            var element = Render(context);
+            try
+            {
+                // get element render info
+                element = Render(context);
+            }
+            catch (Exception e)
+            {
+                context.OnException(e);
+            }
+
+            context.ThrowExceptions();
 
             var body = new List<Expression>();
 
@@ -105,6 +126,46 @@ namespace ofreact
         /// <param name="name">Name of the variable, case sensitive.</param>
         public ParameterExpression GetVariable(string name) => Variables.GetValueOrDefault(name)?.Name;
 
-        public void OnException(Exception e) { }
+        readonly List<Exception> _exceptions = new List<Exception>(1);
+
+        public void OnException(Exception e)
+        {
+            if (e is AggregateException aggregate)
+            {
+                foreach (var inner in aggregate.InnerExceptions)
+                    OnException(inner);
+
+                return;
+            }
+
+            _exceptions.Add(e);
+
+            if (!Builder.FullAnalysis)
+                ThrowExceptions();
+        }
+
+        internal void ThrowExceptions()
+        {
+            switch (_exceptions.Count)
+            {
+                case 0:
+                    return;
+
+                case 1:
+                    var exception = _exceptions[0];
+
+                    _exceptions.Clear();
+
+                    ExceptionDispatchInfo.Capture(exception).Throw();
+                    return;
+
+                case 2:
+                    var exceptions = _exceptions.ToArray();
+
+                    _exceptions.Clear();
+
+                    throw new AggregateException(exceptions);
+            }
+        }
     }
 }
