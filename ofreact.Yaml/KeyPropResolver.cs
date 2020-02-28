@@ -6,19 +6,19 @@ namespace ofreact.Yaml
 {
     public class KeyPropResolver : IPropResolver
     {
-        public IPropProvider Resolve(IYamlComponentBuilder builder, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, string name, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
         {
-            if (parameter.Name != "key")
+            if (name != "key")
                 return null;
 
             if (!(node is YamlScalarNode scalar))
                 throw new YamlComponentException("Must be a scalar.", node);
 
-            if (!parameter.ParameterType.IsAssignableFrom(typeof(string)))
+            if (parameter?.ParameterType.IsAssignableFrom(typeof(string)) == false)
                 throw new YamlComponentException($"Parameter type {parameter.ParameterType} is not assignable from string.", scalar);
 
             // declare a variable for this element
-            if (!builder.TryDeclareVariable(parameter.Member.DeclaringType, scalar.Value, null, out var variable))
+            if (!context.TryDeclareVariable(element.Type, scalar.Value, null, out var variable))
                 throw new YamlComponentException($"Variable '{scalar.Value}' is already declared.", scalar);
 
             // assign to this variable when element is constructed
@@ -36,7 +36,7 @@ namespace ofreact.Yaml
                 _value = value;
             }
 
-            public Expression GetValue(Expression node) => Expression.Constant(_value);
+            public Expression GetValue(ComponentBuilderContext context) => Expression.Constant(_value);
         }
     }
 }

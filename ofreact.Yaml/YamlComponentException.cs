@@ -12,6 +12,11 @@ namespace ofreact.Yaml
     {
         public YamlNode Node { get; }
 
+        public YamlComponentException(YamlNode node, Exception inner) : base(FormatMessage(inner.Message, node), inner)
+        {
+            Node = node;
+        }
+
         public YamlComponentException(string message, YamlNode node, Exception inner = null) : base(FormatMessage(message, node), inner)
         {
             Node = node;

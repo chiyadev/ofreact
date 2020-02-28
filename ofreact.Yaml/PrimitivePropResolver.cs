@@ -15,8 +15,13 @@ namespace ofreact.Yaml
     {
         public bool IgnoreEnumCase { get; set; } = true;
 
-        public IPropProvider Resolve(IYamlComponentBuilder builder, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
-            => ResolveType(parameter.ParameterType, parameter.ParameterType, node);
+        public IPropProvider Resolve(ComponentBuilderContext context, string name, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
+        {
+            if (parameter == null)
+                return null;
+
+            return ResolveType(parameter.ParameterType, parameter.ParameterType, node);
+        }
 
         static bool IsNullable(Type type, out Type underlyingType)
         {
@@ -104,7 +109,7 @@ namespace ofreact.Yaml
                 _type  = type;
             }
 
-            public Expression GetValue(Expression node) => Expression.Constant(_value, _type);
+            public Expression GetValue(ComponentBuilderContext context) => Expression.Constant(_value, _type);
         }
     }
 }

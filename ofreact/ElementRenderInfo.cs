@@ -8,7 +8,7 @@ namespace ofreact
 {
     public interface IPropProvider
     {
-        Expression GetValue(Expression node);
+        Expression GetValue(ComponentBuilderContext context);
     }
 
     public class ElementRenderInfo : IPropProvider
@@ -57,7 +57,7 @@ namespace ofreact
                 _parameter = parameter;
             }
 
-            public Expression GetValue(Expression node)
+            public Expression GetValue(ComponentBuilderContext context)
             {
                 if (_parameter.HasDefaultValue)
                     return Expression.Constant(_parameter.DefaultValue, _parameter.ParameterType);
@@ -66,9 +66,9 @@ namespace ofreact
             }
         }
 
-        public virtual Expression GetValue(Expression node)
+        public virtual Expression GetValue(ComponentBuilderContext context)
         {
-            Expression expr = Expression.New(Constructor, Parameters.Select(p => Props[p.Name].GetValue(node)));
+            Expression expr = Expression.New(Constructor, Parameters.Select(p => Props[p.Name].GetValue(context)));
 
             if (Assignee != null)
                 expr = Expression.Assign(Assignee, expr);
@@ -103,6 +103,6 @@ namespace ofreact
             }
         }
 
-        public override Expression GetValue(Expression node) => Expression.Constant(null, typeof(ofElement));
+        public override Expression GetValue(ComponentBuilderContext context) => Expression.Constant(null, typeof(ofElement));
     }
 }

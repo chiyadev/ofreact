@@ -19,7 +19,7 @@ namespace ofreact.Yaml
             _resolvers = resolvers;
         }
 
-        public IPropProvider Resolve(IYamlComponentBuilder builder, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
-            => _resolvers.Select(r => r.Resolve(builder, element, parameter, node)).FirstOrDefault(p => p != null);
+        public IPropProvider Resolve(ComponentBuilderContext context, string name, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
+            => _resolvers.Select(r => r.Resolve(context, name, element, parameter, node)).FirstOrDefault(p => p != null);
     }
 }

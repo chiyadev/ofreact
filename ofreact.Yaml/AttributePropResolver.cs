@@ -18,8 +18,11 @@ namespace ofreact.Yaml
     {
         readonly ConcurrentDictionary<object, IPropResolver[]> _resolvers = new ConcurrentDictionary<object, IPropResolver[]>();
 
-        public IPropProvider Resolve(IYamlComponentBuilder builder, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, string name, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
         {
+            if (parameter == null)
+                return null;
+
             return resolve(parameter, parameter.GetCustomAttributes) ?? resolve(parameter.ParameterType, parameter.ParameterType.GetCustomAttributes);
 
             IPropProvider resolve(object key, Func<IEnumerable<Attribute>> attrs)
@@ -27,7 +30,7 @@ namespace ofreact.Yaml
                 if (!_resolvers.TryGetValue(key, out var resolvers))
                     _resolvers[key] = resolvers = attrs().OfType<IPropResolver>().ToArray();
 
-                return resolvers.Select(r => r.Resolve(builder, element, parameter, node)).FirstOrDefault(p => p != null);
+                return resolvers.Select(r => r.Resolve(context, name, element, parameter, node)).FirstOrDefault(p => p != null);
             }
         }
     }

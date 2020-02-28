@@ -7,7 +7,7 @@ namespace ofreact.Yaml
     /// </summary>
     public class NamePartHandler : IComponentPartHandler
     {
-        public bool Handle(IYamlComponentBuilder builder, string name, YamlNode node)
+        public bool Handle(ComponentBuilderContext context, string name, YamlNode node)
         {
             if (name != "name")
                 return false;
@@ -15,7 +15,7 @@ namespace ofreact.Yaml
             if (!(node is YamlScalarNode scalar))
                 throw new YamlComponentException("Must be a scalar.", node);
 
-            builder.Name = scalar.Value;
+            context.Name = scalar.Value;
             return true;
         }
     }

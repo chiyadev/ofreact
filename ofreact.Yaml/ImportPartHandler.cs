@@ -14,7 +14,7 @@ namespace ofreact.Yaml
     /// </remarks>
     public class ImportPartHandler : IComponentPartHandler
     {
-        public bool Handle(IYamlComponentBuilder builder, string name, YamlNode node)
+        public bool Handle(ComponentBuilderContext context, string name, YamlNode node)
         {
             if (name != "import")
                 return false;
@@ -35,7 +35,7 @@ namespace ofreact.Yaml
                         assemblies.Add(Assembly.LoadFrom(scalar.Value));
                     }
 
-                    builder.ElementResolver = new CompositeElementResolver(assemblies.Select(a => new AssemblyElementResolver(a)));
+                    ((IYamlComponentBuilder) context.Builder).ElementResolver = new CompositeElementResolver(assemblies.Select(a => new AssemblyElementResolver(a)));
                     return true;
 
                 case YamlScalarNode scalar when string.IsNullOrEmpty(scalar.Value):

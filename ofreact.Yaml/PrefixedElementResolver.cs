@@ -18,7 +18,7 @@ namespace ofreact.Yaml
             _comparison = comparison;
         }
 
-        public Type Resolve(IYamlComponentBuilder builder, string name) => _resolver?.Resolve(builder, AddPrefix(name)) ?? _resolver?.Resolve(builder, RemovePrefix(name));
+        public Type Resolve(ComponentBuilderContext context, string name) => _resolver?.Resolve(context, AddPrefix(name)) ?? _resolver?.Resolve(context, RemovePrefix(name));
 
         string AddPrefix(string name)
         {

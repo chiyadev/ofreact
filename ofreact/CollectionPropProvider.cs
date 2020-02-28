@@ -79,9 +79,9 @@ namespace ofreact
             _items = items.ToArray();
         }
 
-        public Expression GetValue(Expression node)
+        public Expression GetValue(ComponentBuilderContext context)
         {
-            var items = _items.Select(x => x.GetValue(node));
+            var items = _items.Select(x => x.GetValue(context));
 
             var elementType = _type.GetElementType();
 

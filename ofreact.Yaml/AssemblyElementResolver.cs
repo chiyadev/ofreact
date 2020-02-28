@@ -41,6 +41,6 @@ namespace ofreact.Yaml
             }
         }
 
-        public Type Resolve(IYamlComponentBuilder builder, string name) => _types.GetValueOrDefault(name);
+        public Type Resolve(ComponentBuilderContext context, string name) => _types.GetValueOrDefault(name);
     }
 }

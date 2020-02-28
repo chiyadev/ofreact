@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using YamlDotNet.RepresentationModel;
@@ -13,7 +12,7 @@ namespace ofreact.Yaml
     /// </summary>
     public interface IComponentPartHandler
     {
-        bool Handle(IYamlComponentBuilder builder, string name, YamlNode node);
+        bool Handle(ComponentBuilderContext context, string name, YamlNode node);
     }
 
     /// <summary>
@@ -21,7 +20,7 @@ namespace ofreact.Yaml
     /// </summary>
     public interface IElementTypeResolver
     {
-        Type Resolve(IYamlComponentBuilder builder, string name);
+        Type Resolve(ComponentBuilderContext context, string name);
     }
 
     /// <summary>
@@ -29,7 +28,7 @@ namespace ofreact.Yaml
     /// </summary>
     public interface IPropResolver
     {
-        IPropProvider Resolve(IYamlComponentBuilder builder, ElementRenderInfo element, ParameterInfo parameter, YamlNode node);
+        IPropProvider Resolve(ComponentBuilderContext context, string name, ElementRenderInfo element, ParameterInfo parameter, YamlNode node);
     }
 
     public interface IYamlComponentBuilder : IComponentBuilder
@@ -38,7 +37,7 @@ namespace ofreact.Yaml
         IElementTypeResolver ElementResolver { get; set; }
         IPropResolver PropResolver { get; set; }
 
-        ElementRenderInfo BuildElement(YamlNode node);
+        ElementRenderInfo BuildElement(ComponentBuilderContext context, YamlNode node);
     }
 
     /// <summary>
@@ -91,7 +90,7 @@ namespace ofreact.Yaml
                 throw new ArgumentException("Document root must be a mapping.");
         }
 
-        protected override ElementRenderInfo Render(Expression node)
+        protected override ElementRenderInfo Render(ComponentBuilderContext context)
         {
             var render = null as YamlNode;
 
@@ -106,14 +105,25 @@ namespace ofreact.Yaml
                     continue;
                 }
 
-                if (!PartHandler.Handle(this, keyScalar.Value, value))
-                    throw new YamlComponentException($"Invalid component part '{keyScalar.Value}'.", key);
+                try
+                {
+                    if (!PartHandler.Handle(context, keyScalar.Value, value))
+                        throw new YamlComponentException($"Invalid component part '{keyScalar.Value}'.", key);
+                }
+                catch (YamlComponentException)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    throw new YamlComponentException(value, e);
+                }
             }
 
             if (render == null)
                 return null;
 
-            return BuildElement(render);
+            return BuildElement(context, render);
         }
 
         readonly struct YamlProp
@@ -128,7 +138,7 @@ namespace ofreact.Yaml
             }
         }
 
-        public ElementRenderInfo BuildElement(YamlNode node)
+        public ElementRenderInfo BuildElement(ComponentBuilderContext context, YamlNode node)
         {
             switch (node)
             {
@@ -146,7 +156,7 @@ namespace ofreact.Yaml
                         throw new YamlComponentException("Must be a scalar.", key);
 
                     // resolve type
-                    var type = ElementResolver.Resolve(this, typeScalar.Value) ?? throw new YamlComponentException($"Cannot resolve element '{typeScalar.Value}'.", typeScalar);
+                    var type = ElementResolver.Resolve(context, typeScalar.Value) ?? throw new YamlComponentException($"Cannot resolve element '{typeScalar.Value}'.", typeScalar);
 
                     // build prop dictionary
                     Dictionary<string, YamlProp> props;
@@ -165,11 +175,11 @@ namespace ofreact.Yaml
                             throw new YamlComponentException("Must be a mapping.", value);
                     }
 
-                    return BuildElementWithProps(type, typeScalar, props);
+                    return BuildElementWithProps(context, type, typeScalar, props);
 
                 // fragment
                 case YamlSequenceNode sequence:
-                    var elements = sequence.Select(BuildElement).Where(e => !(e is EmptyRenderInfo)).ToArray();
+                    var elements = sequence.Select(n => BuildElement(context, n)).Where(e => !(e is EmptyRenderInfo)).ToArray();
 
                     return elements.Length switch
                     {
@@ -202,7 +212,7 @@ namespace ofreact.Yaml
             }
         }
 
-        ElementRenderInfo BuildElementWithProps(Type type, YamlNode node, IReadOnlyDictionary<string, YamlProp> props)
+        ElementRenderInfo BuildElementWithProps(ComponentBuilderContext context, Type type, YamlNode node, IReadOnlyDictionary<string, YamlProp> props)
         {
             var success   = new List<ElementMatch>();
             var exception = new List<ElementMatch>();
@@ -214,16 +224,16 @@ namespace ofreact.Yaml
 
                 try
                 {
-                    var matchedProps = new HashSet<string>();
+                    var matchedParams = new HashSet<string>();
 
                     // match parameters to props
                     foreach (var parameter in element.Parameters)
                     {
                         if (props.TryGetValue(parameter.Name, out var prop))
                         {
-                            matchedProps.Add(parameter.Name);
+                            matchedParams.Add(parameter.Name);
 
-                            var provider = PropResolver.Resolve(this, element, parameter, prop.Value);
+                            var provider = PropResolver.Resolve(context, parameter.Name, element, parameter, prop.Value);
 
                             element.Props[parameter.Name] = provider ?? throw new YamlComponentException($"Cannot resolve prop '{parameter.Name}' in element {type}.", prop.Value);
 
@@ -244,8 +254,14 @@ namespace ofreact.Yaml
                     // find excessive props
                     foreach (var (key, prop) in props)
                     {
-                        if (!matchedProps.Remove(key))
-                            throw new YamlComponentException($"Cannot resolve prop '{key}' in element {type}.", prop.Key);
+                        if (!matchedParams.Remove(key))
+                        {
+                            var provider = PropResolver.Resolve(context, key, element, null, prop.Value);
+
+                            element.Props[key] = provider ?? throw new YamlComponentException($"Cannot resolve prop '{key}' in element {type}.", prop.Key);
+
+                            points += 1;
+                        }
                     }
 
                     success.Add(new ElementMatch(element, null, points));

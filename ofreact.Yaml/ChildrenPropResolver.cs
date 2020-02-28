@@ -9,18 +9,22 @@ namespace ofreact.Yaml
     /// </summary>
     public class ChildrenPropResolver : IPropResolver
     {
-        public IPropProvider Resolve(IYamlComponentBuilder builder, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, string name, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
         {
-            var type = parameter.ParameterType;
+            if (parameter == null)
+                return null;
+
+            var type    = parameter.ParameterType;
+            var builder = (IYamlComponentBuilder) context.Builder;
 
             if (typeof(ofElement).IsAssignableFrom(type))
-                return builder.BuildElement(node);
+                return builder.BuildElement(context, node);
 
             if (CollectionPropProvider.IsCollection(type, out _, out var elementType) && typeof(ofElement).IsAssignableFrom(elementType))
                 return node switch
                 {
-                    YamlSequenceNode sequence => new CollectionPropProvider(type, sequence.Select(builder.BuildElement)),
-                    _                         => new CollectionPropProvider(type, new[] { builder.BuildElement(node) })
+                    YamlSequenceNode sequence => new CollectionPropProvider(type, sequence.Select(n => builder.BuildElement(context, n))),
+                    _                         => new CollectionPropProvider(type, new[] { builder.BuildElement(context, node) })
                 };
 
             return null;
