@@ -64,6 +64,19 @@ render:
         }
 
         [Test]
+        public void FlattenedLists()
+        {
+            using var node = new ofRootNode();
+
+            node.RenderElement(new ofYamlComponent(@"
+render:
+  - - - - - - Fragment:
+  - Fragment:"));
+
+            node.Diagnostics.EnsureRendered(typeof(ofYamlComponent), typeof(ofFragment), typeof(ofFragment), typeof(ofFragment));
+        }
+
+        [Test]
         public void EmptyRenderMapping()
         {
             using var node = new ofRootNode();
