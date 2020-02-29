@@ -137,7 +137,7 @@ namespace MyGame
 
 ### Writing a component using YAML (OML)
 
-Not implemented yet.
+Implementation is WIP.
 
 ```yaml
 # the name by which this element can be referred from other elements
