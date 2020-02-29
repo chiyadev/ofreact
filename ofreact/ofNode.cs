@@ -349,6 +349,7 @@ namespace ofreact
 
             RerenderNodes.Clear();
             PendingEffects.Clear();
+            Diagnostics.Clear();
         }
     }
 }
