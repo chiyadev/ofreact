@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using ofreact.Yaml;
+using osu.Framework.Declarative.Yaml;
 
 namespace ofreact.Tests
 {

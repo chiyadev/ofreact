@@ -2,7 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using YamlDotNet.RepresentationModel;
 
-namespace ofreact.Yaml
+namespace osu.Framework.Declarative.Yaml
 {
     /// <summary>
     /// Represents errors that occur in <see cref="YamlComponentBuilder"/>.

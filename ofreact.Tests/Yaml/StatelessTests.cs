@@ -1,6 +1,6 @@
 using System.IO;
 using NUnit.Framework;
-using ofreact.Yaml;
+using osu.Framework.Declarative.Yaml;
 using YamlDotNet.RepresentationModel;
 
 namespace ofreact.Tests.Yaml

@@ -1,6 +1,7 @@
+using ofreact;
 using YamlDotNet.RepresentationModel;
 
-namespace ofreact.Yaml
+namespace osu.Framework.Declarative.Yaml
 {
     /// <summary>
     /// Handles the name of a component.

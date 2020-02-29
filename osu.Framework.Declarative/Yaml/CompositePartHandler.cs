@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using ofreact;
 using YamlDotNet.RepresentationModel;
 
-namespace ofreact.Yaml
+namespace osu.Framework.Declarative.Yaml
 {
     /// <summary>
     /// Handles a part of a component using a collection of nested handlers.

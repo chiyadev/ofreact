@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using ofreact;
 using YamlDotNet.RepresentationModel;
 
-namespace ofreact.Yaml
+namespace osu.Framework.Declarative.Yaml
 {
     /// <summary>
     /// Used to handle one key-value mapping in the document root.

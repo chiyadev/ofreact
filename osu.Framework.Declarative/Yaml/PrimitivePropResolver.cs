@@ -3,9 +3,10 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using ofreact;
 using YamlDotNet.RepresentationModel;
 
-namespace ofreact.Yaml
+namespace osu.Framework.Declarative.Yaml
 {
     /// <summary>
     /// Resolves an element prop that is a primitive type.

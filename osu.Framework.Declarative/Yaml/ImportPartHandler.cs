@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using ofreact;
 using YamlDotNet.RepresentationModel;
 
-namespace ofreact.Yaml
+namespace osu.Framework.Declarative.Yaml
 {
     /// <summary>
     /// Handles the type import part of a component.

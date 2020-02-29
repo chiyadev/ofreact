@@ -1,8 +1,9 @@
 using System.Linq.Expressions;
 using System.Reflection;
+using ofreact;
 using YamlDotNet.RepresentationModel;
 
-namespace ofreact.Yaml
+namespace osu.Framework.Declarative.Yaml
 {
     public class KeyPropResolver : IPropResolver
     {

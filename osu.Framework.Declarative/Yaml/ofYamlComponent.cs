@@ -1,9 +1,10 @@
 using System;
 using System.IO;
+using ofreact;
 using YamlDotNet.RepresentationModel;
 using static ofreact.Hooks;
 
-namespace ofreact.Yaml
+namespace osu.Framework.Declarative.Yaml
 {
     /// <summary>
     /// Represents a dynamic component that is created from an YAML document.

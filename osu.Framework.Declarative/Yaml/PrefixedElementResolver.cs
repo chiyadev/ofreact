@@ -1,6 +1,7 @@
 using System;
+using ofreact;
 
-namespace ofreact.Yaml
+namespace osu.Framework.Declarative.Yaml
 {
     /// <summary>
     /// Resolves an element type by prepending or removing a name prefix.
