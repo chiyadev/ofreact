@@ -1,6 +1,6 @@
-using osu.Framework.Declarative;
+using ofreact;
 
-namespace ofreact.VisualTests
+namespace osu.Framework.Declarative.VisualTests
 {
     public class TestGame : ofComponent
     {

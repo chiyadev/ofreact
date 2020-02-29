@@ -1,9 +1,9 @@
-using osu.Framework.Declarative;
+using ofreact;
 using osuTK;
 using osuTK.Graphics;
 using static osu.Framework.Declarative.Hooks;
 
-namespace ofreact.VisualTests
+namespace osu.Framework.Declarative.VisualTests
 {
     public class TestSceneBfewwfewf : ofTestScene
     {

@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "osu.Framework.Declarative",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ofreact.Benchmarks", "ofreact.Benchmarks\ofreact.Benchmarks.csproj", "{03ED0EC0-D3C1-4F67-A410-225A5F6CF816}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ofreact.VisualTests", "ofreact.VisualTests\ofreact.VisualTests.csproj", "{1E92EC96-5C08-40BB-BF56-94AA06F4E937}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "osu.Framework.Declarative.VisualTests", "osu.Framework.Declarative.VisualTests\osu.Framework.Declarative.VisualTests.csproj", "{1E92EC96-5C08-40BB-BF56-94AA06F4E937}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

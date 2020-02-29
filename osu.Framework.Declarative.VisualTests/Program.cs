@@ -1,4 +1,6 @@
-﻿namespace ofreact.VisualTests
+﻿using ofreact;
+
+namespace osu.Framework.Declarative.VisualTests
 {
     static class Program
     {
