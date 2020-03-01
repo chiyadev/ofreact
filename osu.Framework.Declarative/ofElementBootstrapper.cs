@@ -9,7 +9,7 @@ namespace osu.Framework.Declarative
     /// <summary>
     /// Bootstraps an ofreact element inside an osu!framework <see cref="Container{Drawable}"/>.
     /// </summary>
-    public sealed class ofDrawableBootstrapper : Container<Drawable>
+    public sealed class ofElementBootstrapper : Container<Drawable>
     {
         readonly ofRootNode _node = new ofRootNode();
 

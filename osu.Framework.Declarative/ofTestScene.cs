@@ -16,7 +16,7 @@ namespace osu.Framework.Declarative
         protected abstract ofElement Render();
 
         [BackgroundDependencyLoader]
-        void Load() => Child = new ofDrawableBootstrapper
+        void Load() => Child = new ofElementBootstrapper
         {
             Element          = ofElement.DefineComponent(n => Render()),
             RelativeSizeAxes = Axes.Both

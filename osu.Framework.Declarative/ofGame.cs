@@ -109,7 +109,7 @@ namespace osu.Framework.Declarative
                 _dependencies.CacheAs<Game>(this);
                 _dependencies.CacheAs(_game);
 
-                Child = new ofDrawableBootstrapper
+                Child = new ofElementBootstrapper
                 {
                     Element          = _game.Children,
                     RelativeSizeAxes = Axes.Both
