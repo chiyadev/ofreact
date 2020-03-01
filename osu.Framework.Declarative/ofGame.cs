@@ -100,8 +100,8 @@ namespace osu.Framework.Declarative
 
             DependencyContainer _dependencies;
 
-            protected override IReadOnlyDependencyContainer CreateChildDependencies(IReadOnlyDependencyContainer parent) =>
-                _dependencies = new DependencyContainer(base.CreateChildDependencies(parent));
+            protected override IReadOnlyDependencyContainer CreateChildDependencies(IReadOnlyDependencyContainer parent)
+                => _dependencies = new DependencyContainer(base.CreateChildDependencies(parent));
 
             [BackgroundDependencyLoader]
             void Load()
