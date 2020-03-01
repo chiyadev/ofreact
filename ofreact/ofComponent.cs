@@ -28,9 +28,9 @@ namespace ofreact
             var nodeRef = UseChild();
             var node    = nodeRef.Current;
 
-            var element = Render();
+            var child = Render();
 
-            if (element == null)
+            if (child == null)
             {
                 if (node != null)
                 {
@@ -41,13 +41,19 @@ namespace ofreact
                 return false;
             }
 
-            if (node == null || !node.CanRenderElement(element))
+            node ??= nodeRef.Current = Node.CreateChild();
+
+            var result = node.RenderElement(child);
+
+            if (result == RenderResult.Mismatch)
             {
-                node?.Dispose();
+                node.Dispose();
                 node = nodeRef.Current = Node.CreateChild();
+
+                result = node.RenderElement(child);
             }
 
-            return node.RenderElement(element);
+            return result == RenderResult.Rendered;
         }
     }
 }

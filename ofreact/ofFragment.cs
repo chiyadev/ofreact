@@ -27,13 +27,15 @@ namespace ofreact
         /// <param name="element">Element to add.</param>
         public void Add(ofElement element) => Children.Add(element);
 
-        protected internal override bool RenderSubtree()
+        protected internal override unsafe bool RenderSubtree()
         {
             if (!base.RenderSubtree())
                 return false;
 
             var nodesRef = UseChildren();
             var nodes    = nodesRef.Current;
+
+            var nodeMatched = stackalloc bool[nodes.Length];
 
             var rendered = false;
             var newNodes = new List<ofNode>(nodes.Length);
@@ -46,41 +48,51 @@ namespace ofreact
                 if (child == null)
                     continue;
 
-                ofNode node;
+                ofNode       node;
+                RenderResult result;
 
                 // iterate nodes until matching node for child element is found
                 for (var j = 0; j < nodes.Length; j++)
                 {
-                    node = nodes[j];
-
-                    if (node != null && node.CanRenderElement(child))
+                    if (!nodeMatched[j])
                     {
-                        nodes[j] = null;
+                        node   = nodes[j];
+                        result = node.RenderElement(child);
 
-                        goto render;
+                        if (result != RenderResult.Mismatch)
+                        {
+                            nodeMatched[j] = true;
+
+                            newNodes.Add(node);
+                            rendered |= result == RenderResult.Rendered;
+
+                            goto next;
+                        }
                     }
                 }
 
-                // if no node matched, create a new one
-                node = Node.CreateChild();
+                // if no node matched, make a new one
+                node   = Node.CreateChild();
+                result = node.RenderElement(child);
 
-                render:
+                if (result != RenderResult.Mismatch)
+                {
+                    newNodes.Add(node);
+                    rendered |= result == RenderResult.Rendered;
+                }
 
-                // render child element
-                rendered |= node.RenderElement(child);
-
-                newNodes.Add(node);
+                next: ;
             }
 
             // update node list
             nodesRef.Current = newNodes.ToArray();
 
-            // dispose removed nodes
-            foreach (var node in nodes)
+            // dispose removed nodes (nodes not matched)
+            for (var j = 0; j < nodes.Length; j++)
             {
-                if (node != null)
+                if (!nodeMatched[j])
                 {
-                    node.Dispose();
+                    nodes[j].Dispose();
                     rendered = true;
                 }
             }

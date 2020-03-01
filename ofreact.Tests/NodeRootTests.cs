@@ -16,7 +16,7 @@ namespace ofreact.Tests
 
             node.RenderElement(new ElementTypeA());
 
-            Assert.That(node.RenderElement(new ElementTypeB()), Is.False);
+            Assert.That(node.RenderElement(new ElementTypeB()), Is.EqualTo(RenderResult.Mismatch));
         }
     }
 }

@@ -6,6 +6,24 @@ using ofreact.Diagnostics;
 
 namespace ofreact
 {
+    public enum RenderResult
+    {
+        /// <summary>
+        /// Node was rendered successfully.
+        /// </summary>
+        Rendered = 0,
+
+        /// <summary>
+        /// Rendering was skipped for optimization.
+        /// </summary>
+        Skipped,
+
+        /// <summary>
+        /// Node and element cannot be bound.
+        /// </summary>
+        Mismatch
+    }
+
     /// <summary>
     /// Represents a node in ofreact.
     /// </summary>
@@ -63,25 +81,35 @@ namespace ofreact
             Parent = parent;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        bool CanRender(ofElement element)
+        {
+            if (element == null)
+                return false;
+
+            if (Element == null || ReferenceEquals(element, Element))
+                return true;
+
+            return element.GetType() == Element.GetType() && KeysEqual(element, Element);
+        }
+
         /// <summary>
         /// Renders the given element.
         /// </summary>
-        /// <remarks>
-        /// The caller is responsible for ensuring that <see cref="CanRenderElement"/> returns true.
-        /// </remarks>
-        public virtual bool RenderElement(ofElement element)
+        public virtual RenderResult RenderElement(ofElement element)
         {
-            var shouldRender = Root.RerenderNodes.Remove(this); // remove first to avoid infinite rendering loop
+            var shouldRender = Root.RerenderNodes.Remove(this); // remove first to avoid infinite rerender loop
 
-            if (element == null)
-                return false;
+            if (!CanRender(element))
+                return RenderResult.Mismatch;
 
             shouldRender = shouldRender || AlwaysInvalid || Element == null || Element.ShouldComponentUpdate(element);
 
             if (!shouldRender)
             {
                 Root.Diagnostics?.OnNodeRenderSkipped(this);
-                return false;
+
+                return RenderResult.Skipped;
             }
 
             // enable hooks
@@ -105,7 +133,9 @@ namespace ofreact
                                                                 "See https://reactjs.org/docs/hooks-rules.html for rules about hooks.");
                     }
 
-                    return result;
+                    return result
+                        ? RenderResult.Rendered
+                        : RenderResult.Skipped;
                 }
             }
             catch (Exception e)
@@ -117,23 +147,6 @@ namespace ofreact
             {
                 _hooks = null;
             }
-        }
-
-        /// <summary>
-        /// Determines whether the given element can be bound to this node and rendered or not.
-        /// </summary>
-        /// <param name="element">Element to test.</param>
-        /// <returns>True if the element can be bound to this node and rendered.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool CanRenderElement(ofElement element)
-        {
-            if (element == null)
-                return false;
-
-            if (Element == null || ReferenceEquals(element, Element))
-                return true;
-
-            return element.GetType() == Element.GetType() && KeysEqual(element, Element);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -311,14 +324,16 @@ namespace ofreact
             return true;
         }
 
-        public override bool RenderElement(ofElement element)
+        public override RenderResult RenderElement(ofElement element)
         {
             Diagnostics?.Clear();
 
-            if (!CanRenderElement(element))
-                return false;
-
             var result = base.RenderElement(element);
+
+            if (result == RenderResult.Mismatch)
+                return result;
+
+            var rendered = result == RenderResult.Rendered;
 
             do
             {
@@ -326,7 +341,7 @@ namespace ofreact
                 while (GetRerenderNodes(out var nodes))
                 {
                     foreach (var node in nodes)
-                        result |= node.RenderElement(node.Element);
+                        rendered |= node.RenderElement(node.Element) == RenderResult.Rendered;
                 }
 
                 // run effects
@@ -335,12 +350,15 @@ namespace ofreact
                     Diagnostics?.OnEffectInvoking(effect);
 
                     effect.Invoke();
-                    result = true;
+
+                    rendered = true;
                 }
             }
             while (RerenderNodes.Count != 0);
 
-            return result;
+            return rendered
+                ? RenderResult.Rendered
+                : RenderResult.Skipped;
         }
 
         public override void Dispose()
