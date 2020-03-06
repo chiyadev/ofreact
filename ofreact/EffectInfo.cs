@@ -15,6 +15,7 @@ namespace ofreact
     public sealed class EffectInfo
     {
         ofNode _node;
+        ofElement _element;
         object[] _dependencies;
 
         EffectDelegate _effect;
@@ -28,6 +29,7 @@ namespace ofreact
             var pending = _node == null || dependencies?.Length == 0 || !Utils.ObjectsEqual(_dependencies, dependencies);
 
             _node         = node;
+            _element      = node.Element;
             _dependencies = dependencies;
             _effect       = effect;
 
@@ -44,7 +46,7 @@ namespace ofreact
         {
             Cleanup();
 
-            using (_node.Element.Bind(_node, false))
+            using (_element.Bind(_node, false))
                 _cleanup = _effect?.Invoke();
         }
 
@@ -58,7 +60,7 @@ namespace ofreact
 
             _cleanup = null;
 
-            using (_node.Element.Bind(_node, false))
+            using (_element.Bind(_node, false))
                 cleanup();
         }
     }
