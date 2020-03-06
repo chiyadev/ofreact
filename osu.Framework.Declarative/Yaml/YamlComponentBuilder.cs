@@ -250,7 +250,7 @@ namespace osu.Framework.Declarative.Yaml
 
                             var provider = PropResolver.Resolve(context, parameter.Name, element, parameter, prop.Value);
 
-                            element.Props[parameter.Name] = provider ?? throw new YamlComponentException($"Cannot resolve prop '{parameter.Name}' in element {type}.", prop.Value);
+                            element.Props[parameter.Name] = provider ?? throw new YamlComponentException($"Cannot resolve prop '{parameter.Name}' in element {type}.", prop.Key);
 
                             points += 1;
                         }
