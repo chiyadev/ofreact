@@ -1,9 +1,12 @@
-﻿using ofreact;
-
-namespace osu.Framework.Declarative.VisualTests
+﻿namespace osu.Framework.Declarative.VisualTests
 {
     static class Program
     {
-        public static void Main() => new ofRootNode().RenderElement(new TestGame());
+        public static void Main()
+        {
+            using var node = new ofGameHost("ofreact");
+
+            node.RenderElement(new TestGame());
+        }
     }
 }

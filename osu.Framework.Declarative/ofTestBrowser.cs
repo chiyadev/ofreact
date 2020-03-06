@@ -1,4 +1,5 @@
 using ofreact;
+using osu.Framework.Allocation;
 using osu.Framework.Testing;
 
 namespace osu.Framework.Declarative
@@ -16,11 +17,29 @@ namespace osu.Framework.Declarative
         public ofTestBrowser(object key = default,
                              RefDelegate<TestBrowser> @ref = default,
                              DrawableStyleDelegate<TestBrowser> style = default,
-                             string assemblyNamespace = default) : base(key, @ref, style)
+                             string assemblyNamespace = "") : base(key, @ref, style)
         {
             AssemblyNamespace = assemblyNamespace;
         }
 
-        protected override TestBrowser CreateDrawable() => new TestBrowser(AssemblyNamespace ?? "");
+        protected override TestBrowser CreateDrawable() => new InternalTestBrowser(AssemblyNamespace, this);
+
+        sealed class InternalTestBrowser : TestBrowser
+        {
+            readonly ofTestBrowser _browser;
+
+            public InternalTestBrowser(string assemblyNamespace, ofTestBrowser browser) : base(assemblyNamespace)
+            {
+                _browser = browser;
+            }
+
+            DependencyContainer _dependencies;
+
+            protected override IReadOnlyDependencyContainer CreateChildDependencies(IReadOnlyDependencyContainer parent)
+                => _dependencies = new DependencyContainer(base.CreateChildDependencies(parent));
+
+            [BackgroundDependencyLoader]
+            void Load() => _dependencies.Cache(new ofElementBootstrapper.NodeConnector(_browser.Node));
+        }
     }
 }

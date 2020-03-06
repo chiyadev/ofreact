@@ -6,17 +6,9 @@ namespace osu.Framework.Declarative.VisualTests
     {
         protected override ofElement Render()
         {
-            return new ofGame(
-                name: "ofreact",
-                host: new GameHostOptions
-                {
-                    PortableInstallation = true
-                })
+            return new ofDrawSizePreservingFillContainer
             {
-                new ofDrawSizePreservingFillContainer
-                {
-                    new ofTestBrowser()
-                }
+                new ofTestBrowser()
             };
         }
     }
