@@ -26,9 +26,8 @@ namespace ofreact
         {
             _dict = node.State;
 
-            // - key is always lowercase to achieve case-insensitivity
-            // - underscore prefix convention is removed
-            _key = key.ToLowerInvariant().TrimStart('_');
+            // underscore convention is removed
+            _key = key.TrimStart('_');
 
             if (!_dict.ContainsKey(_key))
                 Current = initialValue;

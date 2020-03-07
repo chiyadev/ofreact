@@ -47,10 +47,10 @@ namespace ofreact
         /// Dictionary of stateful variables.
         /// </summary>
         /// <remarks>
-        /// Named states are lowercase string keys.
-        /// Hook states are string keys prefixed with ^ (caret character) followed by zero-based hook index.
+        /// Named states are case-insensitive.
+        /// Hook states are prefixed with ^ (caret character) followed by zero-based hook index.
         /// </remarks>
-        public IDictionary<string, object> State => _state ??= new Dictionary<string, object>(1);
+        public IDictionary<string, object> State => _state ??= new Dictionary<string, object>(1, StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// List of effects specific to this node.
