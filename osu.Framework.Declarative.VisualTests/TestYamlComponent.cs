@@ -12,15 +12,15 @@ render:
   Box:
     style:
       name: test
-      size: 100 .5
+      size: 100, .5
       position: .5
       relativeSizeAxes: y
-      relativePositionAxes: x y
+      relativePositionAxes: x, y
       origin: centre
       colour:
         vertical:
           - red
-          - blue .3
+          - blue, .3
       alpha: .6");
         }
     }
