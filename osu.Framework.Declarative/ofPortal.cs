@@ -18,7 +18,7 @@ namespace osu.Framework.Declarative
         /// <summary>
         /// Creates a new <see cref="ofPortal"/>.
         /// </summary>
-        public ofPortal(Container<Drawable> container, object key = default, IEnumerable<ofElement> children = default) : base(key, children, new Context(container)) { }
+        public ofPortal(Container<Drawable> container, ElementKey key = default, IEnumerable<ofElement> children = default) : base(key, children, new Context(container)) { }
 
         sealed class Context : IDrawableRenderContext
         {

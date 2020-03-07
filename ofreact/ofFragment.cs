@@ -14,7 +14,7 @@ namespace ofreact
         /// <summary>
         /// Creates a new <see cref="ofFragment"/>.
         /// </summary>
-        public ofFragment(object key = default, IEnumerable<ofElement> children = default) : base(key)
+        public ofFragment(ElementKey key = default, IEnumerable<ofElement> children = default) : base(key)
         {
             Children = children == null
                 ? new List<ofElement>()

@@ -10,7 +10,7 @@ namespace ofreact.Tests
             [Prop] public readonly string Prop1;
             [Prop] public readonly int Prop2;
 
-            public Element(string prop1 = default, int prop2 = default, object key = default) : base(key)
+            public Element(string prop1 = default, int prop2 = default, ElementKey key = default) : base(key)
             {
                 Prop1 = prop1;
                 Prop2 = prop2;
@@ -20,10 +20,8 @@ namespace ofreact.Tests
         [Test]
         public void AreEqual()
         {
-            var key = new object();
-
-            var element1 = new Element("test", 777, key);
-            var element2 = new Element("test", 777, key);
+            var element1 = new Element("test", 777, "key");
+            var element2 = new Element("test", 777, "key");
 
             Assert.That(PropComparer.Equal(element1, element2), Is.True);
         }
@@ -33,8 +31,8 @@ namespace ofreact.Tests
         {
             var key = new object();
 
-            var element1 = new Element("test1", 777, key);
-            var element2 = new Element("test2", 777, key);
+            var element1 = new Element("test1", 777, "key");
+            var element2 = new Element("test2", 777, "key");
 
             Assert.That(PropComparer.Equal(element1, element2), Is.False);
         }
@@ -44,19 +42,19 @@ namespace ofreact.Tests
         {
             var key = new object();
 
-            var element1 = new Element("test", 777, key);
-            var element2 = new Element("test", 778, key);
+            var element1 = new Element("test", 777, "key");
+            var element2 = new Element("test", 778, "key");
 
             Assert.That(PropComparer.Equal(element1, element2), Is.False);
         }
 
         [Test]
-        public void AreNotEqualReference()
+        public void AreNotEqualKey()
         {
             var key = new object();
 
-            var element1 = new Element("test", 777, key);
-            var element2 = new Element("test", 777, new object());
+            var element1 = new Element("test", 777, "key");
+            var element2 = new Element("test", 777, "key2");
 
             Assert.That(PropComparer.Equal(element1, element2), Is.False);
         }

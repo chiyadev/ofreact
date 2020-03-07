@@ -19,7 +19,7 @@ namespace osu.Framework.Declarative.Yaml
         /// <summary>
         /// Creates a new <see cref="ofYamlComponent"/> from an YAML document.
         /// </summary>
-        public ofYamlComponent(YamlDocument document, object key = default) : base(key)
+        public ofYamlComponent(YamlDocument document, ElementKey key = default) : base(key)
         {
             _build = new YamlComponentBuilder(document).BuildRenderer;
         }
@@ -31,7 +31,7 @@ namespace osu.Framework.Declarative.Yaml
         /// <paramref name="reader"/> must not be disposed until this element is rendered at least once.
         /// Caller is responsible for disposing the reader afterwards.
         /// </remarks>
-        public ofYamlComponent(TextReader reader, object key = default) : base(key)
+        public ofYamlComponent(TextReader reader, ElementKey key = default) : base(key)
         {
             _build = () =>
             {
@@ -49,7 +49,7 @@ namespace osu.Framework.Declarative.Yaml
         /// <summary>
         /// Creates a new <see cref="ofYamlComponent"/> from a document string.
         /// </summary>
-        public ofYamlComponent(string document, object key = default) : this(new StringReader(document), key) { }
+        public ofYamlComponent(string document, ElementKey key = default) : this(new StringReader(document), key) { }
 
         protected override ofElement Render() => UseMemo(_build)(Node);
     }

@@ -8,7 +8,7 @@ namespace ofreact.Tests.Yaml
 {
     public class AnalysisElement : ofElement
     {
-        public AnalysisElement(object key = default, int integer = default, bool boolean = default) : base(key) { }
+        public AnalysisElement(ElementKey key = default, int integer = default, bool boolean = default) : base(key) { }
     }
 
     public class AnalysisTests

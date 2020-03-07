@@ -122,7 +122,7 @@ namespace osu.Framework.Declarative
         /// <summary>
         /// Creates a new <see cref="ofContainerBase{T}"/>.
         /// </summary>
-        protected ofContainerBase(object key = default,
+        protected ofContainerBase(ElementKey key = default,
                                   RefDelegate<T> @ref = default,
                                   DrawableStyleDelegate<T> style = default,
                                   IEnumerable<ofElement> children = default) : base(key, @ref, style)

@@ -58,7 +58,7 @@ namespace ofreact.Tests
                 return null;
             }
 
-            public MountCounting(object key = default) : base(key) { }
+            public MountCounting(ElementKey key = default) : base(key) { }
         }
 
         [Test]

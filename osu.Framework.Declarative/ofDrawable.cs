@@ -16,7 +16,7 @@ namespace osu.Framework.Declarative
         /// <summary>
         /// Creates a new <see cref="ofDrawableBase{T}"/>.
         /// </summary>
-        protected ofDrawableBase(object key = default,
+        protected ofDrawableBase(ElementKey key = default,
                                  RefDelegate<T> @ref = default,
                                  DrawableStyleDelegate<T> style = default) : base(key)
         {
@@ -65,7 +65,7 @@ namespace osu.Framework.Declarative
                 drawableCreated = false;
             }
 
-            drawable.Name = Key?.ToString();
+            drawable.Name = Key.ToString();
 
             // add styling
             ApplyStyles(drawable);
@@ -97,7 +97,7 @@ namespace osu.Framework.Declarative
     /// <typeparam name="T">Type of the <see cref="Drawable"/> to render.</typeparam>
     public sealed class ofDrawable<T> : ofDrawableBase<T> where T : Drawable, new()
     {
-        public ofDrawable(object key = default,
+        public ofDrawable(ElementKey key = default,
                           RefDelegate<T> @ref = default,
                           DrawableStyleDelegate<T> style = default) : base(key, @ref, style) { }
 

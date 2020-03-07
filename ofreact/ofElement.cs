@@ -36,12 +36,12 @@ namespace ofreact
         /// <summary>
         /// Key used to differentiate this element amongst other sibling elements.
         /// </summary>
-        [Prop] public readonly object Key;
+        [Prop] public readonly ElementKey Key;
 
         /// <summary>
         /// Creates a new <see cref="ofElement"/>.
         /// </summary>
-        protected ofElement(object key = default)
+        protected ofElement(ElementKey key = default)
         {
             Key = key;
         }
@@ -185,7 +185,7 @@ namespace ofreact
         {
             var str = GetType().FullName;
 
-            if (Key != null)
+            if (Key.HasValue)
                 str = $"{str} key='{Key}'";
 
             return str;

@@ -15,7 +15,7 @@ namespace osu.Framework.Declarative
         /// <summary>
         /// Creates a new <see cref="ofDrawSizePreservingFillContainer"/>.
         /// </summary>
-        public ofDrawSizePreservingFillContainer(object key = default,
+        public ofDrawSizePreservingFillContainer(ElementKey key = default,
                                                  RefDelegate<DrawSizePreservingFillContainer> @ref = default,
                                                  DrawableStyleDelegate<DrawSizePreservingFillContainer> style = default,
                                                  Vector2? targetDrawSize = default,

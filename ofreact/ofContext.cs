@@ -17,7 +17,7 @@ namespace ofreact
         /// <summary>
         /// Creates a new <see cref="ofContext{TContext}"/>.
         /// </summary>
-        public ofContext(object key = default, IEnumerable<ofElement> children = default, TContext value = default) : base(key, children)
+        public ofContext(ElementKey key = default, IEnumerable<ofElement> children = default, TContext value = default) : base(key, children)
         {
             Value = value;
         }

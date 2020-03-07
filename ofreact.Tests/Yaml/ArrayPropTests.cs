@@ -7,7 +7,7 @@ namespace ofreact.Tests.Yaml
     {
         [Prop] readonly string[] _values;
 
-        public StringArrayPropElement(object key = default, string[] values = default) : base(key)
+        public StringArrayPropElement(ElementKey key = default, string[] values = default) : base(key)
         {
             _values = values;
         }
@@ -29,7 +29,7 @@ namespace ofreact.Tests.Yaml
     {
         [Prop] readonly string[][] _values;
 
-        public StringJaggedArrayPropElement(object key = default, string[][] values = default) : base(key)
+        public StringJaggedArrayPropElement(ElementKey key = default, string[][] values = default) : base(key)
         {
             _values = values;
         }
@@ -51,7 +51,7 @@ namespace ofreact.Tests.Yaml
     {
         [Prop] readonly int?[][][] _values;
 
-        public ComplexNullableJaggedArrayPropElement(object key = default, int?[][][] values = default) : base(key)
+        public ComplexNullableJaggedArrayPropElement(ElementKey key = default, int?[][][] values = default) : base(key)
         {
             _values = values;
         }

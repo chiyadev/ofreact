@@ -14,7 +14,7 @@ namespace osu.Framework.Declarative
         /// <summary>
         /// Creates a new <see cref="ofTestBrowser"/>.
         /// </summary>
-        public ofTestBrowser(object key = default,
+        public ofTestBrowser(ElementKey key = default,
                              RefDelegate<TestBrowser> @ref = default,
                              DrawableStyleDelegate<TestBrowser> style = default,
                              string assemblyNamespace = "") : base(key, @ref, style)

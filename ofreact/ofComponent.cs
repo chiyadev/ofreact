@@ -13,7 +13,7 @@ namespace ofreact
         /// <summary>
         /// Creates a new <see cref="ofComponent"/>.
         /// </summary>
-        protected ofComponent(object key = default) : base(key) { }
+        protected ofComponent(ElementKey key = default) : base(key) { }
 
         /// <summary>
         /// Renders this component and returns the rendered element.
