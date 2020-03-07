@@ -183,7 +183,7 @@ namespace osu.Framework.Declarative
 
     public class DrawableStyleDelegatePropResolverAttribute : Attribute, IPropResolver
     {
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementRenderInfo element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
         {
             if (prop.Type == null)
                 return null;

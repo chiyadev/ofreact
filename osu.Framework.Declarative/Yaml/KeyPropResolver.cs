@@ -6,16 +6,13 @@ namespace osu.Framework.Declarative.Yaml
 {
     public class KeyPropResolver : IPropResolver
     {
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementRenderInfo element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
         {
-            if (prop.Name != "key")
+            if (prop.Type != typeof(ElementKey))
                 return null;
 
             if (!(node is YamlScalarNode scalar))
                 throw new YamlComponentException("Must be a scalar.", node);
-
-            if (prop.Type.IsAssignableFrom(typeof(string)) == false)
-                throw new YamlComponentException($"Type {prop.Type} is not assignable from string.", scalar);
 
             // declare a variable for this element
             if (!context.TryDeclareVariable(element.Type, scalar.Value, null, out var variable))

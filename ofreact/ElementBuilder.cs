@@ -11,8 +11,22 @@ namespace ofreact
         Expression GetValue(ComponentBuilderContext context);
     }
 
-    public class ElementRenderInfo : IPropProvider
+    public class ElementBuilder : IPropProvider
     {
+        public static ElementBuilder Empty => new EmptyBuilder();
+
+        sealed class EmptyBuilder : ElementBuilder
+        {
+            sealed class Empty : ofElement { }
+
+            static readonly Type _type = typeof(Empty);
+            static readonly ConstructorInfo _ctor = _type.GetConstructors()[0];
+
+            public EmptyBuilder() : base(_type, _ctor) { }
+
+            public override Expression GetValue(ComponentBuilderContext context) => Expression.Constant(null, typeof(ofElement));
+        }
+
         /// <summary>
         /// Type of the element.
         /// </summary>
@@ -38,7 +52,7 @@ namespace ofreact
         /// </summary>
         public Expression Assignee { get; set; }
 
-        public ElementRenderInfo(Type type, ConstructorInfo constructor)
+        public ElementBuilder(Type type, ConstructorInfo constructor)
         {
             Type        = type;
             Constructor = constructor;
@@ -77,32 +91,14 @@ namespace ofreact
         }
     }
 
-    public class FragmentRenderInfo : ElementRenderInfo
+    public class FragmentBuilder : ElementBuilder
     {
         static readonly Type _type = typeof(ofFragment);
         static readonly ConstructorInfo _ctor = _type.GetConstructors()[0];
 
-        public FragmentRenderInfo(IEnumerable<ElementRenderInfo> children) : base(_type, _ctor)
+        public FragmentBuilder(IEnumerable<ElementBuilder> children) : base(_type, _ctor)
         {
             Props["children"] = new CollectionPropProvider(typeof(IEnumerable<ofElement>), children);
         }
-    }
-
-    public class EmptyRenderInfo : ElementRenderInfo
-    {
-        static readonly Type _type = typeof(ofEmptyElement);
-        static readonly ConstructorInfo _ctor = _type.GetConstructors()[0];
-
-        public EmptyRenderInfo() : base(_type, _ctor) { }
-
-        sealed class ofEmptyElement : ofElement
-        {
-            public ofEmptyElement()
-            {
-                throw new NotSupportedException($"{nameof(EmptyRenderInfo)} should not be rendered.");
-            }
-        }
-
-        public override Expression GetValue(ComponentBuilderContext context) => Expression.Constant(null, typeof(ofElement));
     }
 }

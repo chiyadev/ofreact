@@ -39,11 +39,11 @@ namespace ofreact
         public FunctionComponent BuildRenderer()
         {
             var context = new ComponentBuilderContext(this);
-            var element = null as ElementRenderInfo;
+            var element = null as ElementBuilder;
 
             try
             {
-                // get element render info
+                // build element to be rendered
                 element = Render(context);
             }
             catch (Exception e)
@@ -67,7 +67,7 @@ namespace ofreact
             return Expression.Lambda<FunctionComponent>(Expression.Block(variables.Select(v => v.Name), body), context.Node).CompileSafe();
         }
 
-        protected abstract ElementRenderInfo Render(ComponentBuilderContext context);
+        protected abstract ElementBuilder Render(ComponentBuilderContext context);
     }
 
     public sealed class ComponentBuilderContext

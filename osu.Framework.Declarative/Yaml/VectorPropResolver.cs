@@ -9,7 +9,7 @@ namespace osu.Framework.Declarative.Yaml
 {
     public class VectorPropResolver : IPropResolver
     {
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementRenderInfo element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
         {
             if (prop.Type == typeof(Vector2))
                 return new Provider2(ParseVector(node, 2));

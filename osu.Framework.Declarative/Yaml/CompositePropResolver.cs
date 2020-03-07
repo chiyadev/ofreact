@@ -19,7 +19,7 @@ namespace osu.Framework.Declarative.Yaml
             _resolvers = resolvers;
         }
 
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementRenderInfo element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
             => _resolvers.Select(r => r.Resolve(context, prop, element, node)).FirstOrDefault(p => p != null);
     }
 }

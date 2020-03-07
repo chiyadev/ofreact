@@ -22,7 +22,7 @@ namespace osu.Framework.Declarative.Yaml
                 _namedColors[property.Name] = (Color4) property.GetValue(null);
         }
 
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementRenderInfo element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
         {
             if (prop.Type == typeof(Color4))
             {
