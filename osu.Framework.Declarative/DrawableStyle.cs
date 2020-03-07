@@ -203,17 +203,20 @@ namespace osu.Framework.Declarative
                     if (!(key is YamlScalarNode keyScalar))
                         throw new YamlComponentException("Must be a scalar.", key);
 
+                    // get property or field info
                     var member = drawableType.GetProperty(keyScalar.Value, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase) as MemberInfo
                               ?? drawableType.GetField(keyScalar.Value, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
 
                     if (member == null || member is PropertyInfo p && !p.CanWrite) // ensure writable if property
                         throw new YamlComponentException($"Cannot resolve property or field '{keyScalar.Value}' in element {drawableType}.", keyScalar);
 
+                    // resolve value recursively
                     var provider = ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, member, element, value);
 
                     if (provider == null)
                         throw new YamlComponentException($"Cannot resolve property or field '{keyScalar.Value}' in element {drawableType}.", keyScalar);
 
+                    // add assignment to member
                     body.Add(Expression.Assign(Expression.MakeMemberAccess(drawable, member), provider.GetValue(context)));
                 }
                 catch (Exception e)
@@ -222,6 +225,7 @@ namespace osu.Framework.Declarative
                 }
             }
 
+            // build lambda expression that adds styling to drawable
             return new Provider(Expression.Lambda(prop.Type, Expression.Block(body), drawable));
         }
 
