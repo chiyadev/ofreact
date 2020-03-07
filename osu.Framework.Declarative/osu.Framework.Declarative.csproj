@@ -7,10 +7,10 @@
 
     <ItemGroup>
       <PackageReference Include="ppy.osu.Framework" Version="2020.213.0" />
+      <PackageReference Include="YamlDotNet" Version="8.1.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ofreact.Yaml\ofreact.Yaml.csproj" />
       <ProjectReference Include="..\ofreact\ofreact.csproj" />
     </ItemGroup>
 
