@@ -12,13 +12,13 @@ namespace ofreact
         /// </summary>
         /// <param name="type">Type to determine.</param>
         /// <param name="constructed">Type that will be constructed.</param>
-        /// <param name="element">Type of element objects.</param>
-        public static bool IsCollection(Type type, out Type constructed, out Type element)
+        /// <param name="item">Type of item objects.</param>
+        public static bool IsCollection(Type type, out Type constructed, out Type item)
         {
             if (type.IsArray)
             {
                 constructed = type;
-                element     = type.GetElementType();
+                item        = type.GetElementType();
                 return true;
             }
 
@@ -27,7 +27,7 @@ namespace ofreact
                 if (!inter.IsGenericType || !typeof(IEnumerable<>).IsAssignableFrom(inter.GetGenericTypeDefinition()))
                     continue;
 
-                element = inter.GetGenericArguments()[0];
+                item = inter.GetGenericArguments()[0];
 
                 if (!type.IsAbstract)
                 {
@@ -40,7 +40,7 @@ namespace ofreact
                     }
                 }
 
-                var array = element.MakeArrayType();
+                var array = item.MakeArrayType();
 
                 if (type.IsAssignableFrom(array))
                 {
@@ -49,7 +49,7 @@ namespace ofreact
                 }
 
                 //todo: this breaks with aot
-                var list = typeof(List<>).MakeGenericType(element);
+                var list = typeof(List<>).MakeGenericType(item);
 
                 if (type.IsAssignableFrom(list))
                 {
@@ -59,7 +59,7 @@ namespace ofreact
             }
 
             constructed = null;
-            element     = null;
+            item        = null;
             return false;
         }
 
