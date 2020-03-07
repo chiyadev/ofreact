@@ -13,7 +13,7 @@ render:
     style:
       relativeSizeAxes: both
       name: test
-      #colour: white");
+      colour: red, 0.2");
         }
     }
 }

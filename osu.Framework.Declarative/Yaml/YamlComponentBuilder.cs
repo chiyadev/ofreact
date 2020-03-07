@@ -112,7 +112,8 @@ namespace osu.Framework.Declarative.Yaml
                 new AttributePropResolver(),
                 new KeyPropResolver(),
                 new ChildrenPropResolver(),
-                new PrimitivePropResolver());
+                new PrimitivePropResolver(),
+                new ColorPropResolver());
 
         public IComponentPartHandler PartHandler { get; set; } = DefaultPartHandler;
         public IElementTypeResolver ElementResolver { get; set; } = DefaultTypeResolver;
