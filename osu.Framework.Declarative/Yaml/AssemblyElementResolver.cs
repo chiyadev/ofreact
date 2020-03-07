@@ -11,10 +11,14 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public class AssemblyElementResolver : IElementTypeResolver
     {
-        readonly Dictionary<string, Type> _types = new Dictionary<string, Type>();
+        readonly Dictionary<string, Type> _types;
 
-        public AssemblyElementResolver(Assembly assembly)
+        public AssemblyElementResolver(Assembly assembly) : this(assembly, StringComparer.Ordinal) { }
+
+        public AssemblyElementResolver(Assembly assembly, IEqualityComparer<string> comparer)
         {
+            _types = new Dictionary<string, Type>(comparer);
+
             IEnumerable<Type> types;
 
             try
