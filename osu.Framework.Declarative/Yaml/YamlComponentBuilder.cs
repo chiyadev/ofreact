@@ -13,6 +13,9 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public interface IComponentPartHandler
     {
+        /// <param name="context">Builder context.</param>
+        /// <param name="name">Name of the part.</param>
+        /// <param name="node">YAML node of the part.</param>
         bool Handle(ComponentBuilderContext context, string name, YamlNode node);
     }
 
@@ -21,6 +24,8 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public interface IElementTypeResolver
     {
+        /// <param name="context">Builder context.</param>
+        /// <param name="name">Name of the element to resolve to the type.</param>
         Type Resolve(ComponentBuilderContext context, string name);
     }
 
@@ -29,6 +34,11 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public interface IPropResolver
     {
+        /// <param name="context">Builder context.</param>
+        /// <param name="name">Name of the prop.</param>
+        /// <param name="element">Element containing this prop that is currently being built.</param>
+        /// <param name="parameter">Parameter information of the prop. This may be null.</param>
+        /// <param name="node">YAML node of the prop.</param>
         IPropProvider Resolve(ComponentBuilderContext context, string name, ElementRenderInfo element, ParameterInfo parameter, YamlNode node);
     }
 
