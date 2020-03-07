@@ -198,21 +198,28 @@ namespace osu.Framework.Declarative
 
             foreach (var (key, value) in mapping)
             {
-                if (!(key is YamlScalarNode keyScalar))
-                    throw new YamlComponentException("Must be a scalar.", key);
+                try
+                {
+                    if (!(key is YamlScalarNode keyScalar))
+                        throw new YamlComponentException("Must be a scalar.", key);
 
-                var member = drawableType.GetProperty(keyScalar.Value, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase) as MemberInfo
-                          ?? drawableType.GetField(keyScalar.Value, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+                    var member = drawableType.GetProperty(keyScalar.Value, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase) as MemberInfo
+                              ?? drawableType.GetField(keyScalar.Value, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
 
-                if (member == null || member is PropertyInfo p && !p.CanWrite) // ensure writable if property
-                    throw new YamlComponentException($"Cannot resolve property or field '{keyScalar.Value}' in element {drawableType}.", keyScalar);
+                    if (member == null || member is PropertyInfo p && !p.CanWrite) // ensure writable if property
+                        throw new YamlComponentException($"Cannot resolve property or field '{keyScalar.Value}' in element {drawableType}.", keyScalar);
 
-                var provider = ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, member, element, value);
+                    var provider = ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, member, element, value);
 
-                if (provider == null)
-                    throw new YamlComponentException($"Cannot resolve property or field '{keyScalar.Value}' in element {drawableType}.", keyScalar);
+                    if (provider == null)
+                        throw new YamlComponentException($"Cannot resolve property or field '{keyScalar.Value}' in element {drawableType}.", keyScalar);
 
-                body.Add(Expression.Assign(Expression.MakeMemberAccess(drawable, member), provider.GetValue(context)));
+                    body.Add(Expression.Assign(Expression.MakeMemberAccess(drawable, member), provider.GetValue(context)));
+                }
+                catch (Exception e)
+                {
+                    context.OnException(e);
+                }
             }
 
             return new Provider(Expression.Lambda(prop.Type, Expression.Block(body), drawable));
