@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
 using ofreact;
 using osu.Framework.Declarative.Yaml;
@@ -15,7 +17,7 @@ namespace osu.Framework.Declarative
     /// </summary>
     /// <param name="drawable">Drawable to apply styling to.</param>
     /// <typeparam name="T">Type of the drawable.</typeparam>
-    [DrawableStylePropHandler]
+    [DrawableStyleDelegatePropResolver]
     public delegate void DrawableStyleDelegate<in T>(T drawable) where T : Drawable;
 
     /// <summary>
@@ -27,7 +29,6 @@ namespace osu.Framework.Declarative
     /// Base class for defining styles for <see cref="ofDrawable{T}"/>.
     /// </summary>
     /// <typeparam name="T">Type of the drawable to apply styling to.</typeparam>
-    [DrawableStylePropHandler]
     public abstract class DrawableStyle<T> where T : Drawable
     {
         /// <inheritdoc cref="Drawable.Depth"/>
@@ -178,5 +179,55 @@ namespace osu.Framework.Declarative
         }
 
         public static implicit operator DrawableStyleDelegate<T>(DrawableStyle<T> style) => style.Apply;
+    }
+
+    public class DrawableStyleDelegatePropResolverAttribute : Attribute, IPropResolver
+    {
+        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementRenderInfo element, YamlNode node)
+        {
+            if (prop.Type == null)
+                return null;
+
+            if (!(node is YamlMappingNode mapping))
+                throw new YamlComponentException("Must be a mapping.", node);
+
+            var drawableType = prop.Type.GetGenericArguments()[0];
+            var drawable     = Expression.Parameter(drawableType, "drawable");
+
+            var body = new List<Expression>();
+
+            foreach (var (key, value) in mapping)
+            {
+                if (!(key is YamlScalarNode keyScalar))
+                    throw new YamlComponentException("Must be a scalar.", key);
+
+                var member = drawableType.GetProperty(keyScalar.Value, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase) as MemberInfo
+                          ?? drawableType.GetField(keyScalar.Value, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+
+                if (member == null || member is PropertyInfo p && !p.CanWrite) // ensure writable if property
+                    throw new YamlComponentException($"Cannot resolve property or field '{keyScalar.Value}' in element {drawableType}.", keyScalar);
+
+                var provider = ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, member, element, value);
+
+                if (provider == null)
+                    throw new YamlComponentException($"Cannot resolve property or field '{keyScalar.Value}' in element {drawableType}.", keyScalar);
+
+                body.Add(Expression.Assign(Expression.MakeMemberAccess(drawable, member), provider.GetValue(context)));
+            }
+
+            return new Provider(Expression.Lambda(prop.Type, Expression.Block(body), drawable));
+        }
+
+        sealed class Provider : IPropProvider
+        {
+            readonly Expression _expr;
+
+            public Provider(Expression expr)
+            {
+                _expr = expr;
+            }
+
+            public Expression GetValue(ComponentBuilderContext context) => _expr;
+        }
     }
 }
