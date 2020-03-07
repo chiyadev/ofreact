@@ -11,9 +11,17 @@ namespace osu.Framework.Declarative.VisualTests
 render:
   Box:
     style:
-      relativeSizeAxes: both
       name: test
-      colour: red, 0.2");
+      size: 100 .5
+      position: .5
+      relativeSizeAxes: y
+      relativePositionAxes: x y
+      origin: centre
+      colour:
+        vertical:
+          - red
+          - blue .3
+      alpha: .6");
         }
     }
 }
