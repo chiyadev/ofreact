@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -27,13 +28,20 @@ namespace osu.Framework.Declarative.Yaml
 
                     foreach (var item in sequence)
                     {
-                        if (!(item is YamlScalarNode scalar))
-                            throw new YamlComponentException("Must be a scalar.", item);
+                        try
+                        {
+                            if (!(item is YamlScalarNode scalar))
+                                throw new YamlComponentException("Must be a scalar.", item);
 
-                        if (string.IsNullOrEmpty(scalar.Value))
-                            continue;
+                            if (string.IsNullOrEmpty(scalar.Value))
+                                continue;
 
-                        assemblies.Add(Assembly.LoadFrom(scalar.Value));
+                            assemblies.Add(Assembly.LoadFrom(scalar.Value));
+                        }
+                        catch (Exception e)
+                        {
+                            context.OnException(e);
+                        }
                     }
 
                     ((IYamlComponentBuilder) context.Builder).ElementResolver = new CompositeElementResolver(assemblies.Select(a => new AssemblyElementResolver(a)));

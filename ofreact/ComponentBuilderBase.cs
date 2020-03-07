@@ -142,6 +142,9 @@ namespace ofreact
 
             if (!Builder.FullAnalysis)
                 ThrowExceptions();
+
+            else if (e.InnerException != null)
+                OnException(e.InnerException);
         }
 
         internal void ThrowExceptions()

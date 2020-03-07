@@ -130,37 +130,29 @@ namespace osu.Framework.Declarative.Yaml
                 throw new ArgumentException("Document root must be a mapping.");
         }
 
-        static YamlComponentException WrapException(YamlNode node, Exception e)
-        {
-            if (e is YamlComponentException yamlException)
-                return yamlException;
-
-            return new YamlComponentException(node, e);
-        }
-
         protected override ElementRenderInfo Render(ComponentBuilderContext context)
         {
             var render = null as YamlNode;
 
             foreach (var (key, value) in _mapping)
             {
-                if (!(key is YamlScalarNode keyScalar))
-                    throw new YamlComponentException("Must be a scalar.", key);
-
-                if (keyScalar.Value == "render")
-                {
-                    render = value;
-                    continue;
-                }
-
                 try
                 {
+                    if (!(key is YamlScalarNode keyScalar))
+                        throw new YamlComponentException("Must be a scalar.", key);
+
+                    if (keyScalar.Value == "render")
+                    {
+                        render = value;
+                        continue;
+                    }
+
                     if (!PartHandler.Handle(context, keyScalar.Value, value))
                         throw new YamlComponentException($"Invalid component part '{keyScalar.Value}'.", key);
                 }
                 catch (Exception e)
                 {
-                    context.OnException(WrapException(value, e));
+                    context.OnException(e);
                 }
             }
 
