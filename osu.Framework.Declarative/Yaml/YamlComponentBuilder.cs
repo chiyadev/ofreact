@@ -35,11 +35,40 @@ namespace osu.Framework.Declarative.Yaml
     public interface IPropResolver
     {
         /// <param name="context">Builder context.</param>
-        /// <param name="name">Name of the prop.</param>
+        /// <param name="prop">Prop type information.</param>
         /// <param name="element">Element containing this prop that is currently being built.</param>
-        /// <param name="parameter">Parameter information of the prop. This may be null.</param>
         /// <param name="node">YAML node of the prop.</param>
-        IPropProvider Resolve(ComponentBuilderContext context, string name, ElementRenderInfo element, ParameterInfo parameter, YamlNode node);
+        IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementRenderInfo element, YamlNode node);
+    }
+
+    public struct PropTypeInfo
+    {
+        public static readonly PropTypeInfo Empty = new PropTypeInfo(null, null);
+
+        readonly ParameterInfo _parameter;
+        readonly MemberInfo _member;
+
+        PropTypeInfo(ParameterInfo parameter, MemberInfo member)
+        {
+            _parameter = parameter;
+            _member    = member;
+        }
+
+        /// <summary>
+        /// Name of the prop.
+        /// </summary>
+        public string Name => _parameter?.Name ?? _member.Name;
+
+        /// <summary>
+        /// Type of the prop.
+        /// </summary>
+        public Type Type => _parameter?.ParameterType ?? (_member as PropertyInfo)?.PropertyType ?? (_member as FieldInfo)?.FieldType;
+
+        /// <inheritdoc cref="CustomAttributeExtensions.GetCustomAttributes(MemberInfo)"/>
+        public IEnumerable<Attribute> GetCustomAttributes() => _parameter?.GetCustomAttributes() ?? _member?.GetCustomAttributes() ?? Enumerable.Empty<Attribute>();
+
+        public static implicit operator PropTypeInfo(ParameterInfo parameter) => new PropTypeInfo(parameter, null);
+        public static implicit operator PropTypeInfo(MemberInfo member) => new PropTypeInfo(null, member);
     }
 
     public interface IYamlComponentBuilder : IComponentBuilder
@@ -258,7 +287,7 @@ namespace osu.Framework.Declarative.Yaml
                         {
                             matchedParams.Add(parameter.Name);
 
-                            var provider = PropResolver.Resolve(context, parameter.Name, element, parameter, prop.Value);
+                            var provider = PropResolver.Resolve(context, parameter, element, prop.Value);
 
                             element.Props[parameter.Name] = provider ?? throw new YamlComponentException($"Cannot resolve prop '{parameter.Name}' in element {type}.", prop.Key);
 
@@ -288,7 +317,7 @@ namespace osu.Framework.Declarative.Yaml
                     {
                         if (!matchedParams.Remove(key))
                         {
-                            var provider = PropResolver.Resolve(context, key, element, null, prop.Value);
+                            var provider = PropResolver.Resolve(context, PropTypeInfo.Empty, element, prop.Value);
 
                             element.Props[key] = provider ?? throw new YamlComponentException($"Cannot resolve prop '{key}' in element {type}.", prop.Key);
 

@@ -1,5 +1,4 @@
 using System.Linq;
-using System.Reflection;
 using ofreact;
 using YamlDotNet.RepresentationModel;
 
@@ -10,22 +9,21 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public class ChildrenPropResolver : IPropResolver
     {
-        public IPropProvider Resolve(ComponentBuilderContext context, string name, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementRenderInfo element, YamlNode node)
         {
-            if (parameter == null)
+            if (prop.Type == null)
                 return null;
 
-            var type    = parameter.ParameterType;
             var builder = (IYamlComponentBuilder) context.Builder;
 
-            if (typeof(ofElement).IsAssignableFrom(type))
+            if (typeof(ofElement).IsAssignableFrom(prop.Type))
                 return builder.BuildElement(context, node);
 
-            if (CollectionPropProvider.IsCollection(type, out _, out var elementType) && typeof(ofElement).IsAssignableFrom(elementType))
+            if (CollectionPropProvider.IsCollection(prop.Type, out _, out var elementType) && typeof(ofElement).IsAssignableFrom(elementType))
                 return node switch
                 {
-                    YamlSequenceNode sequence => new CollectionPropProvider(type, sequence.Select(n => builder.BuildElement(context, n))),
-                    _                         => new CollectionPropProvider(type, new[] { builder.BuildElement(context, node) })
+                    YamlSequenceNode sequence => new CollectionPropProvider(prop.Type, sequence.Select(n => builder.BuildElement(context, n))),
+                    _                         => new CollectionPropProvider(prop.Type, new[] { builder.BuildElement(context, node) })
                 };
 
             return null;

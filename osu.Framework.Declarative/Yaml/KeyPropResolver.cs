@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using System.Reflection;
 using ofreact;
 using YamlDotNet.RepresentationModel;
 
@@ -7,16 +6,16 @@ namespace osu.Framework.Declarative.Yaml
 {
     public class KeyPropResolver : IPropResolver
     {
-        public IPropProvider Resolve(ComponentBuilderContext context, string name, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementRenderInfo element, YamlNode node)
         {
-            if (name != "key")
+            if (prop.Name != "key")
                 return null;
 
             if (!(node is YamlScalarNode scalar))
                 throw new YamlComponentException("Must be a scalar.", node);
 
-            if (parameter?.ParameterType.IsAssignableFrom(typeof(string)) == false)
-                throw new YamlComponentException($"Parameter type {parameter.ParameterType} is not assignable from string.", scalar);
+            if (prop.Type.IsAssignableFrom(typeof(string)) == false)
+                throw new YamlComponentException($"Type {prop.Type} is not assignable from string.", scalar);
 
             // declare a variable for this element
             if (!context.TryDeclareVariable(element.Type, scalar.Value, null, out var variable))

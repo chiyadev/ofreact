@@ -2,7 +2,6 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using ofreact;
 using YamlDotNet.RepresentationModel;
 
@@ -16,12 +15,12 @@ namespace osu.Framework.Declarative.Yaml
     {
         public bool IgnoreEnumCase { get; set; } = true;
 
-        public IPropProvider Resolve(ComponentBuilderContext context, string name, ElementRenderInfo element, ParameterInfo parameter, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementRenderInfo element, YamlNode node)
         {
-            if (parameter == null)
+            if (prop.Type == null)
                 return null;
 
-            return ResolveType(parameter.ParameterType, parameter.ParameterType, node);
+            return ResolveType(prop.Type, prop.Type, node);
         }
 
         static bool IsNullable(Type type, out Type underlyingType)
