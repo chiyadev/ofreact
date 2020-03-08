@@ -4,9 +4,9 @@
     {
         public static void Main()
         {
-            using var node = new ofGameHost("ofreact");
+            using var game = new ofGame("ofreact");
 
-            node.RenderElement(new TestGame());
+            game.RenderElement(new TestGame());
         }
     }
 }

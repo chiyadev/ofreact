@@ -8,19 +8,19 @@ namespace osu.Framework.Declarative
     /// <summary>
     /// Renders a <see cref="Game"/> inside a suitable platform-specific <see cref="GameHost"/> and bootstraps the ofreact scene graph.
     /// </summary>
-    public class ofGameHost : ofRootNode
+    public class ofGame : ofRootNode
     {
         public GameHost Host { get; }
 
         /// <summary>
-        /// Creates a new <see cref="ofGameHost"/> with the given host name.
+        /// Creates a new <see cref="ofGame"/> with the given host name.
         /// </summary>
-        public ofGameHost(string name) : this(Framework.Host.GetSuitableHost(name)) { }
+        public ofGame(string name) : this(Framework.Host.GetSuitableHost(name)) { }
 
         /// <summary>
-        /// Creates a new <see cref="ofGameHost"/> using the given host.
+        /// Creates a new <see cref="ofGame"/> using the given host.
         /// </summary>
-        public ofGameHost(GameHost host)
+        public ofGame(GameHost host)
         {
             Host = host;
         }
@@ -34,7 +34,7 @@ namespace osu.Framework.Declarative
             return RenderResult.Rendered;
         }
 
-        void RenderElementInternal(ofElement element) => base.RenderElement(element);
+        void RenderInternal(ofElement element) => base.RenderElement(element);
 
         public override void Dispose()
         {
@@ -45,12 +45,12 @@ namespace osu.Framework.Declarative
 
         sealed class InternalGame : Game
         {
-            readonly ofGameHost _root;
+            readonly ofGame _game;
             readonly ofElement _element;
 
-            public InternalGame(ofGameHost root, ofElement element)
+            public InternalGame(ofGame game, ofElement element)
             {
-                _root    = root;
+                _game    = game;
                 _element = element;
             }
 
@@ -63,7 +63,7 @@ namespace osu.Framework.Declarative
             void Load()
             {
                 _dependencies.CacheAs<Game>(this);
-                _dependencies.Cache(new ofElementBootstrapper.NodeConnector(_root));
+                _dependencies.Cache(new ofElementBootstrapper.NodeConnector(_game));
 
                 Child = new ofElementBootstrapper
                 {
@@ -76,7 +76,7 @@ namespace osu.Framework.Declarative
             {
                 base.Update();
 
-                _root.RenderElementInternal(_element);
+                _game.RenderInternal(_element);
             }
         }
     }
