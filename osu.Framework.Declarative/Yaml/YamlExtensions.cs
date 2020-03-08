@@ -1,3 +1,4 @@
+using System.Globalization;
 using YamlDotNet.RepresentationModel;
 
 namespace osu.Framework.Declarative.Yaml
@@ -44,6 +45,24 @@ namespace osu.Framework.Declarative.Yaml
                 default:
                     throw new YamlComponentException("Must be a mapping.", node);
             }
+        }
+
+        public static float ToSingle(this YamlNode node)
+        {
+            var s = node.ToScalar().Value;
+
+            if (float.TryParse(s, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var v))
+                return v;
+
+            throw new YamlComponentException($"Cannot convert '{s}' to number.", node);
+        }
+
+        public static float ToSingle(this YamlNode node, string value)
+        {
+            if (float.TryParse(value, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var v))
+                return v;
+
+            throw new YamlComponentException($"Cannot convert '{value}' to number.", node);
         }
     }
 }

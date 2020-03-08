@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
 using ofreact;
@@ -33,7 +32,7 @@ namespace osu.Framework.Declarative.Yaml
                     if (parts.Length == 1) // scalar shorthand
                     {
                         var a = new float[count];
-                        var n = ParseNumber(node, parts[0]);
+                        var n = node.ToSingle(parts[0]);
 
                         for (var i = 0; i < count; i++)
                             a[i] = n;
@@ -46,7 +45,7 @@ namespace osu.Framework.Declarative.Yaml
                         var a = new float[count];
 
                         for (var i = 0; i < count; i++)
-                            a[i] = ParseNumber(node, parts[i]);
+                            a[i] = node.ToSingle(parts[i]);
 
                         return a;
                     }
@@ -58,21 +57,13 @@ namespace osu.Framework.Declarative.Yaml
                     var a = new float[count];
 
                     for (var i = 0; i < count; i++)
-                        a[i] = ParseNumber(sequence[i], sequence[i].ToScalar().Value);
+                        a[i] = sequence[i].ToSingle();
 
                     return a;
                 }
             }
 
             throw new YamlComponentException($"Must be a scalar or sequence containing {count} components.", node);
-        }
-
-        static float ParseNumber(YamlNode node, string s)
-        {
-            if (float.TryParse(s, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var value))
-                return value;
-
-            throw new YamlComponentException($"Cannot convert '{s}' to number.", node);
         }
 
         sealed class Provider2 : IPropProvider

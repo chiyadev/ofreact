@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -97,7 +96,7 @@ namespace osu.Framework.Declarative.Yaml
                     if (!_namedColors.TryGetValue(parts[0], out color))
                         throw new YamlComponentException($"Cannot convert '{parts[0]}' to named color.", node);
 
-                    color.A = ParseNumber(node, parts[1]);
+                    color.A = node.ToSingle(parts[2]);
 
                     return color;
 
@@ -105,21 +104,13 @@ namespace osu.Framework.Declarative.Yaml
                 case 3:
                 case 4:
                     return new Color4(
-                        ParseNumber(node, parts[0]) / byte.MaxValue,
-                        ParseNumber(node, parts[1]) / byte.MaxValue,
-                        ParseNumber(node, parts[2]) / byte.MaxValue,
-                        parts.Length == 4 ? ParseNumber(node, parts[3]) : 1); // alpha is [0, 1] so we don't divide
+                        node.ToSingle(parts[0]) / byte.MaxValue,
+                        node.ToSingle(parts[1]) / byte.MaxValue,
+                        node.ToSingle(parts[2]) / byte.MaxValue,
+                        parts.Length == 4 ? node.ToSingle(parts[3]) : 1); // alpha is [0, 1] so we don't divide
             }
 
             throw new YamlComponentException("Must be a scalar containing three or four components representing R, G, B and optionally A.", node);
-        }
-
-        static float ParseNumber(YamlNode node, string s)
-        {
-            if (float.TryParse(s, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var value))
-                return value;
-
-            throw new YamlComponentException($"Cannot convert '{s}' to number.", node);
         }
 
         sealed class Provider : IPropProvider
