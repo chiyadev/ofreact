@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using AgileObjects.ReadableExpressions;
 using ofreact;
 using YamlDotNet.RepresentationModel;
 
@@ -113,6 +114,11 @@ namespace osu.Framework.Declarative.Yaml
         IPropResolver PropResolver { get; set; }
 
         ElementBuilder BuildElement(ComponentBuilderContext context, YamlNode node);
+
+        /// <summary>
+        /// Builds a C# source code of the rendering function.
+        /// </summary>
+        string GenerateSource();
     }
 
     /// <summary>
@@ -268,6 +274,8 @@ namespace osu.Framework.Declarative.Yaml
                 return new ElementBuilder.Empty();
             }
         }
+
+        public string GenerateSource() => BuildRendererExpression().ToReadableString();
 
         sealed class ElementMatch
         {

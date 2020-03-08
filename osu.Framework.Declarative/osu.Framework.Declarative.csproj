@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="AgileObjects.ReadableExpressions" Version="2.3.2" />
       <PackageReference Include="ppy.osu.Framework" Version="2020.213.0" />
       <PackageReference Include="YamlDotNet" Version="8.1.0" />
     </ItemGroup>
