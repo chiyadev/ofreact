@@ -4,7 +4,7 @@ using osuTK;
 
 namespace osu.Framework.Declarative
 {
-    public class DrawSizePreservingFillContainerStyle : DrawableStyle<DrawSizePreservingFillContainer>
+    public sealed class DrawSizePreservingFillContainerStyle : DrawableStyle<DrawSizePreservingFillContainer>
     {
         /// <inheritdoc cref="DrawSizePreservingFillContainer.TargetDrawSize"/>
         public Vector2? TargetDrawSize;
@@ -27,7 +27,7 @@ namespace osu.Framework.Declarative
     /// <summary>
     /// Renders a <see cref="DrawSizePreservingFillContainer"/>.
     /// </summary>
-    public class ofDrawSizePreservingFillContainer : ofContainerBase<DrawSizePreservingFillContainer>
+    public sealed class ofDrawSizePreservingFillContainer : ofContainer<DrawSizePreservingFillContainer>
     {
         /// <summary>
         /// Creates a new <see cref="ofDrawSizePreservingFillContainer"/>.

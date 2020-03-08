@@ -7,7 +7,7 @@ namespace osu.Framework.Declarative
     /// <summary>
     /// Renders a <see cref="TestBrowser"/>.
     /// </summary>
-    public class ofTestBrowser : ofContainerBase<TestBrowser>
+    public class ofTestBrowser : ofContainer<TestBrowser>
     {
         [Prop] public readonly string AssemblyNamespace;
 

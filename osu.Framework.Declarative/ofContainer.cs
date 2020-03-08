@@ -114,7 +114,7 @@ namespace osu.Framework.Declarative
     /// <summary>
     /// Renders a <see cref="Container{Drawable}"/> and all children inside it.
     /// </summary>
-    public sealed class ofContainer : ofContainerBase<Container<Drawable>>
+    public sealed class ofContainer : ofContainer<Container<Drawable>>
     {
         public ofContainer(ElementKey key = default, RefDelegate<Container<Drawable>> @ref = default, DrawableStyleDelegate<Container<Drawable>> style = default, IEnumerable<ofElement> children = default) : base(key, @ref, style, children) { }
 
@@ -125,14 +125,14 @@ namespace osu.Framework.Declarative
     /// Defines the base class for rendering a <see cref="Container{T}"/> of type <typeparamref name="T"/> and all children inside it.
     /// </summary>
     /// <typeparam name="T">Type of the <see cref="Container{T}"/> to render.</typeparam>
-    public abstract class ofContainerBase<T> : ofDrawableBase<T>, IEnumerable<ofElement> where T : Container<Drawable>
+    public abstract class ofContainer<T> : ofDrawableBase<T>, IEnumerable<ofElement> where T : Container<Drawable>
     {
         [Prop] public readonly List<ofElement> Children;
 
         /// <summary>
-        /// Creates a new <see cref="ofContainerBase{T}"/>.
+        /// Creates a new <see cref="ofContainer{T}"/>.
         /// </summary>
-        protected ofContainerBase(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, IEnumerable<ofElement> children = default) : base(key, @ref, style)
+        protected ofContainer(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, IEnumerable<ofElement> children = default) : base(key, @ref, style)
         {
             Children = children == null
                 ? new List<ofElement>()
