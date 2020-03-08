@@ -158,6 +158,11 @@ namespace osu.Framework.Declarative
     /// </summary>
     public sealed class ofContainer : ofContainerBase<Container<Drawable>>
     {
+        public ofContainer(ElementKey key = default,
+                           RefDelegate<Container<Drawable>> @ref = default,
+                           DrawableStyleDelegate<Container<Drawable>> style = default,
+                           IEnumerable<ofElement> children = default) : base(key, @ref, style, children) { }
+
         protected override Container<Drawable> CreateDrawable() => new Container<Drawable>();
     }
 }
