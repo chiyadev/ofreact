@@ -176,6 +176,17 @@ namespace osu.Framework.Declarative
     }
 
     /// <summary>
+    /// Renders a <see cref="Drawable"/> of type <typeparamref name="T"/>.
+    /// </summary>
+    /// <typeparam name="T">Type of the <see cref="Drawable"/> to render.</typeparam>
+    public sealed class ofDrawable<T> : ofDrawableBase<T> where T : Drawable, new()
+    {
+        public ofDrawable(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default) : base(key, @ref, style) { }
+
+        protected override T CreateDrawable() => new T();
+    }
+
+    /// <summary>
     /// Defines the base class for rendering a <see cref="Drawable"/> of type <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">Type of the <see cref="Drawable"/> to render.</typeparam>
@@ -258,16 +269,5 @@ namespace osu.Framework.Declarative
 
             return true;
         }
-    }
-
-    /// <summary>
-    /// Renders a <see cref="Drawable"/> of type <typeparamref name="T"/>.
-    /// </summary>
-    /// <typeparam name="T">Type of the <see cref="Drawable"/> to render.</typeparam>
-    public sealed class ofDrawable<T> : ofDrawableBase<T> where T : Drawable, new()
-    {
-        public ofDrawable(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default) : base(key, @ref, style) { }
-
-        protected override T CreateDrawable() => new T();
     }
 }
