@@ -7,9 +7,9 @@ using osuTK.Graphics;
 
 namespace osu.Framework.Declarative
 {
-    public sealed class SpriteTextStyle : SpriteTextStyle<SpriteText> { }
+    public sealed class TextStyle : TextStyle<SpriteText> { }
 
-    public abstract class SpriteTextStyle<T> : DrawableStyle<T> where T : SpriteText
+    public abstract class TextStyle<T> : DrawableStyle<T> where T : SpriteText
     {
         /// <inheritdoc cref="SpriteText.Text"/>
         public LocalisedString? Text;
@@ -83,15 +83,15 @@ namespace osu.Framework.Declarative
         }
     }
 
-    public sealed class ofSpriteText : ofSpriteText<SpriteText>
+    public sealed class ofText : ofText<SpriteText>
     {
-        public ofSpriteText(ElementKey key = default, RefDelegate<SpriteText> @ref = default, DrawableStyleDelegate<SpriteText> style = default) : base(key, @ref, style) { }
+        public ofText(ElementKey key = default, RefDelegate<SpriteText> @ref = default, DrawableStyleDelegate<SpriteText> style = default) : base(key, @ref, style) { }
 
         protected override SpriteText CreateDrawable() => new SpriteText();
     }
 
-    public abstract class ofSpriteText<T> : ofDrawableBase<T> where T : SpriteText
+    public abstract class ofText<T> : ofDrawableBase<T> where T : SpriteText
     {
-        public ofSpriteText(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default) : base(key, @ref, style) { }
+        public ofText(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default) : base(key, @ref, style) { }
     }
 }
