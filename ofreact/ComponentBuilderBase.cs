@@ -25,6 +25,11 @@ namespace ofreact
         /// Builds an <see cref="FunctionComponent"/> delegate that renders this component.
         /// </summary>
         FunctionComponent BuildRenderer();
+
+        /// <summary>
+        /// Builds a <see cref="LambdaExpression"/> that represents the rendering function.
+        /// </summary>
+        Expression<FunctionComponent> BuildRendererExpression();
     }
 
     /// <summary>
@@ -35,8 +40,9 @@ namespace ofreact
         public bool FullAnalysis { get; set; }
 
         public ofElement Build() => ofElement.DefineComponent(BuildRenderer());
+        public FunctionComponent BuildRenderer() => BuildRendererExpression().CompileSafe();
 
-        public FunctionComponent BuildRenderer()
+        public Expression<FunctionComponent> BuildRendererExpression()
         {
             var context = new ComponentBuilderContext(this);
             var element = null as ElementBuilder;
@@ -64,7 +70,7 @@ namespace ofreact
             // return rendered element step
             body.Add(element?.GetValue(context) ?? Expression.Constant(null, typeof(ofElement)));
 
-            return Expression.Lambda<FunctionComponent>(Expression.Block(variables.Select(v => v.Name), body), context.Node).CompileSafe();
+            return Expression.Lambda<FunctionComponent>(Expression.Block(variables.Select(v => v.Name), body), context.Node);
         }
 
         protected abstract ElementBuilder Render(ComponentBuilderContext context);
