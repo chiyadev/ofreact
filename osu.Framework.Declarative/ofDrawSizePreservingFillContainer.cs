@@ -4,32 +4,17 @@ using osuTK;
 
 namespace osu.Framework.Declarative
 {
-    /// <summary>
-    /// Renders a <see cref="DrawSizePreservingFillContainer"/>.
-    /// </summary>
-    public class ofDrawSizePreservingFillContainer : ofContainerBase<DrawSizePreservingFillContainer>
+    public class DrawSizePreservingFillContainerStyle : DrawableStyle<DrawSizePreservingFillContainer>
     {
-        [Prop] public readonly Vector2? TargetDrawSize;
-        [Prop] public readonly DrawSizePreservationStrategy? Strategy;
+        /// <inheritdoc cref="DrawSizePreservingFillContainer.TargetDrawSize"/>
+        public Vector2? TargetDrawSize;
 
-        /// <summary>
-        /// Creates a new <see cref="ofDrawSizePreservingFillContainer"/>.
-        /// </summary>
-        public ofDrawSizePreservingFillContainer(ElementKey key = default,
-                                                 RefDelegate<DrawSizePreservingFillContainer> @ref = default,
-                                                 DrawableStyleDelegate<DrawSizePreservingFillContainer> style = default,
-                                                 Vector2? targetDrawSize = default,
-                                                 DrawSizePreservationStrategy? strategy = default) : base(key, @ref, style)
+        /// <inheritdoc cref="DrawSizePreservingFillContainer.Strategy"/>
+        public DrawSizePreservationStrategy? Strategy;
+
+        protected override void Apply(DrawSizePreservingFillContainer drawable)
         {
-            TargetDrawSize = targetDrawSize;
-            Strategy       = strategy;
-        }
-
-        protected override DrawSizePreservingFillContainer CreateDrawable() => new DrawSizePreservingFillContainer();
-
-        protected override void ApplyStyles(DrawSizePreservingFillContainer drawable)
-        {
-            base.ApplyStyles(drawable);
+            base.Apply(drawable);
 
             if (TargetDrawSize != null)
                 drawable.TargetDrawSize = TargetDrawSize.Value;
@@ -37,5 +22,18 @@ namespace osu.Framework.Declarative
             if (Strategy != null)
                 drawable.Strategy = Strategy.Value;
         }
+    }
+
+    /// <summary>
+    /// Renders a <see cref="DrawSizePreservingFillContainer"/>.
+    /// </summary>
+    public class ofDrawSizePreservingFillContainer : ofContainerBase<DrawSizePreservingFillContainer>
+    {
+        /// <summary>
+        /// Creates a new <see cref="ofDrawSizePreservingFillContainer"/>.
+        /// </summary>
+        public ofDrawSizePreservingFillContainer(ElementKey key = default, RefDelegate<DrawSizePreservingFillContainer> @ref = default, DrawableStyleDelegate<DrawSizePreservingFillContainer> style = default) : base(key, @ref, style) { }
+
+        protected override DrawSizePreservingFillContainer CreateDrawable() => new DrawSizePreservingFillContainer();
     }
 }

@@ -9,19 +9,34 @@ namespace osu.Framework.Declarative.VisualTests
         {
             return new ofYamlComponent(@"
 render:
-  Box:
+  Container:
+    key: test
     style:
-      name: test
-      size: 100, .5
-      position: .5
-      relativeSizeAxes: y
-      relativePositionAxes: x, y
+      size: .5
+      relativeSizeAxes: both
+      anchor: centre
       origin: centre
-      colour:
-        vertical:
-          - red
-          - blue, .3
-      alpha: .6");
+    children:
+      - Box:
+          style:
+            colour: white
+            relativeSizeAxes: both
+      - Box:
+          style:
+            name: test
+            size: 170, .5
+            position: .5
+            relativeSizeAxes: y
+            relativePositionAxes: x, y
+            origin: centre
+            colour:
+              vertical:
+                - red
+                - blue, .3
+            alpha: .6
+      - SpriteText:
+          style:
+            colour: black");
         }
     }
 }

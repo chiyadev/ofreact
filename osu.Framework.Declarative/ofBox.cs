@@ -11,9 +11,7 @@ namespace osu.Framework.Declarative
         /// <summary>
         /// Creates a new <see cref="ofBox"/>.
         /// </summary>
-        public ofBox(ElementKey key = default,
-                     RefDelegate<Box> @ref = default,
-                     DrawableStyleDelegate<Box> style = default) : base(key, @ref, style) { }
+        public ofBox(ElementKey key = default, RefDelegate<Box> @ref = default, DrawableStyleDelegate<Box> style = default) : base(key, @ref, style) { }
 
         protected override Box CreateDrawable() => new Box();
     }

@@ -122,10 +122,7 @@ namespace osu.Framework.Declarative
         /// <summary>
         /// Creates a new <see cref="ofContainerBase{T}"/>.
         /// </summary>
-        protected ofContainerBase(ElementKey key = default,
-                                  RefDelegate<T> @ref = default,
-                                  DrawableStyleDelegate<T> style = default,
-                                  IEnumerable<ofElement> children = default) : base(key, @ref, style)
+        protected ofContainerBase(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, IEnumerable<ofElement> children = default) : base(key, @ref, style)
         {
             Children = children == null
                 ? new List<ofElement>()
@@ -158,10 +155,7 @@ namespace osu.Framework.Declarative
     /// </summary>
     public sealed class ofContainer : ofContainerBase<Container<Drawable>>
     {
-        public ofContainer(ElementKey key = default,
-                           RefDelegate<Container<Drawable>> @ref = default,
-                           DrawableStyleDelegate<Container<Drawable>> style = default,
-                           IEnumerable<ofElement> children = default) : base(key, @ref, style, children) { }
+        public ofContainer(ElementKey key = default, RefDelegate<Container<Drawable>> @ref = default, DrawableStyleDelegate<Container<Drawable>> style = default, IEnumerable<ofElement> children = default) : base(key, @ref, style, children) { }
 
         protected override Container<Drawable> CreateDrawable() => new Container<Drawable>();
     }
