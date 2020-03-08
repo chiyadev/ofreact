@@ -73,7 +73,7 @@ namespace ofreact
             {
                 if (_parameter.HasDefaultValue)
                 {
-                    if (_parameter.DefaultValue == null)
+                    if (_parameter.DefaultValue == null && _parameter.ParameterType.IsValueType)
                         return Expression.Default(_parameter.ParameterType);
 
                     return Expression.Constant(_parameter.DefaultValue, _parameter.ParameterType);
