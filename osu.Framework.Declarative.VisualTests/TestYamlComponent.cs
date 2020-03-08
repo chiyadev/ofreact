@@ -17,7 +17,7 @@ render:
     origin: centre
     children:
       - Box:
-          colour: white
+          colour: '#fff'
           relativeSizeAxes: both
       - Box:
           name: test

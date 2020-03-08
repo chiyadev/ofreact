@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -84,7 +85,7 @@ namespace osu.Framework.Declarative.Yaml
         {
             var value = node.ToScalar().Value;
 
-            if (_namedColors.TryGetValue(value, out var color))
+            if (ParseColorString(value, node, out var color))
                 return color;
 
             var parts = value.Split(',');
@@ -93,7 +94,7 @@ namespace osu.Framework.Declarative.Yaml
             {
                 // name, alpha
                 case 2:
-                    if (!_namedColors.TryGetValue(parts[0], out color))
+                    if (!ParseColorString(parts[0], node, out color))
                         throw new YamlComponentException($"Cannot convert '{parts[0]}' to named color.", node);
 
                     color.A = node.ToSingle(parts[1]);
@@ -111,6 +112,52 @@ namespace osu.Framework.Declarative.Yaml
             }
 
             throw new YamlComponentException("Must be a scalar containing three or four components representing R, G, B and optionally A.", node);
+        }
+
+        static bool ParseColorString(string value, YamlNode node, out Color4 color)
+        {
+            // named color
+            if (_namedColors.TryGetValue(value, out color))
+                return true;
+
+            // hex
+            if (value.Length != 0 && value[0] == '#')
+            {
+                value = value.Substring(1);
+
+                switch (value.Length)
+                {
+                    case 3:
+                        value = $"{value[0]}{value[0]}{value[1]}{value[1]}{value[2]}{value[2]}FF";
+                        break;
+
+                    case 6:
+                        value = $"{value}FF";
+                        break;
+
+                    case 8:
+                        break;
+
+                    default:
+                        value = null;
+                        break;
+                }
+
+                if (int.TryParse(value, NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var argb))
+                {
+                    color = new Color4(
+                        (byte) ((argb & 0xff000000) >> 0x18),
+                        (byte) ((argb & 0xff0000) >> 0x10),
+                        (byte) ((argb & 0xff00) >> 0x08),
+                        (byte) (argb & 0xff));
+
+                    return true;
+                }
+
+                throw new YamlComponentException($"Cannot convert '{value}' to number.", node);
+            }
+
+            return false;
         }
 
         sealed class Provider : IPropProvider
