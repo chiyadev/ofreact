@@ -150,7 +150,8 @@ namespace osu.Framework.Declarative.Yaml
                 new KeyPropResolver(),
                 new ChildPropResolver(),
                 new VectorPropResolver(),
-                new ColorPropResolver());
+                new ColorPropResolver(),
+                new DrawableStylePropResolver());
 
         public IComponentPartHandler PartHandler { get; set; } = DefaultPartHandler;
         public IElementTypeResolver ElementResolver { get; set; } = DefaultTypeResolver;
