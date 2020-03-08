@@ -11,7 +11,7 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public class PrimitivePropResolver : IPropResolver
     {
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, ElementBuilder element, PropTypeInfo prop, YamlNode node)
         {
             if (!prop.Type.IsPrimitive && prop.Type != typeof(string))
                 return null;

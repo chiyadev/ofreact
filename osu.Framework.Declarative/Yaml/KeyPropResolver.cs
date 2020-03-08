@@ -9,7 +9,7 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public class KeyPropResolver : IPropResolver
     {
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, ElementBuilder element, PropTypeInfo prop, YamlNode node)
         {
             if (prop.Type != typeof(ElementKey))
                 return null;
@@ -17,7 +17,7 @@ namespace osu.Framework.Declarative.Yaml
             return ResolveInternal(context, element, node);
         }
 
-        public bool Resolve(ComponentBuilderContext context, string prop, ElementBuilder element, YamlNode node)
+        public bool Resolve(ComponentBuilderContext context, ElementBuilder element, string prop, YamlNode node)
         {
             if (prop != "key")
                 return false;
@@ -27,6 +27,9 @@ namespace osu.Framework.Declarative.Yaml
 
         static Provider ResolveInternal(ComponentBuilderContext context, ElementBuilder element, YamlNode node)
         {
+            if (element == null)
+                return null;
+
             var value = node.ToScalar().Value;
 
             // declare a variable for this element

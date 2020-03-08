@@ -10,7 +10,7 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public class CollectionPropResolver : IPropResolver
     {
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, ElementBuilder element, PropTypeInfo prop, YamlNode node)
         {
             if (!CollectionPropProvider.IsCollection(prop.Type, out _, out var itemType))
                 return null;
@@ -32,7 +32,7 @@ namespace osu.Framework.Declarative.Yaml
                     break;
             }
 
-            return new CollectionPropProvider(prop.Type, items.Select(n => ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, itemType, element, n)));
+            return new CollectionPropProvider(prop.Type, items.Select(n => ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, element, itemType, n)));
         }
     }
 }

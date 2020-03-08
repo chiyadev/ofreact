@@ -9,10 +9,10 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public class AttributePropResolver : IPropResolver
     {
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, ElementBuilder element, PropTypeInfo prop, YamlNode node)
             => prop.GetAttributes()
                    .OfType<IPropResolver>()
-                   .Select(r => r.Resolve(context, prop, element, node))
+                   .Select(r => r.Resolve(context, element, prop, node))
                    .FirstOrDefault(p => p != null);
     }
 }

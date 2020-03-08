@@ -10,7 +10,7 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public class NullablePropResolver : IPropResolver
     {
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, ElementBuilder element, PropTypeInfo prop, YamlNode node)
         {
             var underlying = Nullable.GetUnderlyingType(prop.Type);
 
@@ -18,7 +18,7 @@ namespace osu.Framework.Declarative.Yaml
                 return null;
 
             // rerun prop resolution using unwrapped nullable type
-            return new Provider(prop.Type, ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, underlying, element, node));
+            return new Provider(prop.Type, ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, element, underlying, node));
         }
 
         sealed class Provider : IPropProvider
@@ -32,7 +32,7 @@ namespace osu.Framework.Declarative.Yaml
                 _provider = provider;
             }
 
-            public Expression GetValue(ComponentBuilderContext context) => Expression.Convert(_provider.GetValue(context), _type); // this casts value to nullable
+            public Expression GetValue(ComponentBuilderContext context) => Expression.Convert(_provider.GetValue(context), _type); // this wraps value in nullable
         }
     }
 }

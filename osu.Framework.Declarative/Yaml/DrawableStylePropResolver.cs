@@ -17,7 +17,7 @@ namespace osu.Framework.Declarative.Yaml
         static bool IsStyleDelegate(Type type) => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(DrawableStyleDelegate<>);
 
         // resolving a style delegate parameter
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, ElementBuilder element, PropTypeInfo prop, YamlNode node)
         {
             if (!IsStyleDelegate(prop.Type))
                 return null;
@@ -33,7 +33,7 @@ namespace osu.Framework.Declarative.Yaml
                     var member     = provider.FindMember(memberName);
 
                     // resolve member using prop provider
-                    var memberProvider = member == null ? null : ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, member, element, value);
+                    var memberProvider = member == null ? null : ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, null, member, value);
 
                     if (memberProvider == null)
                         throw new YamlComponentException($"Cannot resolve property or field '{memberName}' in element {provider.DrawableType}.", key);
@@ -51,8 +51,11 @@ namespace osu.Framework.Declarative.Yaml
 
         // resolving some prop that could be a property of drawable
         // the assignment gets appended to the style delegate
-        public bool Resolve(ComponentBuilderContext context, string prop, ElementBuilder element, YamlNode node)
+        public bool Resolve(ComponentBuilderContext context, ElementBuilder element, string prop, YamlNode node)
         {
+            if (element == null)
+                return false;
+
             // find style delegate parameter
             var styleProps = element.Parameters.Where(p => IsStyleDelegate(p.ParameterType)).ToArray();
 
@@ -80,7 +83,7 @@ namespace osu.Framework.Declarative.Yaml
                 return false;
 
             // resolve member using prop provider
-            var memberProvider = ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, member, element, node);
+            var memberProvider = ((IYamlComponentBuilder) context.Builder).PropResolver.Resolve(context, element, member, node);
 
             if (memberProvider == null)
                 throw new YamlComponentException($"Cannot resolve property or field '{prop}' in element {provider.DrawableType}.", node);

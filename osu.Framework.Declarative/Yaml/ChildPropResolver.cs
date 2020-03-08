@@ -8,7 +8,7 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public class ChildPropResolver : IPropResolver
     {
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, ElementBuilder element, PropTypeInfo prop, YamlNode node)
         {
             if (!typeof(ofElement).IsAssignableFrom(prop.Type))
                 return null;

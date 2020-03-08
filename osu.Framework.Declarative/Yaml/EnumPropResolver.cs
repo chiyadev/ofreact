@@ -12,7 +12,7 @@ namespace osu.Framework.Declarative.Yaml
     {
         public bool IgnoreEnumCase { get; set; } = true;
 
-        public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
+        public IPropProvider Resolve(ComponentBuilderContext context, ElementBuilder element, PropTypeInfo prop, YamlNode node)
         {
             if (!prop.Type.IsEnum)
                 return null;

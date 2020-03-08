@@ -38,10 +38,11 @@ namespace osu.Framework.Declarative.Yaml
         /// Resolves the given prop.
         /// </summary>
         /// <param name="context">Builder context.</param>
-        /// <param name="prop">Prop type information.</param>
-        /// <param name="element">Element containing this prop that is currently being built.</param>
+        /// <param name="element">Element containing this prop that is currently being built.
+        /// This can be null if the prop being resolved is not directly related to the element being built..</param>
+        /// <param name="prop">Type information of the prop.</param>
         /// <param name="node">YAML node of the prop.</param>
-        IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node);
+        IPropProvider Resolve(ComponentBuilderContext context, ElementBuilder element, PropTypeInfo prop, YamlNode node);
 
         /// <summary>
         /// Resolves the given prop.
@@ -50,10 +51,11 @@ namespace osu.Framework.Declarative.Yaml
         /// This is only called to resolve excessive props that are not bound to any parameter.
         /// </remarks>
         /// <param name="context">Builder context.</param>
+        /// <param name="element">Element containing this prop that is currently being built.
+        /// This can be null if the prop being resolved is not directly related to the element being built.</param>
         /// <param name="prop">Name of the prop.</param>
-        /// <param name="element">Element containing this prop that is currently being built.</param>
         /// <param name="node">YAML node of the prop.</param>
-        bool Resolve(ComponentBuilderContext context, string prop, ElementBuilder element, YamlNode node) => false;
+        bool Resolve(ComponentBuilderContext context, ElementBuilder element, string prop, YamlNode node) => false;
     }
 
     /// <summary>
@@ -305,7 +307,7 @@ namespace osu.Framework.Declarative.Yaml
                         {
                             matchedParams.Add(parameter.Name);
 
-                            var provider = PropResolver.Resolve(context, parameter, element, prop.Value);
+                            var provider = PropResolver.Resolve(context, element, parameter, prop.Value);
 
                             element.Props[parameter.Name] = provider ?? throw new YamlComponentException($"Cannot resolve prop '{parameter.Name}' in element {type}.", prop.Key);
 
@@ -333,7 +335,7 @@ namespace osu.Framework.Declarative.Yaml
                 {
                     try
                     {
-                        if (!matchedParams.Remove(key) && !PropResolver.Resolve(context, key, element, prop.Value))
+                        if (!matchedParams.Remove(key) && !PropResolver.Resolve(context, element, key, prop.Value))
                             throw new YamlComponentException($"Cannot resolve prop '{key}' in element {type}.", prop.Key);
                     }
                     catch (Exception e)
