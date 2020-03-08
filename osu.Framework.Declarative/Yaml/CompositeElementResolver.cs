@@ -19,6 +19,7 @@ namespace osu.Framework.Declarative.Yaml
             _resolvers = resolvers;
         }
 
-        public Type Resolve(ComponentBuilderContext context, string name) => _resolvers.Select(r => r.Resolve(context, name)).FirstOrDefault(t => t != null);
+        public Type Resolve(ComponentBuilderContext context, string name)
+            => _resolvers.Select(r => r.Resolve(context, name)).FirstOrDefault(t => t != null);
     }
 }

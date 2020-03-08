@@ -142,9 +142,6 @@ namespace ofreact
 
             if (!Builder.FullAnalysis)
                 ThrowExceptions();
-
-            else if (e.InnerException != null)
-                OnException(e.InnerException);
         }
 
         internal void ThrowExceptions()
@@ -162,7 +159,7 @@ namespace ofreact
                     ExceptionDispatchInfo.Capture(exception).Throw();
                     return;
 
-                case 2:
+                default:
                     var exceptions = _exceptions.ToArray();
 
                     _exceptions.Clear();

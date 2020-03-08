@@ -25,20 +25,10 @@ namespace osu.Framework.Declarative.Yaml
         public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
         {
             if (prop.Type == typeof(Color4))
-            {
-                if (!(node is YamlScalarNode scalar))
-                    throw new YamlComponentException("Must be a scalar.", node);
-
-                return new Provider(ParseColor(scalar));
-            }
+                return new Provider(ParseColor(node));
 
             if (prop.Type == typeof(SRGBColour))
-            {
-                if (!(node is YamlScalarNode scalar))
-                    throw new YamlComponentException("Must be a scalar.", node);
-
-                return new SrgbProvider(ParseColor(scalar));
-            }
+                return new SrgbProvider(ParseColor(node));
 
             if (prop.Type == typeof(ColourInfo))
                 switch (node)
@@ -59,30 +49,26 @@ namespace osu.Framework.Declarative.Yaml
                         });
 
                     case YamlMappingNode mapping when mapping.Children.Count == 1:
-                        foreach (var (key, value) in mapping)
+                        foreach (var (keyNode, valueNode) in mapping)
                         {
-                            if (!(key is YamlScalarNode scalarKey))
-                                throw new YamlComponentException("Must be a scalar.", key);
+                            var value = valueNode.ToSequence().Children;
 
-                            if (!(value is YamlSequenceNode sequenceValue))
-                                throw new YamlComponentException("Must be a sequence.", value);
-
-                            switch (scalarKey.Value)
+                            switch (keyNode.ToScalar().Value)
                             {
                                 case "vertical":
-                                    if (sequenceValue.Children.Count != 2)
-                                        throw new YamlComponentException("Must be a sequence containing two colors representing the top and bottom of gradient.", sequenceValue);
+                                    if (value.Count != 2)
+                                        throw new YamlComponentException("Must be a sequence containing two colors representing the top and bottom of gradient.", valueNode);
 
-                                    return new MultiProvider(ColourInfo.GradientVertical(ParseColor(sequenceValue[0]), ParseColor(sequenceValue[1])));
+                                    return new MultiProvider(ColourInfo.GradientVertical(ParseColor(value[0]), ParseColor(value[1])));
 
                                 case "horizontal":
-                                    if (sequenceValue.Children.Count != 2)
-                                        throw new YamlComponentException("Must be a sequence containing two colors representing the left and right of gradient.", sequenceValue);
+                                    if (value.Count != 2)
+                                        throw new YamlComponentException("Must be a sequence containing two colors representing the left and right of gradient.", valueNode);
 
-                                    return new MultiProvider(ColourInfo.GradientHorizontal(ParseColor(sequenceValue[0]), ParseColor(sequenceValue[1])));
+                                    return new MultiProvider(ColourInfo.GradientHorizontal(ParseColor(value[0]), ParseColor(value[1])));
 
                                 default:
-                                    throw new YamlComponentException("Must specify either vertical or horizontal gradient.", scalarKey);
+                                    throw new YamlComponentException("Must specify either vertical or horizontal gradient.", keyNode);
                             }
                         }
 
@@ -95,24 +81,23 @@ namespace osu.Framework.Declarative.Yaml
             return null;
         }
 
-        static Color4 ParseColor(YamlNode s)
+        static Color4 ParseColor(YamlNode node)
         {
-            if (!(s is YamlScalarNode scalar))
-                throw new YamlComponentException("Must be a scalar.", s);
+            var value = node.ToScalar().Value;
 
-            if (_namedColors.TryGetValue(scalar.Value, out var color))
+            if (_namedColors.TryGetValue(value, out var color))
                 return color;
 
-            var parts = scalar.Value.Split(',');
+            var parts = value.Split(',');
 
             switch (parts.Length)
             {
                 // name, alpha
                 case 2:
                     if (!_namedColors.TryGetValue(parts[0], out color))
-                        throw new YamlComponentException($"Cannot convert '{parts[0]}' to named color.", s);
+                        throw new YamlComponentException($"Cannot convert '{parts[0]}' to named color.", node);
 
-                    color.A = ParseNumber(s, parts[1]);
+                    color.A = ParseNumber(node, parts[1]);
 
                     return color;
 
@@ -120,21 +105,21 @@ namespace osu.Framework.Declarative.Yaml
                 case 3:
                 case 4:
                     return new Color4(
-                        ParseNumber(s, parts[0]) / byte.MaxValue,
-                        ParseNumber(s, parts[1]) / byte.MaxValue,
-                        ParseNumber(s, parts[2]) / byte.MaxValue,
-                        parts.Length == 4 ? ParseNumber(s, parts[3]) : 1); // alpha is [0, 1] so we don't divide
+                        ParseNumber(node, parts[0]) / byte.MaxValue,
+                        ParseNumber(node, parts[1]) / byte.MaxValue,
+                        ParseNumber(node, parts[2]) / byte.MaxValue,
+                        parts.Length == 4 ? ParseNumber(node, parts[3]) : 1); // alpha is [0, 1] so we don't divide
             }
 
-            throw new YamlComponentException("Color requires three or four components representing R, G, B and optionally A.", s);
+            throw new YamlComponentException("Must be a scalar containing three or four components representing R, G, B and optionally A.", node);
         }
 
-        static float ParseNumber(YamlNode n, string s)
+        static float ParseNumber(YamlNode node, string s)
         {
             if (float.TryParse(s, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var value))
                 return value;
 
-            throw new YamlComponentException($"Cannot convert '{s}' to number.", n);
+            throw new YamlComponentException($"Cannot convert '{s}' to number.", node);
         }
 
         sealed class Provider : IPropProvider

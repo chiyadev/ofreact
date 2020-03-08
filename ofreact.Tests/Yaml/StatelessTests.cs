@@ -22,7 +22,7 @@ render:
             var builder = new YamlComponentBuilder(stream.Documents[0]);
 
             builder.Build();
-            builder.Build();
+            builder.Build(); // variable should not be stored statefully in builder object
             builder.Build();
         }
     }

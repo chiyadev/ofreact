@@ -19,6 +19,7 @@ namespace osu.Framework.Declarative.Yaml
             _handlers = handlers;
         }
 
-        public bool Handle(ComponentBuilderContext context, string name, YamlNode node) => _handlers.Any(h => h.Handle(context, name, node));
+        public bool Handle(ComponentBuilderContext context, string name, YamlNode node)
+            => _handlers.Any(h => h.Handle(context, name, node));
     }
 }

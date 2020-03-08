@@ -34,17 +34,36 @@ namespace osu.Framework.Declarative.Yaml
     /// </summary>
     public interface IPropResolver
     {
+        /// <summary>
+        /// Resolves the given prop.
+        /// </summary>
         /// <param name="context">Builder context.</param>
         /// <param name="prop">Prop type information.</param>
         /// <param name="element">Element containing this prop that is currently being built.</param>
         /// <param name="node">YAML node of the prop.</param>
-        IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementRenderInfo element, YamlNode node);
+        IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node);
+
+        /// <summary>
+        /// Resolves the given prop.
+        /// </summary>
+        /// <remarks>
+        /// This is only called to resolve excessive props that are not bound to any parameter.
+        /// </remarks>
+        /// <param name="context">Builder context.</param>
+        /// <param name="prop">Name of the prop.</param>
+        /// <param name="element">Element containing this prop that is currently being built.</param>
+        /// <param name="node">YAML node of the prop.</param>
+        bool Resolve(ComponentBuilderContext context, string prop, ElementBuilder element, YamlNode node) => false;
     }
 
+    /// <summary>
+    /// Contains type information of a prop.
+    /// </summary>
+    /// <remarks>
+    /// This struct can represent a constructor parameter, member property or field, or a type.
+    /// </remarks>
     public struct PropTypeInfo
     {
-        public static readonly PropTypeInfo Empty = new PropTypeInfo(null, null);
-
         readonly ParameterInfo _parameter;
         readonly MemberInfo _member;
 
@@ -57,15 +76,29 @@ namespace osu.Framework.Declarative.Yaml
         /// <summary>
         /// Name of the prop.
         /// </summary>
-        public string Name => _parameter?.Name ?? _member.Name;
+        public string Name => Parameter?.Name ?? _member.Name;
+
+        public ParameterInfo Parameter => _parameter;
+        public PropertyInfo Property => _member as PropertyInfo;
+        public FieldInfo Field => _member as FieldInfo;
 
         /// <summary>
         /// Type of the prop.
         /// </summary>
-        public Type Type => _parameter?.ParameterType ?? (_member as PropertyInfo)?.PropertyType ?? (_member as FieldInfo)?.FieldType;
+        public Type Type => Parameter?.ParameterType
+                         ?? Property?.PropertyType
+                         ?? Field?.FieldType
+                         ?? _member as Type;
 
-        /// <inheritdoc cref="CustomAttributeExtensions.GetCustomAttributes(MemberInfo)"/>
-        public IEnumerable<Attribute> GetCustomAttributes() => _parameter?.GetCustomAttributes() ?? _member?.GetCustomAttributes() ?? Enumerable.Empty<Attribute>();
+        /// <summary>
+        /// Enumerates all attributes applied on this prop.
+        /// </summary>
+        public IEnumerable<Attribute> GetAttributes()
+            => Parameter?.GetCustomAttributes().Concat(Parameter.ParameterType.GetCustomAttributes())
+            ?? Property?.GetCustomAttributes().Concat(Property.PropertyType.GetCustomAttributes())
+            ?? Field?.GetCustomAttributes().Concat(Field.FieldType.GetCustomAttributes())
+            ?? Type?.GetCustomAttributes()
+            ?? Enumerable.Empty<Attribute>();
 
         public static implicit operator PropTypeInfo(ParameterInfo parameter) => new PropTypeInfo(parameter, null);
         public static implicit operator PropTypeInfo(MemberInfo member) => new PropTypeInfo(null, member);
@@ -77,7 +110,7 @@ namespace osu.Framework.Declarative.Yaml
         IElementTypeResolver ElementResolver { get; set; }
         IPropResolver PropResolver { get; set; }
 
-        ElementRenderInfo BuildElement(ComponentBuilderContext context, YamlNode node);
+        ElementBuilder BuildElement(ComponentBuilderContext context, YamlNode node);
     }
 
     /// <summary>
@@ -110,9 +143,12 @@ namespace osu.Framework.Declarative.Yaml
         public static IPropResolver DefaultPropResolver { get; set; } =
             new CompositePropResolver(
                 new AttributePropResolver(),
-                new KeyPropResolver(),
-                new ChildrenPropResolver(),
+                new NullablePropResolver(),
                 new PrimitivePropResolver(),
+                new EnumPropResolver(),
+                new CollectionPropResolver(),
+                new KeyPropResolver(),
+                new ChildPropResolver(),
                 new VectorPropResolver(),
                 new ColorPropResolver());
 
@@ -132,25 +168,24 @@ namespace osu.Framework.Declarative.Yaml
                 throw new ArgumentException("Document root must be a mapping.");
         }
 
-        protected override ElementRenderInfo Render(ComponentBuilderContext context)
+        protected override ElementBuilder Render(ComponentBuilderContext context)
         {
             var render = null as YamlNode;
 
-            foreach (var (key, value) in _mapping)
+            foreach (var (keyNode, valueNode) in _mapping)
             {
                 try
                 {
-                    if (!(key is YamlScalarNode keyScalar))
-                        throw new YamlComponentException("Must be a scalar.", key);
+                    var key = keyNode.ToScalar().Value;
 
-                    if (keyScalar.Value == "render")
+                    if (key == "render")
                     {
-                        render = value;
+                        render = valueNode;
                         continue;
                     }
 
-                    if (!PartHandler.Handle(context, keyScalar.Value, value))
-                        throw new YamlComponentException($"Invalid component part '{keyScalar.Value}'.", key);
+                    if (!PartHandler.Handle(context, key, valueNode))
+                        throw new YamlComponentException($"Invalid component part '{key}'.", keyNode);
                 }
                 catch (Exception e)
                 {
@@ -176,7 +211,7 @@ namespace osu.Framework.Declarative.Yaml
             }
         }
 
-        public ElementRenderInfo BuildElement(ComponentBuilderContext context, YamlNode node)
+        public ElementBuilder BuildElement(ComponentBuilderContext context, YamlNode node)
         {
             try
             {
@@ -185,51 +220,36 @@ namespace osu.Framework.Declarative.Yaml
                     // element
                     case YamlMappingNode mapping:
                         if (mapping.Children.Count == 0)
-                            return new EmptyRenderInfo();
+                            return new ElementBuilder.Empty();
 
-                        if (mapping.Children.Count > 1)
-                            throw new YamlComponentException("Mapping must have one key that indicates the element type.", mapping);
+                        if (mapping.Children.Count != 1)
+                            throw new YamlComponentException("Mapping must have one key that indicates element type.", mapping);
 
-                        var (key, value) = mapping.Children.First();
+                        var (keyNode, valueNode) = mapping.Children.First();
 
-                        if (!(key is YamlScalarNode typeScalar))
-                            throw new YamlComponentException("Must be a scalar.", key);
+                        var key = keyNode.ToScalar().Value;
 
                         // resolve type
-                        var type = ElementResolver.Resolve(context, typeScalar.Value) ?? throw new YamlComponentException($"Cannot resolve element '{typeScalar.Value}'.", typeScalar);
+                        var type = ElementResolver.Resolve(context, key) ?? throw new YamlComponentException($"Cannot resolve element '{key}'.", keyNode);
 
                         // build prop dictionary
-                        Dictionary<string, YamlProp> props;
+                        var props = valueNode.ToMapping().ToDictionary(x => x.Key.ToScalar().Value, x => new YamlProp(x.Key, x.Value));
 
-                        switch (value)
-                        {
-                            case YamlMappingNode propsMapping:
-                                props = propsMapping.ToDictionary(x => (x.Key as YamlScalarNode ?? throw new YamlComponentException("Must be a scalar.", x.Key)).Value, x => new YamlProp(x.Key, x.Value));
-                                break;
-
-                            case YamlScalarNode scalar when string.IsNullOrEmpty(scalar.Value):
-                                props = new Dictionary<string, YamlProp>();
-                                break;
-
-                            default:
-                                throw new YamlComponentException("Must be a mapping.", value);
-                        }
-
-                        return BuildElementWithProps(context, type, typeScalar, props);
+                        return BuildElementWithProps(context, type, keyNode, props);
 
                     // fragment
                     case YamlSequenceNode sequence:
-                        var elements = sequence.Select(n => BuildElement(context, n)).Where(e => !(e is EmptyRenderInfo)).ToArray();
+                        var elements = sequence.Select(n => BuildElement(context, n)).Where(e => !(e is ElementBuilder.Empty)).ToArray();
 
                         return elements.Length switch
                         {
-                            0 => new EmptyRenderInfo(),
+                            0 => new ElementBuilder.Empty(),
                             1 => elements[0],
-                            _ => new FragmentRenderInfo(elements)
+                            _ => new FragmentBuilder(elements)
                         };
 
                     case YamlScalarNode scalar when string.IsNullOrEmpty(scalar.Value):
-                        return new EmptyRenderInfo();
+                        return new ElementBuilder.Empty();
 
                     default:
                         throw new YamlComponentException("Must be a mapping or sequence.", node);
@@ -239,36 +259,39 @@ namespace osu.Framework.Declarative.Yaml
             {
                 context.OnException(e);
 
-                return new EmptyRenderInfo();
+                return new ElementBuilder.Empty();
             }
         }
 
         sealed class ElementMatch
         {
-            public readonly ElementRenderInfo Element;
+            public readonly ElementBuilder Element;
             public readonly Exception Exception;
             public readonly float Relevance;
 
-            public ElementMatch(ElementRenderInfo element, Exception exception, float points)
+            public ElementMatch(ElementBuilder element, List<Exception> exceptions, float points)
             {
-                Element   = element;
-                Exception = exception;
+                Element = element;
+
+                if (exceptions.Count != 0)
+                    Exception = new AggregateException(exceptions);
 
                 // relevance is relative
                 Relevance = points / element.Parameters.Length;
             }
         }
 
-        ElementRenderInfo BuildElementWithProps(ComponentBuilderContext context, Type type, YamlNode node, IReadOnlyDictionary<string, YamlProp> props)
+        ElementBuilder BuildElementWithProps(ComponentBuilderContext context, Type type, YamlNode node, IReadOnlyDictionary<string, YamlProp> props)
         {
-            var success = new List<ElementMatch>();
-            var fail    = new List<ElementMatch>();
+            var matches = new List<ElementMatch>();
 
             foreach (var constructor in type.GetConstructors())
             {
-                var element    = new ElementRenderInfo(type, constructor);
+                var element = new ElementBuilder(type, constructor);
+                var points  = 0f;
+
+                // we keep our own list of exceptions because we want to try out every element constructor and find the one that matches
                 var exceptions = new List<Exception>();
-                var points     = 0f;
 
                 var matchedParams = new HashSet<string>();
 
@@ -309,14 +332,8 @@ namespace osu.Framework.Declarative.Yaml
                 {
                     try
                     {
-                        if (!matchedParams.Remove(key))
-                        {
-                            var provider = PropResolver.Resolve(context, PropTypeInfo.Empty, element, prop.Value);
-
-                            element.Props[key] = provider ?? throw new YamlComponentException($"Cannot resolve prop '{key}' in element {type}.", prop.Key);
-
-                            points += 1;
-                        }
+                        if (!matchedParams.Remove(key) && !PropResolver.Resolve(context, key, element, prop.Value))
+                            throw new YamlComponentException($"Cannot resolve prop '{key}' in element {type}.", prop.Key);
                     }
                     catch (Exception e)
                     {
@@ -324,25 +341,28 @@ namespace osu.Framework.Declarative.Yaml
                     }
                 }
 
-                if (exceptions.Count == 0)
-                    success.Add(new ElementMatch(element, null, points));
-                else
-                    fail.Add(new ElementMatch(element, new AggregateException(exceptions), points));
+                matches.Add(new ElementMatch(element, exceptions, points));
             }
 
-            if (success.Count != 0)
-                foreach (var group in success.OrderByDescending(m => m.Relevance).GroupBy(m => m.Relevance))
-                {
-                    var matches = group.ToArray();
+            // sort by relevance descending
+            matches.Sort((a, b) => -a.Relevance.CompareTo(b.Relevance));
 
-                    if (matches.Length == 1)
-                        return matches[0].Element;
+            // find matching constructor
+            foreach (var group in matches.Where(m => m.Exception == null).GroupBy(m => m.Relevance))
+            {
+                var matched = group.ToArray();
 
-                    throw new YamlComponentException($"Ambiguous element constructor reference: {string.Join(", ", matches.Select(m => m.Element.Constructor))}", node);
-                }
+                if (matched.Length == 1)
+                    return matched[0].Element;
 
-            if (fail.Count != 0)
-                ExceptionDispatchInfo.Capture(fail.OrderByDescending(m => m.Relevance).First().Exception).Throw();
+                throw new YamlComponentException($"Ambiguous element constructor reference: {string.Join(", ", matched.Select(m => m.Element.Constructor))}", node);
+            }
+
+            // no matched constructor, so throw for the first failed constructor
+            var failed = matches.FirstOrDefault(m => m.Exception != null);
+
+            if (failed != null)
+                ExceptionDispatchInfo.Capture(failed.Exception).Throw();
 
             throw new YamlComponentException($"No public instance constructor in element {type}.", node);
         }

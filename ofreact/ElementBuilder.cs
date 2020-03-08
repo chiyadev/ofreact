@@ -13,16 +13,14 @@ namespace ofreact
 
     public class ElementBuilder : IPropProvider
     {
-        public static ElementBuilder Empty => new EmptyBuilder();
-
-        sealed class EmptyBuilder : ElementBuilder
+        public sealed class Empty : ElementBuilder
         {
-            sealed class Empty : ofElement { }
+            sealed class EmptyElement : ofElement { }
 
-            static readonly Type _type = typeof(Empty);
+            static readonly Type _type = typeof(EmptyElement);
             static readonly ConstructorInfo _ctor = _type.GetConstructors()[0];
 
-            public EmptyBuilder() : base(_type, _ctor) { }
+            public Empty() : base(_type, _ctor) { }
 
             public override Expression GetValue(ComponentBuilderContext context) => Expression.Constant(null, typeof(ofElement));
         }
@@ -74,7 +72,12 @@ namespace ofreact
             public Expression GetValue(ComponentBuilderContext context)
             {
                 if (_parameter.HasDefaultValue)
+                {
+                    if (_parameter.DefaultValue == null)
+                        return Expression.Default(_parameter.ParameterType);
+
                     return Expression.Constant(_parameter.DefaultValue, _parameter.ParameterType);
+                }
 
                 throw new ArgumentException($"Parameter {_parameter} of constructor {_parameter.Member} in {_parameter.Member.DeclaringType} is required but no value was provided.");
             }

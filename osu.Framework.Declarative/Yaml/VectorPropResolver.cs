@@ -23,9 +23,9 @@ namespace osu.Framework.Declarative.Yaml
             return null;
         }
 
-        static float[] ParseVector(YamlNode s, int count)
+        static float[] ParseVector(YamlNode node, int count)
         {
-            switch (s)
+            switch (node)
             {
                 case YamlScalarNode scalar:
                     var parts = scalar.Value.Split(',');
@@ -33,7 +33,7 @@ namespace osu.Framework.Declarative.Yaml
                     if (parts.Length == 1) // scalar shorthand
                     {
                         var a = new float[count];
-                        var n = ParseNumber(s, parts[0]);
+                        var n = ParseNumber(node, parts[0]);
 
                         for (var i = 0; i < count; i++)
                             a[i] = n;
@@ -46,7 +46,7 @@ namespace osu.Framework.Declarative.Yaml
                         var a = new float[count];
 
                         for (var i = 0; i < count; i++)
-                            a[i] = ParseNumber(s, parts[i]);
+                            a[i] = ParseNumber(node, parts[i]);
 
                         return a;
                     }
@@ -58,29 +58,21 @@ namespace osu.Framework.Declarative.Yaml
                     var a = new float[count];
 
                     for (var i = 0; i < count; i++)
-                        a[i] = ParseNumber(sequence[i]);
+                        a[i] = ParseNumber(sequence[i], sequence[i].ToScalar().Value);
 
                     return a;
                 }
             }
 
-            throw new YamlComponentException($"Must be a scalar or sequence containing {count} components.", s);
+            throw new YamlComponentException($"Must be a scalar or sequence containing {count} components.", node);
         }
 
-        static float ParseNumber(YamlNode n)
-        {
-            if (n is YamlScalarNode scalar)
-                return ParseNumber(scalar, scalar.Value);
-
-            throw new YamlComponentException("Must be a scalar.", n);
-        }
-
-        static float ParseNumber(YamlNode n, string s)
+        static float ParseNumber(YamlNode node, string s)
         {
             if (float.TryParse(s, NumberStyles.Any, NumberFormatInfo.InvariantInfo, out var value))
                 return value;
 
-            throw new YamlComponentException($"Cannot convert '{s}' to number.", n);
+            throw new YamlComponentException($"Cannot convert '{s}' to number.", node);
         }
 
         sealed class Provider2 : IPropProvider

@@ -21,37 +21,26 @@ namespace osu.Framework.Declarative.Yaml
             if (name != "import")
                 return false;
 
-            switch (node)
+            var assemblies = new List<Assembly>();
+
+            foreach (var item in node.ToSequence())
             {
-                case YamlSequenceNode sequence:
-                    var assemblies = new List<Assembly>();
-
-                    foreach (var item in sequence)
-                    {
-                        try
-                        {
-                            if (!(item is YamlScalarNode scalar))
-                                throw new YamlComponentException("Must be a scalar.", item);
-
-                            if (string.IsNullOrEmpty(scalar.Value))
-                                continue;
-
-                            assemblies.Add(Assembly.LoadFrom(scalar.Value));
-                        }
-                        catch (Exception e)
-                        {
-                            context.OnException(e);
-                        }
-                    }
-
-                    ((IYamlComponentBuilder) context.Builder).ElementResolver = new CompositeElementResolver(assemblies.Select(a => new AssemblyElementResolver(a)));
-                    return true;
-
-                case YamlScalarNode scalar when string.IsNullOrEmpty(scalar.Value):
-                    return true;
+                try
+                {
+                    assemblies.Add(Assembly.LoadFrom(item.ToScalar().Value));
+                }
+                catch (Exception e)
+                {
+                    context.OnException(e);
+                }
             }
 
-            return false;
+            // append as element resolver with new assemblies
+            var builder = (IYamlComponentBuilder) context.Builder;
+
+            builder.ElementResolver = new CompositeElementResolver(assemblies.Select(a => new AssemblyElementResolver(a)).Append(builder.ElementResolver));
+
+            return true;
         }
     }
 }

@@ -40,7 +40,7 @@ namespace ofreact.Tests.Yaml
             {
                 new[] { "value 1 1", "value 1 2" },
                 new[] { "value 2 1", "value 2 2", "value 2 3" },
-                new[] { "" }
+                new string[0]
             }));
 
             return null;

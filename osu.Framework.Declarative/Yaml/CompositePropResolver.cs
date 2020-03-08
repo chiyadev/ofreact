@@ -21,5 +21,8 @@ namespace osu.Framework.Declarative.Yaml
 
         public IPropProvider Resolve(ComponentBuilderContext context, PropTypeInfo prop, ElementBuilder element, YamlNode node)
             => _resolvers.Select(r => r.Resolve(context, prop, element, node)).FirstOrDefault(p => p != null);
+
+        public bool Resolve(ComponentBuilderContext context, string prop, ElementBuilder element, YamlNode node)
+            => _resolvers.Any(r => r.Resolve(context, prop, element, node));
     }
 }

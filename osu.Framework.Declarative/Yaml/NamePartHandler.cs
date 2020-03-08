@@ -13,10 +13,7 @@ namespace osu.Framework.Declarative.Yaml
             if (name != "name")
                 return false;
 
-            if (!(node is YamlScalarNode scalar))
-                throw new YamlComponentException("Must be a scalar.", node);
-
-            context.Name = scalar.Value;
+            context.Name = node.ToScalar().Value;
             return true;
         }
     }
