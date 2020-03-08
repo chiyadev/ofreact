@@ -96,7 +96,7 @@ namespace osu.Framework.Declarative.Yaml
                     if (!_namedColors.TryGetValue(parts[0], out color))
                         throw new YamlComponentException($"Cannot convert '{parts[0]}' to named color.", node);
 
-                    color.A = node.ToSingle(parts[2]);
+                    color.A = node.ToSingle(parts[1]);
 
                     return color;
 
