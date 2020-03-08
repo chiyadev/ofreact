@@ -32,7 +32,13 @@ render:
               - blue, .3
           alpha: .6
       - SpriteText:
-          colour: black");
+          text: My test sprite text
+          font:
+            size: 30
+          padding:
+            top: 10
+            bottom: 10
+          colour: 128, 0, 230");
         }
     }
 }

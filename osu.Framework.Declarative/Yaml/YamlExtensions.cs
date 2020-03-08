@@ -64,5 +64,15 @@ namespace osu.Framework.Declarative.Yaml
 
             throw new YamlComponentException($"Cannot convert '{value}' to number.", node);
         }
+
+        public static bool ToBoolean(this YamlNode node)
+        {
+            var s = node.ToScalar().Value;
+
+            if (bool.TryParse(s, out var v))
+                return v;
+
+            throw new YamlComponentException($"Cannot convert '{s}' to boolean.", node);
+        }
     }
 }

@@ -153,6 +153,9 @@ namespace osu.Framework.Declarative.Yaml
                 new ChildPropResolver(),
                 new VectorPropResolver(),
                 new ColorPropResolver(),
+                new LocalizedStringPropResolver(),
+                new FontUsagePropResolver(),
+                new MarginPaddingPropResolver(),
                 new DrawableStylePropResolver());
 
         public IComponentPartHandler PartHandler { get; set; } = DefaultPartHandler;
