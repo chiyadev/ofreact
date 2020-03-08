@@ -7,7 +7,7 @@ namespace osu.Framework.Declarative.VisualTests
     {
         protected override ofElement Render()
         {
-            return new ofYamlComponent(@"
+            return new ofYamlDesigner(@"
 render:
   Container:
     key: test
@@ -31,7 +31,7 @@ render:
               - red
               - blue, .3
           alpha: .6
-      - SpriteText:
+      - Text:
           text: My test sprite text
           font:
             size: 30
