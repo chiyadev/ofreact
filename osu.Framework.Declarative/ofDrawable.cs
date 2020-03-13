@@ -225,7 +225,7 @@ namespace osu.Framework.Declarative
             if (!base.RenderSubtree())
                 return false;
 
-            var context = UseContext<IDrawableRenderContext>();
+            var context = Node.FindNearestContext<IDrawableRenderContext>().Value;
 
             if (context == null)
                 return false;
