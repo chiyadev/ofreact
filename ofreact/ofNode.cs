@@ -181,12 +181,11 @@ namespace ofreact
         /// </summary>
         /// <typeparam name="T">Type of the context object.</typeparam>
         /// <returns>The found context object or default value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ContextInfo<T> FindNearestContext<T>()
         {
-            var node = this;
+            var node = Parent;
 
-            do
+            while (node != null)
             {
                 var context = node._context;
 
@@ -195,7 +194,6 @@ namespace ofreact
 
                 node = node.Parent;
             }
-            while (node != null);
 
             return default;
         }
@@ -205,12 +203,11 @@ namespace ofreact
         /// </summary>
         /// <param name="type">Type of the context object.</param>
         /// <returns>The found context object or default value.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ContextInfo FindNearestContext(Type type)
         {
-            var node = this;
+            var node = Parent;
 
-            do
+            while (node != null)
             {
                 var context = node._context;
 
@@ -219,7 +216,6 @@ namespace ofreact
 
                 node = node.Parent;
             }
-            while (node != null);
 
             return default;
         }
@@ -228,7 +224,6 @@ namespace ofreact
         /// Marks this node for rerender.
         /// </summary>
         /// <returns>True if this node was previously unmarked.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Invalidate()
         {
             if (Root.RerenderNodes.Add(this))
