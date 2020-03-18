@@ -5,35 +5,29 @@ using System.Text;
 
 namespace ofreact.Diagnostics
 {
-    public sealed class RenderDiagnostics
+    public class RenderDiagnostics
     {
         public List<ofNode> NodesRendered { get; } = new List<ofNode>();
         public List<ofNode> NodesSkipped { get; } = new List<ofNode>();
         public List<ofNode> NodesInvalidated { get; } = new List<ofNode>();
         public List<ofNode> NodesDisposed { get; } = new List<ofNode>();
-
         public List<EffectInfo> EffectsInvoked { get; } = new List<EffectInfo>();
-
         public List<Exception> Exceptions { get; } = new List<Exception>();
 
-        public void OnNodeRendering(ofNode node) => NodesRendered.Add(node);
-        public void OnNodeRenderSkipped(ofNode node) => NodesSkipped.Add(node);
-        public void OnNodeInvalidated(ofNode node) => NodesInvalidated.Add(node);
-        public void OnNodeDisposed(ofNode node) => NodesDisposed.Add(node);
+        public virtual void OnNodeRendering(ofNode node) => NodesRendered.Add(node);
+        public virtual void OnNodeRenderSkipped(ofNode node) => NodesSkipped.Add(node);
+        public virtual void OnNodeInvalidated(ofNode node) => NodesInvalidated.Add(node);
+        public virtual void OnNodeDisposed(ofNode node) => NodesDisposed.Add(node);
+        public virtual void OnEffectInvoking(EffectInfo effect) => EffectsInvoked.Add(effect);
+        public virtual void OnException(Exception exception) => Exceptions.Add(exception);
 
-        public void OnEffectInvoking(EffectInfo effect) => EffectsInvoked.Add(effect);
-
-        public void OnException(Exception exception) => Exceptions.Add(exception);
-
-        public void Clear()
+        public virtual void Clear()
         {
             NodesRendered.Clear();
             NodesSkipped.Clear();
             NodesInvalidated.Clear();
             NodesDisposed.Clear();
-
             EffectsInvoked.Clear();
-
             Exceptions.Clear();
         }
 
