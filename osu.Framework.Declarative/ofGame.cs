@@ -1,6 +1,5 @@
 using ofreact;
 using osu.Framework.Allocation;
-using osu.Framework.Graphics;
 using osu.Framework.Platform;
 
 namespace osu.Framework.Declarative
@@ -64,16 +63,19 @@ namespace osu.Framework.Declarative
             {
                 _dependencies.CacheAs<Game>(this);
                 _dependencies.Cache(new ofElementBootstrapper.NodeConnector(_game));
+            }
 
-                Child = new ofElementBootstrapper
+            protected override void Update()
+            {
+                base.Update();
+
+                _game.RenderInternal(new ofPortal(this)
                 {
-                    RelativeSizeAxes = Axes.Both,
-
-                    Element = new ofContext<IWindow>(value: Host.Window)
+                    new ofContext<IWindow>(value: Host.Window)
                     {
                         _element
                     }
-                };
+                });
             }
         }
     }
