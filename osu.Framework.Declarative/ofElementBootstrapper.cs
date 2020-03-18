@@ -14,7 +14,7 @@ namespace osu.Framework.Declarative
         /// Represents a connection between an ancestor and descendant node that are separated by intermediate <see cref="Drawable"/>s.
         /// </summary>
         /// <remarks>
-        /// This class is used by <see cref="ofElementBootstrapper"/> to determine whether to create a root node or a descendant node of a connected ancestor.
+        /// This is used by <see cref="ofElementBootstrapper"/> to determine whether to create a root node or a descendant node of a connected ancestor.
         /// <see cref="NodeConnector"/> is to be cached as a dependency in a <see cref="Drawable"/>.
         /// </remarks>
         public class NodeConnector

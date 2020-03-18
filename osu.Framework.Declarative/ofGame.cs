@@ -67,16 +67,13 @@ namespace osu.Framework.Declarative
 
                 Child = new ofElementBootstrapper
                 {
-                    Element          = _element,
-                    RelativeSizeAxes = Axes.Both
+                    RelativeSizeAxes = Axes.Both,
+
+                    Element = new ofContext<IWindow>(value: Host.Window)
+                    {
+                        _element
+                    }
                 };
-            }
-
-            protected override void Update()
-            {
-                base.Update();
-
-                _game.RenderInternal(_element);
             }
         }
     }
