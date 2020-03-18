@@ -18,8 +18,16 @@ namespace ofreact
         /// </summary>
         public T Current
         {
-            get => _dict.TryGetValue(_key, out var value) ? (T) value : default;
-            set => _dict[_key] = value;
+            get
+            {
+                lock (_dict)
+                    return _dict.TryGetValue(_key, out var value) ? (T) value : default;
+            }
+            set
+            {
+                lock (_dict)
+                    _dict[_key] = value;
+            }
         }
 
         internal RefObject(ofNode node, string key, T initialValue)
@@ -29,8 +37,12 @@ namespace ofreact
             // underscore convention is removed
             _key = key.TrimStart('_');
 
-            if (!_dict.ContainsKey(_key))
-                Current = initialValue;
+            // initial value
+            lock (_dict)
+            {
+                if (!_dict.ContainsKey(_key))
+                    Current = initialValue;
+            }
         }
 
         public override bool Equals(object obj) => obj is RefObject<T> refObj && (Current?.Equals(refObj.Current) ?? false);

@@ -45,6 +45,7 @@ namespace ofreact
 
         /// <summary>
         /// Dictionary of stateful variables.
+        /// This should be locked during access.
         /// </summary>
         /// <remarks>
         /// Named states are case-insensitive.
@@ -98,7 +99,11 @@ namespace ofreact
         /// </summary>
         public virtual RenderResult RenderElement(ofElement element)
         {
-            var shouldRender = Root.RerenderNodes.Remove(this); // remove first to avoid infinite rerender loop
+            bool shouldRender;
+
+            // remove first to avoid infinite rerender loop
+            lock (Root.RerenderNodes)
+                shouldRender = Root.RerenderNodes.Remove(this);
 
             if (!CanRender(element))
                 return RenderResult.Mismatch;
@@ -226,13 +231,16 @@ namespace ofreact
         /// <returns>True if this node was previously unmarked.</returns>
         public bool Invalidate()
         {
-            if (Root.RerenderNodes.Add(this))
+            lock (Root.RerenderNodes)
             {
-                Root.Diagnostics?.OnNodeInvalidated(this);
-                return true;
-            }
+                if (Root.RerenderNodes.Add(this))
+                {
+                    Root.Diagnostics?.OnNodeInvalidated(this);
+                    return true;
+                }
 
-            return false;
+                return false;
+            }
         }
 
         /// <summary>
@@ -276,6 +284,7 @@ namespace ofreact
 
         /// <summary>
         /// Set of <see cref="ofNode"/> that are marked for rerender.
+        /// This should be locked during access.
         /// </summary>
         public HashSet<ofNode> RerenderNodes { get; } = new HashSet<ofNode>(512);
 
@@ -305,18 +314,21 @@ namespace ofreact
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool GetRerenderNodes(out ofNode[] nodes)
         {
-            var count = RerenderNodes.Count;
-
-            if (count == 0)
+            lock (RerenderNodes)
             {
-                nodes = null;
-                return false;
+                var count = RerenderNodes.Count;
+
+                if (count == 0)
+                {
+                    nodes = null;
+                    return false;
+                }
+
+                nodes = new ofNode[count];
+                RerenderNodes.CopyTo(nodes);
+
+                return true;
             }
-
-            nodes = new ofNode[count];
-            RerenderNodes.CopyTo(nodes);
-
-            return true;
         }
 
         public override RenderResult RenderElement(ofElement element)
@@ -360,7 +372,9 @@ namespace ofreact
         {
             base.Dispose();
 
-            RerenderNodes.Clear();
+            lock (RerenderNodes)
+                RerenderNodes.Clear();
+
             PendingEffects.Clear();
             Diagnostics.Clear();
         }
