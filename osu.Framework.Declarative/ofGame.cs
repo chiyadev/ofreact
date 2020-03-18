@@ -71,7 +71,7 @@ namespace osu.Framework.Declarative
 
                 _game.RenderInternal(new ofPortal(this)
                 {
-                    new ofContext<IWindow>(value: Host.Window)
+                    new ofContext<GameHost>(value: Host)
                     {
                         _element
                     }
