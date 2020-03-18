@@ -76,6 +76,7 @@ namespace osu.Framework.Declarative
             public override bool HandleNonPositionalInput => base.HandleNonPositionalInput || EventDelegate != null;
 
             protected override bool Handle(UIEvent e) => base.Handle(e) || EventDelegate(e);
+            protected override bool OnClick(ClickEvent e) => base.OnClick(e) | EventDelegate(e);
         }
     }
 
