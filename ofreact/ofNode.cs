@@ -29,6 +29,8 @@ namespace ofreact
     /// </summary>
     public class ofNode : IDisposable
     {
+        volatile bool _disposed;
+
         /// <summary>
         /// <see cref="ofNode"/> that is the root of the tree.
         /// </summary>
@@ -99,6 +101,9 @@ namespace ofreact
         /// </summary>
         public virtual RenderResult RenderElement(ofElement element)
         {
+            if (_disposed)
+                return RenderResult.Mismatch;
+
             bool shouldRender;
 
             // remove first to avoid infinite rerender loop
@@ -188,6 +193,9 @@ namespace ofreact
         /// <returns>The found context object or default value.</returns>
         public ContextInfo<T> FindNearestContext<T>()
         {
+            if (_disposed)
+                return default;
+
             var node = Parent;
 
             while (node != null)
@@ -210,6 +218,9 @@ namespace ofreact
         /// <returns>The found context object or default value.</returns>
         public ContextInfo FindNearestContext(Type type)
         {
+            if (_disposed)
+                return default;
+
             var node = Parent;
 
             while (node != null)
@@ -231,6 +242,9 @@ namespace ofreact
         /// <returns>True if this node was previously unmarked.</returns>
         public bool Invalidate()
         {
+            if (_disposed)
+                return false;
+
             lock (Root.RerenderNodes)
             {
                 if (Root.RerenderNodes.Add(this))
@@ -251,6 +265,11 @@ namespace ofreact
 
         public virtual void Dispose()
         {
+            if (_disposed)
+                return;
+
+            _disposed = true;
+
             // do effect cleanups
             if (_effects != null)
                 foreach (var effect in _effects)
