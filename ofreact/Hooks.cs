@@ -30,7 +30,7 @@ namespace ofreact
         /// </remarks>
         /// <param name="initialValue">Initial value of the variable.</param>
         /// <typeparam name="T">Type of the variable.</typeparam>
-        public static (T, Action<T>) UseState<T>(T initialValue = default) => ofElement.DefineHook<(T, Action<T>)>(node =>
+        public static (T value, Action<T> setValue) UseState<T>(T initialValue = default) => ofElement.DefineHook<(T, Action<T>)>(node =>
         {
             var obj = node.GetHookRef(initialValue);
 
