@@ -1,6 +1,7 @@
 using ofreact;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
+using osu.Framework.Input.Events;
 
 namespace osu.Framework.Declarative
 {
@@ -52,13 +53,22 @@ namespace osu.Framework.Declarative
 
     public sealed class ofTextFlow : ofTextFlow<TextFlowContainer>
     {
-        public ofTextFlow(ElementKey key = default, RefDelegate<TextFlowContainer> @ref = default, DrawableStyleDelegate<TextFlowContainer> style = default) : base(key, @ref, style) { }
+        public ofTextFlow(ElementKey key = default, RefDelegate<TextFlowContainer> @ref = default, DrawableStyleDelegate<TextFlowContainer> style = default, DrawableEventDelegate @event = default) : base(key, @ref, style, @event) { }
 
-        protected override TextFlowContainer CreateDrawable() => new TextFlowContainer();
+        protected override TextFlowContainer CreateDrawable() => new InternalTextFlowContainer();
+
+        sealed class InternalTextFlowContainer : TextFlowContainer, ISupportEventDelegation
+        {
+            public DrawableEventDelegate EventDelegate { get; set; }
+            public override bool HandlePositionalInput => base.HandlePositionalInput || EventDelegate != null;
+            public override bool HandleNonPositionalInput => base.HandleNonPositionalInput || EventDelegate != null;
+
+            protected override bool Handle(UIEvent e) => base.Handle(e) || EventDelegate(e);
+        }
     }
 
     public abstract class ofTextFlow<T> : ofDrawableBase<T> where T : TextFlowContainer
     {
-        protected ofTextFlow(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default) : base(key, @ref, style) { }
+        protected ofTextFlow(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, DrawableEventDelegate @event = default) : base(key, @ref, style, @event) { }
     }
 }

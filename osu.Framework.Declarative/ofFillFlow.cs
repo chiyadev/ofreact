@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using ofreact;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
+using osu.Framework.Input.Events;
 using osuTK;
 
 namespace osu.Framework.Declarative
@@ -30,13 +31,22 @@ namespace osu.Framework.Declarative
 
     public sealed class ofFillFlow : ofFillFlow<FillFlowContainer<Drawable>>
     {
-        public ofFillFlow(ElementKey key = default, RefDelegate<FillFlowContainer<Drawable>> @ref = default, DrawableStyleDelegate<FillFlowContainer<Drawable>> style = default, IEnumerable<ofElement> children = default) : base(key, @ref, style, children) { }
+        public ofFillFlow(ElementKey key = default, RefDelegate<FillFlowContainer<Drawable>> @ref = default, DrawableStyleDelegate<FillFlowContainer<Drawable>> style = default, DrawableEventDelegate @event = default, IEnumerable<ofElement> children = default) : base(key, @ref, style, @event, children) { }
 
-        protected override FillFlowContainer<Drawable> CreateDrawable() => new FillFlowContainer<Drawable>();
+        protected override FillFlowContainer<Drawable> CreateDrawable() => new InternalFillFlowContainer();
+
+        sealed class InternalFillFlowContainer : FillFlowContainer, ISupportEventDelegation
+        {
+            public DrawableEventDelegate EventDelegate { get; set; }
+            public override bool HandlePositionalInput => base.HandlePositionalInput || EventDelegate != null;
+            public override bool HandleNonPositionalInput => base.HandleNonPositionalInput || EventDelegate != null;
+
+            protected override bool Handle(UIEvent e) => base.Handle(e) || EventDelegate(e);
+        }
     }
 
     public abstract class ofFillFlow<T> : ofFlow<T> where T : FillFlowContainer<Drawable>
     {
-        protected ofFillFlow(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, IEnumerable<ofElement> children = default) : base(key, @ref, style, children) { }
+        protected ofFillFlow(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, DrawableEventDelegate @event = default, IEnumerable<ofElement> children = default) : base(key, @ref, style, @event, children) { }
     }
 }

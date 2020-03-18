@@ -86,14 +86,19 @@ namespace osu.Framework.Declarative.Yaml
                     return null;
 
                 if (!open)
-                    return new ofButton(onClick: () => setOpen(true), style: new ButtonStyle
-                    {
-                        Text             = "Show generated code",
-                        RelativeSizeAxes = Axes.X,
-                        Size             = new Vector2(0.2f, 30),
-                        Anchor           = Anchor.BottomLeft,
-                        Origin           = Anchor.BottomLeft
-                    });
+                    return new ofButton(
+                        @event: new DrawableEvent
+                        {
+                            OnClick = _ => setOpen(true)
+                        },
+                        style: new ButtonStyle
+                        {
+                            Text             = "Show generated code",
+                            RelativeSizeAxes = Axes.X,
+                            Size             = new Vector2(0.2f, 30),
+                            Anchor           = Anchor.BottomLeft,
+                            Origin           = Anchor.BottomLeft
+                        });
 
                 return new ofContainer(style: new ContainerStyle
                 {
@@ -123,21 +128,31 @@ namespace osu.Framework.Declarative.Yaml
                             AutoSizeAxes     = Axes.Y
                         })
                         {
-                            new ofButton("show button", onClick: () => setOpen(false), style: new ButtonStyle
-                            {
-                                Text             = "Hide generated code",
-                                RelativeSizeAxes = Axes.X,
-                                Size             = new Vector2(0.8f, 30)
-                            }),
+                            new ofButton("show button",
+                                @event: new DrawableEvent
+                                {
+                                    OnClick = _ => setOpen(false)
+                                },
+                                style: new ButtonStyle
+                                {
+                                    Text             = "Hide generated code",
+                                    RelativeSizeAxes = Axes.X,
+                                    Size             = new Vector2(0.8f, 30)
+                                }),
 
-                            new ofButton("copy button", onClick: () => host.GetClipboard().SetText(_code), style: new ButtonStyle
-                            {
-                                Text             = "Copy to clipboard",
-                                RelativeSizeAxes = Axes.X,
-                                Size             = new Vector2(0.2f, 30),
-                                Anchor           = Anchor.TopRight,
-                                Origin           = Anchor.TopRight
-                            })
+                            new ofButton("copy button",
+                                @event: new DrawableEvent
+                                {
+                                    OnClick = _ => host.GetClipboard().SetText(_code)
+                                },
+                                style: new ButtonStyle
+                                {
+                                    Text             = "Copy to clipboard",
+                                    RelativeSizeAxes = Axes.X,
+                                    Size             = new Vector2(0.2f, 30),
+                                    Anchor           = Anchor.TopRight,
+                                    Origin           = Anchor.TopRight
+                                })
                         },
 
                         new ofScroll("text scroll", style: new ScrollStyle
@@ -239,12 +254,17 @@ namespace osu.Framework.Declarative.Yaml
                 {
                     var (open, setOpen) = UseState(_shouldOpen);
 
-                    var button = new ofButton(onClick: () => setOpen(!open), style: new ButtonStyle
-                    {
-                        Text             = _ex.Message,
-                        RelativeSizeAxes = Axes.X,
-                        Size             = new Vector2(1, 20)
-                    });
+                    var button = new ofButton(
+                        @event: new DrawableEvent
+                        {
+                            OnClick = _ => setOpen(!open)
+                        },
+                        style: new ButtonStyle
+                        {
+                            Text             = _ex.Message,
+                            RelativeSizeAxes = Axes.X,
+                            Size             = new Vector2(1, 20)
+                        });
 
                     if (!open)
                         return button;

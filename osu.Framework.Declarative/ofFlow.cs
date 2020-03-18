@@ -34,6 +34,6 @@ namespace osu.Framework.Declarative
 
     public abstract class ofFlow<T> : ofContainer<T> where T : FlowContainer<Drawable>
     {
-        protected ofFlow(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, IEnumerable<ofElement> children = default) : base(key, @ref, style, children) { }
+        protected ofFlow(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, DrawableEventDelegate @event = default, IEnumerable<ofElement> children = default) : base(key, @ref, style, @event, children) { }
     }
 }

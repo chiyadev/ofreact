@@ -5,6 +5,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Colour;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Effects;
+using osu.Framework.Input.Events;
 using osuTK;
 using static ofreact.Hooks;
 
@@ -116,9 +117,18 @@ namespace osu.Framework.Declarative
     /// </summary>
     public sealed class ofContainer : ofContainer<Container<Drawable>>
     {
-        public ofContainer(ElementKey key = default, RefDelegate<Container<Drawable>> @ref = default, DrawableStyleDelegate<Container<Drawable>> style = default, IEnumerable<ofElement> children = default) : base(key, @ref, style, children) { }
+        public ofContainer(ElementKey key = default, RefDelegate<Container<Drawable>> @ref = default, DrawableStyleDelegate<Container<Drawable>> style = default, DrawableEventDelegate @event = default, IEnumerable<ofElement> children = default) : base(key, @ref, style, @event, children) { }
 
-        protected override Container<Drawable> CreateDrawable() => new Container<Drawable>();
+        protected override Container<Drawable> CreateDrawable() => new InternalContainer();
+
+        sealed class InternalContainer : Container, ISupportEventDelegation
+        {
+            public DrawableEventDelegate EventDelegate { get; set; }
+            public override bool HandlePositionalInput => base.HandlePositionalInput || EventDelegate != null;
+            public override bool HandleNonPositionalInput => base.HandleNonPositionalInput || EventDelegate != null;
+
+            protected override bool Handle(UIEvent e) => base.Handle(e) || EventDelegate(e);
+        }
     }
 
     /// <summary>
@@ -132,7 +142,7 @@ namespace osu.Framework.Declarative
         /// <summary>
         /// Creates a new <see cref="ofContainer{T}"/>.
         /// </summary>
-        protected ofContainer(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, IEnumerable<ofElement> children = default) : base(key, @ref, style)
+        protected ofContainer(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, DrawableEventDelegate @event = default, IEnumerable<ofElement> children = default) : base(key, @ref, style, @event)
         {
             Children = children == null
                 ? new List<ofElement>()

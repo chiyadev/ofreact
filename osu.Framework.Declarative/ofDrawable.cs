@@ -178,23 +178,31 @@ namespace osu.Framework.Declarative
     }
 
     /// <summary>
-    /// Encapsulates a method that handles an input event triggered on a <see cref="Drawable"/> of type <typeparamref name="T"/>.
+    /// Encapsulates a method that handles an input event triggered on a <see cref="Drawable"/>.
     /// </summary>
     /// <remarks>
     /// Not all drawable elements (i.e. inheritors of <see cref="ofDrawableBase{T}"/>) support this delegate.
     /// Unlike styling delegates that simply manipulate public properties of a drawable,
-    /// event delegates must be invoked manually by deriving the drawable being wrapped and individually overriding <see cref="Drawable.Handle"/>
-    /// which is not always possible.
+    /// event delegates must be invoked manually by deriving the drawable being wrapped and implementing <see cref="ISupportEventDelegation"/> which is not always possible.
     /// </remarks>
-    /// <param name="drawable">Drawable to handle events of.</param>
     /// <param name="event">Input event information.</param>
-    /// <typeparam name="T">Type of the drawable.</typeparam>
-    public delegate bool DrawableEventDelegate<in T>(T drawable, UIEvent @event) where T : Drawable;
+    public delegate bool DrawableEventDelegate(UIEvent @event);
+
+    /// <summary>
+    /// Indicates that the <see cref="Drawable"/> implementing this interface supports delegation of input events.
+    /// </summary>
+    public interface ISupportEventDelegation : IDrawable
+    {
+        DrawableEventDelegate EventDelegate { get; set; }
+    }
 
     /// <summary>
     /// Contains event handlers for <see cref="ofDrawable{T}"/>.
     /// </summary>
-    public sealed class DrawableEvent : DrawableEvent<Drawable> { }
+    public sealed class DrawableEvent : DrawableEvent<Drawable>
+    {
+        internal static readonly DrawableEventDelegate EmptyDelegate = _ => false;
+    }
 
     /// <summary>
     /// Base class for defining event handlers for <see cref="ofDrawable{T}"/>.
@@ -203,83 +211,136 @@ namespace osu.Framework.Declarative
     public abstract class DrawableEvent<T> where T : Drawable
     {
         /// <inheritdoc cref="Drawable.OnMouseMove"/>
-        public Func<MouseMoveEvent, bool> OnMouseMove;
+        public Action<MouseMoveEvent> OnMouseMove;
 
         /// <inheritdoc cref="Drawable.OnHover"/>
-        public Func<HoverEvent, bool> OnHover;
+        public Action<HoverEvent> OnHover;
 
         /// <inheritdoc cref="Drawable.OnHoverLost"/>
-        public Func<HoverLostEvent, bool> OnHoverLost;
+        public Action<HoverLostEvent> OnHoverLost;
 
         /// <inheritdoc cref="Drawable.OnMouseDown"/>
-        public Func<MouseDownEvent, bool> OnMouseDown;
+        public Action<MouseDownEvent> OnMouseDown;
 
         /// <inheritdoc cref="Drawable.OnMouseUp"/>
-        public Func<MouseUpEvent, bool> OnMouseUp;
+        public Action<MouseUpEvent> OnMouseUp;
 
         /// <inheritdoc cref="Drawable.OnClick"/>
-        public Func<ClickEvent, bool> OnClick;
+        public Action<ClickEvent> OnClick;
 
         /// <inheritdoc cref="Drawable.OnDoubleClick"/>
-        public Func<DoubleClickEvent, bool> OnDoubleClick;
+        public Action<DoubleClickEvent> OnDoubleClick;
 
         /// <inheritdoc cref="Drawable.OnDragStart"/>
-        public Func<DragStartEvent, bool> OnDragStart;
+        public Action<DragStartEvent> OnDragStart;
 
         /// <inheritdoc cref="Drawable.OnDrag"/>
-        public Func<DragEvent, bool> OnDrag;
+        public Action<DragEvent> OnDrag;
 
         /// <inheritdoc cref="Drawable.OnDragEnd"/>
-        public Func<DragEndEvent, bool> OnDragEnd;
+        public Action<DragEndEvent> OnDragEnd;
 
         /// <inheritdoc cref="Drawable.OnScroll"/>
-        public Func<ScrollEvent, bool> OnScroll;
+        public Action<ScrollEvent> OnScroll;
 
         /// <inheritdoc cref="Drawable.OnFocus"/>
-        public Func<FocusEvent, bool> OnFocus;
+        public Action<FocusEvent> OnFocus;
 
         /// <inheritdoc cref="Drawable.OnFocusLost"/>
-        public Func<FocusLostEvent, bool> OnFocusLost;
+        public Action<FocusLostEvent> OnFocusLost;
 
         /// <inheritdoc cref="Drawable.OnKeyDown"/>
-        public Func<KeyDownEvent, bool> OnKeyDown;
+        public Action<KeyDownEvent> OnKeyDown;
 
         /// <inheritdoc cref="Drawable.OnKeyUp"/>
-        public Func<KeyUpEvent, bool> OnKeyUp;
+        public Action<KeyUpEvent> OnKeyUp;
 
         /// <inheritdoc cref="Drawable.OnJoystickPress"/>
-        public Func<JoystickPressEvent, bool> OnJoystickPress;
+        public Action<JoystickPressEvent> OnJoystickPress;
 
         /// <inheritdoc cref="Drawable.OnJoystickRelease"/>
-        public Func<JoystickReleaseEvent, bool> OnJoystickRelease;
+        public Action<JoystickReleaseEvent> OnJoystickRelease;
 
         /// <summary>
         /// Handles input event of the given <see cref="Drawable"/>.
         /// </summary>
-        protected virtual bool Handle(T drawable, UIEvent @event) => @event switch
+        protected virtual bool Handle(UIEvent @event)
         {
-            MouseMoveEvent e       => OnMouseMove?.Invoke(e) ?? false,
-            HoverEvent e           => OnHover?.Invoke(e) ?? false,
-            HoverLostEvent e       => OnHoverLost?.Invoke(e) ?? false,
-            MouseDownEvent e       => OnMouseDown?.Invoke(e) ?? false,
-            MouseUpEvent e         => OnMouseUp?.Invoke(e) ?? false,
-            ClickEvent e           => OnClick?.Invoke(e) ?? false,
-            DoubleClickEvent e     => OnDoubleClick?.Invoke(e) ?? false,
-            DragStartEvent e       => OnDragStart?.Invoke(e) ?? false,
-            DragEvent e            => OnDrag?.Invoke(e) ?? false,
-            DragEndEvent e         => OnDragEnd?.Invoke(e) ?? false,
-            ScrollEvent e          => OnScroll?.Invoke(e) ?? false,
-            FocusEvent e           => OnFocus?.Invoke(e) ?? false,
-            FocusLostEvent e       => OnFocusLost?.Invoke(e) ?? false,
-            KeyDownEvent e         => OnKeyDown?.Invoke(e) ?? false,
-            KeyUpEvent e           => OnKeyUp?.Invoke(e) ?? false,
-            JoystickPressEvent e   => OnJoystickPress?.Invoke(e) ?? false,
-            JoystickReleaseEvent e => OnJoystickRelease?.Invoke(e) ?? false,
+            switch (@event)
+            {
+                case MouseMoveEvent e when OnMouseMove != null:
+                    OnMouseMove(e);
+                    return true;
 
-            _ => false
-        };
+                case HoverEvent e when OnHover != null:
+                    OnHover(e);
+                    return true;
 
-        public static implicit operator DrawableEventDelegate<T>(DrawableEvent<T> @event) => @event.Handle;
+                case HoverLostEvent e when OnHoverLost != null:
+                    OnHoverLost(e);
+                    return true;
+
+                case MouseDownEvent e when OnMouseDown != null:
+                    OnMouseDown(e);
+                    return true;
+
+                case MouseUpEvent e when OnMouseUp != null:
+                    OnMouseUp(e);
+                    return true;
+
+                case ClickEvent e when OnClick != null:
+                    OnClick(e);
+                    return true;
+
+                case DoubleClickEvent e when OnDoubleClick != null:
+                    OnDoubleClick(e);
+                    return true;
+
+                case DragStartEvent e when OnDragStart != null:
+                    OnDragStart(e);
+                    return true;
+
+                case DragEvent e when OnDrag != null:
+                    OnDrag(e);
+                    return true;
+
+                case DragEndEvent e when OnDragEnd != null:
+                    OnDragEnd(e);
+                    return true;
+
+                case ScrollEvent e when OnScroll != null:
+                    OnScroll(e);
+                    return true;
+
+                case FocusEvent e when OnFocus != null:
+                    OnFocus(e);
+                    return true;
+
+                case FocusLostEvent e when OnFocusLost != null:
+                    OnFocusLost(e);
+                    return true;
+
+                case KeyDownEvent e when OnKeyDown != null:
+                    OnKeyDown(e);
+                    return true;
+
+                case KeyUpEvent e when OnKeyUp != null:
+                    OnKeyUp(e);
+                    return true;
+
+                case JoystickPressEvent e when OnJoystickPress != null:
+                    OnJoystickPress(e);
+                    return true;
+
+                case JoystickReleaseEvent e when OnJoystickRelease != null:
+                    OnJoystickRelease(e);
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static implicit operator DrawableEventDelegate(DrawableEvent<T> @event) => @event.Handle;
     }
 
     /// <summary>
@@ -288,7 +349,7 @@ namespace osu.Framework.Declarative
     /// <typeparam name="T">Type of the <see cref="Drawable"/> to render.</typeparam>
     public sealed class ofDrawable<T> : ofDrawableBase<T> where T : Drawable, new()
     {
-        public ofDrawable(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, DrawableEventDelegate<T> @event = default) : base(key, @ref, style, @event) { }
+        public ofDrawable(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, DrawableEventDelegate @event = default) : base(key, @ref, style, @event) { }
 
         protected override T CreateDrawable() => new T();
     }
@@ -301,12 +362,12 @@ namespace osu.Framework.Declarative
     {
         [Prop] public readonly RefDelegate<T> Ref;
         [Prop] public readonly DrawableStyleDelegate<T> Style;
-        [Prop] public readonly DrawableEventDelegate<T> Event;
+        [Prop] public readonly DrawableEventDelegate Event;
 
         /// <summary>
         /// Creates a new <see cref="ofDrawableBase{T}"/>.
         /// </summary>
-        protected ofDrawableBase(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, DrawableEventDelegate<T> @event = default) : base(key)
+        protected ofDrawableBase(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, DrawableEventDelegate @event = default) : base(key)
         {
             Ref   = @ref;
             Style = style;
@@ -323,6 +384,15 @@ namespace osu.Framework.Declarative
         /// Applies styles on the given drawable.
         /// </summary>
         protected virtual void ApplyStyles(T drawable) => Style?.Invoke(drawable);
+
+        /// <summary>
+        /// Applies event handlers of the given drawable, if it implements <see cref="ISupportEventDelegation"/>.
+        /// </summary>
+        protected virtual void ApplyEvents(T drawable)
+        {
+            if (drawable is ISupportEventDelegation d)
+                d.EventDelegate = Event ?? DrawableEvent.EmptyDelegate; // always not null
+        }
 
         /// <summary>
         /// Reference of the drawable that was rendered.
@@ -356,8 +426,9 @@ namespace osu.Framework.Declarative
 
             drawable.Name = Key.ToString();
 
-            // add styling
+            // add styling and events
             ApplyStyles(drawable);
+            ApplyEvents(drawable);
 
             // render drawable
             var explicitDepth = UseRef(drawableCreated && drawable.Depth != 0).Current;

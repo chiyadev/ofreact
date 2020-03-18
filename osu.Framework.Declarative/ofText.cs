@@ -1,6 +1,7 @@
 using ofreact;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Sprites;
+using osu.Framework.Input.Events;
 using osu.Framework.Localisation;
 using osuTK;
 using osuTK.Graphics;
@@ -85,13 +86,22 @@ namespace osu.Framework.Declarative
 
     public sealed class ofText : ofText<SpriteText>
     {
-        public ofText(ElementKey key = default, RefDelegate<SpriteText> @ref = default, DrawableStyleDelegate<SpriteText> style = default) : base(key, @ref, style) { }
+        public ofText(ElementKey key = default, RefDelegate<SpriteText> @ref = default, DrawableStyleDelegate<SpriteText> style = default, DrawableEventDelegate @event = default) : base(key, @ref, style, @event) { }
 
-        protected override SpriteText CreateDrawable() => new SpriteText();
+        protected override SpriteText CreateDrawable() => new InternalSpriteText();
+
+        sealed class InternalSpriteText : SpriteText, ISupportEventDelegation
+        {
+            public DrawableEventDelegate EventDelegate { get; set; }
+            public override bool HandlePositionalInput => base.HandlePositionalInput || EventDelegate != null;
+            public override bool HandleNonPositionalInput => base.HandleNonPositionalInput || EventDelegate != null;
+
+            protected override bool Handle(UIEvent e) => base.Handle(e) || EventDelegate(e);
+        }
     }
 
     public abstract class ofText<T> : ofDrawableBase<T> where T : SpriteText
     {
-        public ofText(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default) : base(key, @ref, style) { }
+        protected ofText(ElementKey key = default, RefDelegate<T> @ref = default, DrawableStyleDelegate<T> style = default, DrawableEventDelegate @event = default) : base(key, @ref, style, @event) { }
     }
 }
