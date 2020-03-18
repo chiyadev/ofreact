@@ -1,7 +1,9 @@
 using ofreact;
+using ofreact.Diagnostics;
 using osu.Framework.Allocation;
 using osu.Framework.Configuration;
 using osu.Framework.Platform;
+using osu.Framework.Statistics;
 
 namespace osu.Framework.Declarative
 {
@@ -23,6 +25,59 @@ namespace osu.Framework.Declarative
         public ofGame(GameHost host)
         {
             Host = host;
+
+            if (IsDiagnosticsEnabled)
+                Diagnostics = new GameRenderDiagnostics();
+        }
+
+        sealed class GameRenderDiagnostics : RenderDiagnostics
+        {
+            public readonly GlobalStatistic<int> NodesRenderedStatistic = GlobalStatistics.Get<int>(nameof(ofreact), nameof(NodesRendered));
+            public readonly GlobalStatistic<int> NodesSkippedStatistic = GlobalStatistics.Get<int>(nameof(ofreact), nameof(NodesSkipped));
+            public readonly GlobalStatistic<int> NodesInvalidatedStatistic = GlobalStatistics.Get<int>(nameof(ofreact), nameof(NodesInvalidated));
+            public readonly GlobalStatistic<int> NodesDisposedStatistic = GlobalStatistics.Get<int>(nameof(ofreact), nameof(NodesDisposed));
+            public readonly GlobalStatistic<int> EffectsInvokedStatistic = GlobalStatistics.Get<int>(nameof(ofreact), nameof(EffectsInvoked));
+
+            public override void OnNodeRendering(ofNode node)
+            {
+                base.OnNodeRendering(node);
+                NodesRenderedStatistic.Value = NodesRendered.Count;
+            }
+
+            public override void OnNodeRenderSkipped(ofNode node)
+            {
+                base.OnNodeRenderSkipped(node);
+                NodesSkippedStatistic.Value = NodesSkipped.Count;
+            }
+
+            public override void OnNodeInvalidated(ofNode node)
+            {
+                base.OnNodeInvalidated(node);
+                NodesInvalidatedStatistic.Value = NodesInvalidated.Count;
+            }
+
+            public override void OnNodeDisposed(ofNode node)
+            {
+                base.OnNodeDisposed(node);
+                NodesDisposedStatistic.Value = NodesDisposed.Count;
+            }
+
+            public override void OnEffectInvoking(EffectInfo effect)
+            {
+                base.OnEffectInvoking(effect);
+                EffectsInvokedStatistic.Value = EffectsInvoked.Count;
+            }
+
+            public override void Clear()
+            {
+                base.Clear();
+
+                NodesRenderedStatistic.Value    = 0;
+                NodesSkippedStatistic.Value     = 0;
+                NodesInvalidatedStatistic.Value = 0;
+                NodesDisposedStatistic.Value    = 0;
+                EffectsInvokedStatistic.Value   = 0;
+            }
         }
 
         public override RenderResult RenderElement(ofElement element)
