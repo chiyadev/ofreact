@@ -101,14 +101,14 @@ namespace ofreact
         /// </summary>
         public virtual RenderResult RenderElement(ofElement element)
         {
-            if (_disposed)
-                return RenderResult.Mismatch;
-
             bool shouldRender;
 
             // remove first to avoid infinite rerender loop
             lock (Root.RerenderNodes)
                 shouldRender = Root.RerenderNodes.Remove(this);
+
+            if (_disposed)
+                return RenderResult.Mismatch;
 
             if (!CanRender(element))
                 return RenderResult.Mismatch;
