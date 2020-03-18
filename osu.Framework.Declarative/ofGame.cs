@@ -1,5 +1,6 @@
 using ofreact;
 using osu.Framework.Allocation;
+using osu.Framework.Configuration;
 using osu.Framework.Platform;
 
 namespace osu.Framework.Declarative
@@ -58,6 +59,9 @@ namespace osu.Framework.Declarative
             protected override IReadOnlyDependencyContainer CreateChildDependencies(IReadOnlyDependencyContainer parent)
                 => _dependencies = new DependencyContainer(base.CreateChildDependencies(parent));
 
+            [Resolved]
+            FrameworkConfigManager Config { get; set; }
+
             [BackgroundDependencyLoader]
             void Load()
             {
@@ -73,7 +77,10 @@ namespace osu.Framework.Declarative
                 {
                     new ofContext<GameHost>(value: Host)
                     {
-                        _element
+                        new ofContext<FrameworkConfigManager>(value: Config)
+                        {
+                            _element
+                        }
                     }
                 });
             }
