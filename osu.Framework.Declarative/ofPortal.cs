@@ -23,25 +23,25 @@ namespace osu.Framework.Declarative
         sealed class Context : IDrawableRenderContext
         {
             readonly Container<Drawable> _container;
-            readonly HashSet<Drawable> _remaining;
+            readonly HashSet<Drawable> _rendered;
 
             public IReadOnlyDependencyContainer DependencyContainer => _container.Dependencies;
 
             public Context(Container<Drawable> container)
             {
                 _container = container;
-                _remaining = new HashSet<Drawable>(container.Count);
-
-                foreach (var drawable in container)
-                    _remaining.Add(drawable);
+                _rendered  = new HashSet<Drawable>(container.Count);
             }
 
             float _depth;
 
             public void Render(Drawable drawable, bool explicitDepth)
             {
+                if (!_rendered.Add(drawable))
+                    return;
+
                 // already contained
-                if (_remaining.Contains(drawable))
+                if (_container.Contains(drawable))
                 {
                     if (!explicitDepth)
                         _container.ChangeChildDepth(drawable, _depth--);
