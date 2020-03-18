@@ -315,7 +315,7 @@ namespace ofreact
         /// <summary>
         /// Diagnostics object used for debugging.
         /// </summary>
-        public RenderDiagnostics Diagnostics { get; }
+        public RenderDiagnostics Diagnostics { get; protected set; }
 
         /// <summary>
         /// Creates a new <see cref="ofRootNode"/>.
